@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="2018.11.13" orientation="orthogonal" renderorder="right-up" width="52" height="16" tilewidth="24" tileheight="24" infinite="0" nextlayerid="7" nextobjectid="1">
+ <tileset firstgid="1" name="mm1cuttiles" tilewidth="24" tileheight="24" tilecount="200" columns="10">
+  <image source="mm1cuttiles.png" width="240" height="480"/>
+  <tile id="0">
+   <properties>
+    <property name="terrain" value="solid"/>
+   </properties>
+  </tile>
+  <tile id="1">
+   <properties>
+    <property name="terrain" value="solid"/>
+   </properties>
+  </tile>
+  <tile id="10">
+   <properties>
+    <property name="terrain" value="solid"/>
+   </properties>
+  </tile>
+  <tile id="11">
+   <properties>
+    <property name="terrain" value="solid"/>
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="201" name="symbol" tilewidth="24" tileheight="24" tilecount="100" columns="10">
+  <image source="../symbol/symbol.png" width="240" height="240"/>
+  <tile id="0">
+   <properties>
+    <property name="type" value="room-corner1"/>
+   </properties>
+  </tile>
+  <tile id="1">
+   <properties>
+    <property name="type" value="room-corner2"/>
+   </properties>
+  </tile>
+  <tile id="2">
+   <properties>
+    <property name="type" value="player-spawn"/>
+   </properties>
+  </tile>
+  <tile id="10">
+   <properties>
+    <property name="type" value="room-corner3"/>
+   </properties>
+  </tile>
+  <tile id="11">
+   <properties>
+    <property name="type" value="room-corner4"/>
+   </properties>
+  </tile>
+ </tileset>
+ <layer id="6" name="back" width="52" height="16">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAACu3PsQkAQAgEQZuw/1aNTMxvMdiD5zFapotZQ51tpR85PXrI6dFDTo+e20vfhCf90x5qev56qBbVGWtlr7gADQAA
+  </data>
+ </layer>
+ <layer id="3" name="Terrain" width="52" height="16">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAACmNgGAXEAkYkPJzAqH9GwShABUwD7QAagVF/DS0w6q+hBQaLv0B14GBxC6kA5nZuIOahEZ+egJb+gPFHAXkAAOS4UQkADQAA
+  </data>
+ </layer>
+ <layer id="4" name="Symbol" width="52" height="16" locked="1">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAACmNgGH7gJI3NP0Vj80fBKBgFo2AUjIJRMAqoDU4PtANGGLhMY/Ov0Nj84QwAUFYdRwANAAA=
+  </data>
+ </layer>
+</map>

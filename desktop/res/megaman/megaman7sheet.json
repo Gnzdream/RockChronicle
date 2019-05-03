@@ -1,0 +1,14 @@
+{
+	"image":"megaman7sheet.gif",
+	"textures":[
+		{
+			"name":"normal",
+			"w":34,
+			"h":40,
+			"x":209,
+			"y":11,
+			"offx":-19,
+			"offy":-1
+		}
+	]
+}
