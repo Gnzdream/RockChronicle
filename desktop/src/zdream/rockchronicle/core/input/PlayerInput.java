@@ -1,4 +1,4 @@
-package zdream.rockchronicle.desktop;
+package zdream.rockchronicle.core.input;
 
 import java.util.ArrayList;
 import java.util.HashMap;

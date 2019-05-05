@@ -1,8 +1,11 @@
 package zdream.rockchronicle.character.megaman;
 
-import zdream.rockchronicle.character.ControlModule;
-import zdream.rockchronicle.desktop.InputCenter;
-import zdream.rockchronicle.desktop.PlayerInput;
+import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.utils.JsonValue;
+
+import zdream.rockchronicle.core.character.ControlModule;
+import zdream.rockchronicle.core.input.InputCenter;
+import zdream.rockchronicle.core.input.PlayerInput;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
 public class MegamanControlModule extends ControlModule {
@@ -17,8 +20,8 @@ public class MegamanControlModule extends ControlModule {
 	}
 	
 	@Override
-	public void init() {
-		super.init();
+	public void init(FileHandle file, JsonValue value) {
+		super.init(file, value);
 		to = parent.motion;
 	}
 
@@ -29,6 +32,10 @@ public class MegamanControlModule extends ControlModule {
 		switch (mapkey) {
 		case InputCenter.MAP_JUMP:
 			to.recvControl(new String[] {MegamanMotionModule.INFO_JUMP});
+			break;
+			
+		case InputCenter.MAP_ATTACK:
+			to.recvControl(new String[] {MegamanMotionModule.INFO_ATTACK_BEGIN});
 			break;
 
 		default:
@@ -51,7 +58,7 @@ public class MegamanControlModule extends ControlModule {
 	}
 	
 	@Override
-	public void step(LevelWorld world, int index, boolean hasNext) {
+	public void determine(LevelWorld world, int index, boolean hasNext) {
 		if (index != 0) {
 			return;
 		}
@@ -64,6 +71,11 @@ public class MegamanControlModule extends ControlModule {
 			to.recvControl(new String[] {MegamanMotionModule.INFO_LEFT});
 		} else if (!left && right) {
 			to.recvControl(new String[] {MegamanMotionModule.INFO_RIGHT});
+		}
+		
+		// 攻击状态
+		if (in.isMapKeyDown(InputCenter.MAP_ATTACK)) {
+			to.recvControl(new String[] {MegamanMotionModule.INFO_IN_ATTACK});
 		}
 		
 		// 向 to 发送消息

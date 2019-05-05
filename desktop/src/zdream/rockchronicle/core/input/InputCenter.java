@@ -1,4 +1,4 @@
-package zdream.rockchronicle.desktop;
+package zdream.rockchronicle.core.input;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
@@ -49,7 +49,7 @@ public class InputCenter {
 	
 	public final PlayerInput p1, p2;
 
-	void init() {
+	public void init() {
 		Gdx.input.setInputProcessor(l);
 	}
 	

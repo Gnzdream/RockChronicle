@@ -1,6 +1,6 @@
 package zdream.rockchronicle.character.megaman;
 
-import zdream.rockchronicle.character.SpriteModule;
+import zdream.rockchronicle.core.character.SpriteModule;
 
 public class MegamanSpriteModule extends SpriteModule {
 	

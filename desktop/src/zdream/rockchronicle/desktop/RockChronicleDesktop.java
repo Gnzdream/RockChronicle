@@ -10,6 +10,8 @@ import com.badlogic.gdx.utils.JsonReader;
 
 import zdream.rockchronicle.core.Config;
 import zdream.rockchronicle.core.GameRuntime;
+import zdream.rockchronicle.core.character.CharacterBuilder;
+import zdream.rockchronicle.core.input.InputCenter;
 import zdream.rockchronicle.platform.region.RegionBuilder;
 import zdream.rockchronicle.screen.MainMenuScreen;
 
@@ -41,6 +43,7 @@ public class RockChronicleDesktop extends Game {
 	// 共用工具
 	public final JsonReader jreader = new JsonReader();
 	public final RegionBuilder regionBuilder = new RegionBuilder();
+	public final CharacterBuilder characterBuilder = new CharacterBuilder();
 	
 	// 与引擎相关的
 	
@@ -53,6 +56,7 @@ public class RockChronicleDesktop extends Game {
 		// 初始化
 		initConfig();
 		initControl();
+		characterBuilder.init();
 		
 		widthInPixel = width * Config.INSTANCE.blockWidth;
 		heightInPixel = height * Config.INSTANCE.blockHeight;
@@ -66,7 +70,7 @@ public class RockChronicleDesktop extends Game {
 		FreeTypeFontParameter parameter = new FreeTypeFontParameter();
 		
 		parameter.size = 16;
-		parameter.characters = FreeTypeFontGenerator.DEFAULT_CHARS + "你收集了";
+		parameter.characters = FreeTypeFontGenerator.DEFAULT_CHARS + "这是";
 		
 		font = generator.generateFont(parameter);
 		generator.dispose();

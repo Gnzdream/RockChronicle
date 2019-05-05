@@ -1,12 +1,12 @@
 package zdream.rockchronicle.character.megaman;
 
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.utils.JsonValue;
 
-import zdream.rockchronicle.character.MotionModule;
-import zdream.rockchronicle.core.Config;
+import zdream.rockchronicle.bullet.base.MMBuster;
+import zdream.rockchronicle.core.character.MotionModule;
+import zdream.rockchronicle.core.character.parameter.CharacterParameter;
+import zdream.rockchronicle.desktop.RockChronicleDesktop;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
@@ -22,14 +22,16 @@ public class MegamanMotionModule extends MotionModule {
 	 * 跳跃暂存
 	 */
 	boolean jump, jumpEnd;
+	/**
+	 * 攻击暂存. attackBegin 为暂存, inAttack 为状态
+	 */
+	boolean attackBegin, inAttack;
+	/**
+	 * 子弹的剩余个数
+	 */
+	int bulletCount = 3;
 	
 	public final Box box = new Box();
-	
-	/**
-	 * 在世界场上面控制的物体
-	 */
-	public Body body;
-	public Fixture fixture;
 	
 	/*
 	 * 移动静态参数: 格子 / 秒
@@ -57,6 +59,8 @@ public class MegamanMotionModule extends MotionModule {
 		INFO_LEFT = "left",
 		INFO_RIGHT = "right",
 		INFO_JUMP = "jump",
+		INFO_ATTACK_BEGIN = "a_b",
+		INFO_IN_ATTACK = "a_i",
 		INFO_JUMP_END = "jump_end";
 
 	public MegamanMotionModule(Megaman parent) {
@@ -72,15 +76,29 @@ public class MegamanMotionModule extends MotionModule {
 		this.box.maxDropVelocity = -28 * LevelWorld.TIME_STEP;
 	}
 	
-	public void initCollideRect(JsonValue rectArray) {
-		JsonValue value = rectArray.get(0);
-		 // 单位: 像素 -> 格子
-		box.box.width = (value.getInt("w") / (float) Config.INSTANCE.blockWidth);
-		box.box.height = (value.getInt("h") / (float) Config.INSTANCE.blockHeight);
-		box.box.x = (value.getInt("x") / (float) Config.INSTANCE.blockWidth);
-		box.box.y = (value.getInt("y") / (float) Config.INSTANCE.blockHeight);
+	public void initCollideRect(JsonValue object) {
+		box.inTerrain = object.getBoolean("inTerrain", true);
+		
+		JsonValue orect = object.get("rect");
+		// TODO 暂时不考虑 def
+		box.box.width = orect.getFloat("width");
+		box.box.height = orect.getFloat("height");
+		box.box.x = orect.getFloat("x");
+		box.box.y = orect.getFloat("y");
+		
+		// 初始锚点位置
+		JsonValue oanchor = object.get("anchor");
+		if (oanchor != null) {
+			box.anchor.x = oanchor.getInt("x", 0);
+			box.anchor.y = oanchor.getInt("y", 0);
+		}
 	}
 
+	@Override
+	public void determine(LevelWorld world, int index, boolean hasNext) {
+		
+	}
+	
 	@Override
 	public void step(LevelWorld world, int index, boolean hasNext) {
 		Vector2 vel = box.velocity; // 速度
@@ -156,12 +174,26 @@ public class MegamanMotionModule extends MotionModule {
 		world.execHorizontalMotion(box);
 //		System.out.println(box.anchor);
 		
+		// 其它 : 是否攻击
+		if (bulletCount > 0 && attackBegin) {
+			float x = (orientation) ? box.anchor.x + 0.5f : box.anchor.x - 0.5f;
+			MMBuster buster = (MMBuster) RockChronicleDesktop.INSTANCE.characterBuilder.create("megaman_buster",
+					CharacterParameter.newInstance()
+						.setBoxAnchor(x, box.anchor.y + 0.75f)
+						.setMotionOrientation(orientation)
+						.get());
+			buster.setDisappearCallback((b) -> {this.bulletCount++;});
+			RockChronicleDesktop.INSTANCE.runtime.addEntry(buster);
+			-- bulletCount;
+		}
+		
 		// 重置参数
 		if (!hasNext) {
 			resetControl();
 		}
 		this.jump = false;
 		this.jumpEnd = false;
+		this.attackBegin = false;
 	}
 	
 	/**
@@ -170,16 +202,8 @@ public class MegamanMotionModule extends MotionModule {
 	private void resetControl() {
 		left = false;
 		right = false;
-
 	}
 	
-	/**
-	 * 设置锚点位置, 单位: 格子
-	 */
-	public void setBlockPos(final int blockx, final int blocky) {
-		box.setAnchor(blockx + 0.5f, blocky);
-	}
-
 	@Override
 	public void recvControl(String[] infos) {
 		for (int i = 0; i < infos.length; i++) {
@@ -200,6 +224,12 @@ public class MegamanMotionModule extends MotionModule {
 			case INFO_JUMP_END:
 				jumpEnd = true;
 				break;
+			case INFO_ATTACK_BEGIN:
+				attackBegin = true;
+				break;
+			case INFO_IN_ATTACK:
+				inAttack = true;
+				break;
 
 			default:
 				break;
@@ -210,34 +240,7 @@ public class MegamanMotionModule extends MotionModule {
 
 	@Override
 	public void createBody(LevelWorld world) {
-//		BodyDef bodyDef = new BodyDef();
-//		bodyDef.type = BodyType.DynamicBody;
-//		bodyDef.position.set(anchorPoint.x, anchorPoint.y); // 锚点位置
-//		bodyDef.gravityScale = 0;
-//		bodyDef.fixedRotation = true; // 不旋转
-//		
-//		body = world.world.createBody(bodyDef);
-//		body.setUserData(OtherBodyParam.INSTANCE);
-//		
-//		PolygonShape shape = new PolygonShape();
-//		Vector2 center = rect.getCenter(new Vector2()); // 相对于锚点的位置 (单位: 格子)
-//		shape.setAsBox(rect.width / 2, rect.height / 2, center, 0);
-//		
-//		// Fixture 固定器将 shape 固定到 body 上
-//		FixtureDef fixtureDef = new FixtureDef();
-//		fixtureDef.shape = shape;
-//		fixtureDef.density = 0.5f; 
-//		fixtureDef.friction = 0.4f;
-//		fixtureDef.restitution = 0.6f;
-//		
-//		fixture = body.createFixture(fixtureDef);
-//		shape.dispose();
-//		
-//		// Filter 碰撞过滤
-//		Filter filter = new Filter();
-//		filter.categoryBits = 0x2;
-//		filter.maskBits = 0x1;
-//		fixture.setFilterData(filter);
+		world.addBox(box);
 	}
 
 }

@@ -1,0 +1,15 @@
+{
+	"name":"megaman_buster",
+	"class":"zdream.rockchronicle.bullet.base.MMBuster",
+	"box":
+	{
+		"inTerrain":false,
+		"rect":
+		{
+			"width":0.333333,
+			"height":0.25,
+			"x":-0.166667,
+			"y":-0.125
+		}
+	},
+}

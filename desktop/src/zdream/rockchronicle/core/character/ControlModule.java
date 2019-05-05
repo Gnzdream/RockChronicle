@@ -1,8 +1,8 @@
-package zdream.rockchronicle.character;
+package zdream.rockchronicle.core.character;
 
-import zdream.rockchronicle.desktop.IControlListener;
-import zdream.rockchronicle.desktop.InputCenter;
-import zdream.rockchronicle.desktop.PlayerInput;
+import zdream.rockchronicle.core.input.IControlListener;
+import zdream.rockchronicle.core.input.InputCenter;
+import zdream.rockchronicle.core.input.PlayerInput;
 
 public abstract class ControlModule extends AbstractModule implements IControlListener {
 	
@@ -26,7 +26,7 @@ public abstract class ControlModule extends AbstractModule implements IControlLi
 		this.in = in;
 		// TODO 我们先尝试绑定左右方向键
 		in.addControlListener(new int[] {
-				InputCenter.MAP_LEFT, InputCenter.MAP_RIGHT, InputCenter.MAP_JUMP
+				InputCenter.MAP_LEFT, InputCenter.MAP_RIGHT, InputCenter.MAP_JUMP, InputCenter.MAP_ATTACK
 		}, this);
 	}
 	
@@ -36,6 +36,11 @@ public abstract class ControlModule extends AbstractModule implements IControlLi
 	public void unbind() {
 		in.removeControlListener(this);
 		this.in = null;
+	}
+	
+	@Override
+	public int priority() {
+		return 1;
 	}
 	
 }

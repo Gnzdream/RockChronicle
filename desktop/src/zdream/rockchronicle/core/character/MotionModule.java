@@ -1,4 +1,4 @@
-package zdream.rockchronicle.character;
+package zdream.rockchronicle.core.character;
 
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.utils.JsonValue;
@@ -40,6 +40,8 @@ public abstract class MotionModule extends AbstractModule {
 	 */
 	protected Shape shape;
 	
+	protected LevelWorld world;
+	
 
 	public MotionModule(CharacterEntry ch) {
 		super(ch);
@@ -57,8 +59,33 @@ public abstract class MotionModule extends AbstractModule {
 	 * @param infos
 	 *   消息列表
 	 */
-	public abstract void recvControl(String[] infos);
+	public void recvControl(String[] infos) {
+		// do nothing
+	}
+	
+	public final void doCreateModule(LevelWorld world) {
+		this.world = world;
+		this.createBody(world);
+	}
+	
+	/**
+	 * 每一帧来刷新一下状态
+	 * @param world
+	 *   关卡世界实体
+	 * @param index
+	 *   本帧的第几次调用. 第一次为 0
+	 * @param hasNext
+	 *   本帧是否还会再调用
+	 */
+	public void step(LevelWorld world, int index, boolean hasNext) {
+		// do nothing
+	}
 
-	public abstract void createBody(LevelWorld world);
+	protected abstract void createBody(LevelWorld world);
+	
+	@Override
+	public int priority() {
+		return 0x100;
+	}
 	
 }

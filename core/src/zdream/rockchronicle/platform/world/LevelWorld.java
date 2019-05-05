@@ -1,16 +1,8 @@
 package zdream.rockchronicle.platform.world;
 
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
-import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.Filter;
-import com.badlogic.gdx.physics.box2d.Fixture;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
-import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Array;
 
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.body.TerrainParam;
@@ -28,13 +20,10 @@ public class LevelWorld implements ITerrainStatic {
 		terrainCollisionFilter.groupIndex = -1;
 	}
 	
-	public World world;
-	public Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
 	public Room currentRoom;
 	
 	public void doCreate() {
 		// 世界重力向下
-		world = new World(new Vector2(0, -1), true);
 		this.pause = true;
 	}
 	
@@ -69,11 +58,37 @@ public class LevelWorld implements ITerrainStatic {
 	 * 该值用于在动态帧率时, 调整世界的更新频率.
 	 */
 	private float accumulator = 0;
-	
+
 	/**
 	 * 世界的更新频率为每秒 120 步
 	 */
-	public static final float TIME_STEP = 1/120f;
+	public static final int STEPS_PER_SECOND = 120;
+	public static final float TIME_STEP = 1.0f / STEPS_PER_SECOND;
+	
+	public final Array<Box> boxs = new Array<>();
+	
+	/**
+	 * 向世界放置物体
+	 * @param box
+	 */
+	public void addBox(Box box) {
+		boxs.add(box);
+	}
+	
+	/**
+	 * 从世界中删除物体
+	 * @param box
+	 */
+	public void removeBox(Box box) {
+		boxs.removeValue(box, true);
+	}
+	
+	/**
+	 * 清空世界中的物体
+	 */
+	public void clearBox() {
+		boxs.clear();
+	}
 	
 	/**
 	 * 每帧的回调函数
@@ -110,62 +125,15 @@ public class LevelWorld implements ITerrainStatic {
 	        if (stepCallBack != null) {
 	        	stepCallBack.step(this, index++, accumulator >= TIME_STEP);
 	        }
-	        world.step(TIME_STEP, 2, 2); // 世界在状态修改之后进行更新
 	    }
 		stepCallBack.onStepFinished(this, false);
 	}
 	
 	public void setCurrentRoom(Room currentRoom) {
 		this.currentRoom = currentRoom;
-		buildTerrainBlocks();
-	}
-	
-	/**
-	 * 按照房间数据创建地形的方块
-	 * @param room
-	 *   现在所在的房间
-	 */
-	private void buildTerrainBlocks() {
-		for (int x = 0; x < currentRoom.terrains.length; x++) {
-			int[] ts = currentRoom.terrains[x];
-			
-			for (int y = 0; y < ts.length; y++) {
-				int terrain = ts[y];
-				
-				switch (terrain) {
-				case TERRAIN_STAB_BALL:
-					buildTerrainBlock(x, y, terrain);
-					break;
-
-				default:
-					// 跳过
-					break;
-				}
-			}
-		}
 	}
 	
 	private Filter terrainCollisionFilter;
-	
-	private void buildTerrainBlock(int x, int y, int terrain) {
-		BodyDef bodyDef = new BodyDef();
-		bodyDef.type = BodyType.StaticBody;
-		bodyDef.position.set(x, y); // 锚点位置: 左下角
-		bodyDef.fixedRotation = true; // 不旋转
-		
-		Body body = world.createBody(bodyDef);
-		body.setUserData(new TerrainParam(x, y, terrain));
-		PolygonShape shape = new PolygonShape();
-		shape.setAsBox(0.4f, 0.4f, new Vector2(0.5f, 0.5f), 0);
-		
-		FixtureDef fixtureDef = new FixtureDef();
-		fixtureDef.shape = shape;
-		fixtureDef.friction = 0f; // 摩擦因子
-		Fixture fixture = body.createFixture(fixtureDef);
-		
-		shape.dispose();
-		fixture.setFilterData(terrainCollisionFilter);
-	}
 	
 	/**
 	 * <p>判断一个物体是否在地上.
@@ -192,24 +160,6 @@ public class LevelWorld implements ITerrainStatic {
 		int xright = Math.min((int) Math.floor(rect.x + rect.width), currentRoom.width - 1);
 		float fybottom = rect.y;
 		int ybottom = (int) Math.floor(fybottom);
-		
-		// 抬升部分
-//		for (int x = xleft; x <= xright; x++) {
-//			int terrain = getTerrain(x, ybottom);
-//			
-//			if (terrain == TERRAIN_SOLID) { // TODO 其它实体块
-//				// 位置将抬升
-//				int upTerrain = getTerrain(x, ybottom + 1);
-//				if (upTerrain == TERRAIN_SOLID) {
-//					// TODO 抬升的幅度超过 1 格, 可以判断死亡
-//				} else {
-//					// 位置抬升至上一格
-//					position.setY(ybottom + 1);
-//					serachGround(position, array);
-//					return;
-//				}
-//			}
-//		}
 		
 		// TODO 下面暂时不判断斜坡
 		

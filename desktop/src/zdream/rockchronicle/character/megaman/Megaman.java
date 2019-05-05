@@ -1,15 +1,12 @@
 package zdream.rockchronicle.character.megaman;
 
-import java.util.Iterator;
-
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.JsonValue;
 
-import zdream.rockchronicle.character.AbstractModule;
-import zdream.rockchronicle.character.CharacterEntry;
-import zdream.rockchronicle.desktop.PlayerInput;
-import zdream.rockchronicle.platform.world.LevelWorld;
+import zdream.rockchronicle.core.character.CharacterEntry;
+import zdream.rockchronicle.core.input.PlayerInput;
 
 public class Megaman extends CharacterEntry {
 	
@@ -17,7 +14,7 @@ public class Megaman extends CharacterEntry {
 	MegamanMotionModule motion;
 	MegamanSpriteModule sprite;
 	
-	public Megaman() {
+	{
 		ctrl = new MegamanControlModule(this);
 		motion = new MegamanMotionModule(this);
 		sprite = new MegamanSpriteModule(this);
@@ -25,20 +22,19 @@ public class Megaman extends CharacterEntry {
 		this.addModule(ctrl);
 		this.addModule(motion);
 		this.addModule(sprite);
-		
-		ctrl.init();
-		motion.init();
-		sprite.init();
 	}
-
+	
 	@Override
-	protected void onLoadJson(FileHandle file, JsonValue json) {
-		// rect 碰撞块
+	protected void init(FileHandle file, JsonValue json) {
+		super.init(file, json);
 		
-		JsonValue rectArray = json.get("rect");
+		// rect 碰撞块
+		JsonValue rectArray = json.get("box");
 		motion.initCollideRect(rectArray);
 		
-		sprite.initTexturePaths(file, json.get("textures"));
+		ctrl.init(file, json);
+		motion.init(file, json);
+		sprite.init(file, json);
 	}
 	
 	/**
@@ -56,31 +52,8 @@ public class Megaman extends CharacterEntry {
 	}
 	
 	@Override
-	public void draw(SpriteBatch batch) {
+	public void draw(SpriteBatch batch, OrthographicCamera camera) {
 		sprite.draw(batch);
 	}
 	
-	/**
-	 * 设置位置, 单位 block
-	 */
-	public void setBlockPos(final int blockx, final int blocky) {
-		motion.setBlockPos(blockx, blocky);
-	}
-	
-	@Override
-	public void step(LevelWorld world, int index, boolean hasNext) {
-		ctrl.step(world, index, hasNext);
-		motion.step(world, index, hasNext);
-		
-		Iterator<AbstractModule> it = modules.values().iterator();
-		while (it.hasNext()) {
-			AbstractModule m = it.next();
-			if (m == ctrl || m == motion || m == sprite) {
-				continue;
-			}
-			m.step(world, index, hasNext);
-		}
-		sprite.step(world, index, hasNext);
-	}
-
 }

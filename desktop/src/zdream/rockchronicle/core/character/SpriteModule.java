@@ -1,4 +1,4 @@
-package zdream.rockchronicle.character;
+package zdream.rockchronicle.core.character;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -24,8 +24,13 @@ public abstract class SpriteModule extends AbstractModule {
 	}
 	
 	@Override
-	public void init() {
+	public void init(FileHandle file, JsonValue value) {
 		motion = ((MotionModule) ch.getModule(MotionModule.NAME));
+		
+		if (value.has("textures")) {
+			// 场一般没有 textures
+			initTexturePaths(file, value.get("textures"));
+		}
 	}
 
 	@Override
@@ -45,7 +50,7 @@ public abstract class SpriteModule extends AbstractModule {
 	File baseFile;
 	ArrayList<String> texturePaths;
 	
-	public void initTexturePaths(FileHandle file, JsonValue array) {
+	private void initTexturePaths(FileHandle file, JsonValue array) {
 		baseFile = file.file().getParentFile();
 		
 		int len = array.size;
@@ -115,5 +120,10 @@ public abstract class SpriteModule extends AbstractModule {
 	 * 获取 y 坐标.
 	 */
 	public abstract float getY();
+	
+	@Override
+	public int priority() {
+		return -0x100;
+	}
 
 }

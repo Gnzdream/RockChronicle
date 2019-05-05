@@ -8,18 +8,13 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
-import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.physics.box2d.Fixture;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
 
 import zdream.rockchronicle.character.megaman.Megaman;
 import zdream.rockchronicle.core.Config;
 import zdream.rockchronicle.core.GameRuntime;
+import zdream.rockchronicle.core.character.parameter.CharacterParameter;
 import zdream.rockchronicle.desktop.RockChronicleDesktop;
-import zdream.rockchronicle.platform.body.OtherBodyParam;
 import zdream.rockchronicle.platform.region.Region;
 import zdream.rockchronicle.platform.region.Room;
 import zdream.rockchronicle.platform.world.IPhysicsStep;
@@ -33,7 +28,7 @@ public class LevelScreen implements Screen, IPhysicsStep {
 	 * 查看该世界的镜头, 一般长宽为 25 x 14
 	 * 这个锁定的是人物位置.
 	 */
-	OrthographicCamera worldCamera;
+	public OrthographicCamera worldCamera;
 	/**
 	 * 查看整个屏幕的镜头, 用于放置字幕、头像、血槽等指示、辅助性物品.
 	 * 一般呈现的物品浮于世界镜头之上
@@ -64,15 +59,10 @@ public class LevelScreen implements Screen, IPhysicsStep {
 		
 		symbolCamera = new OrthographicCamera();
 		symbolCamera.setToOrtho(false, game.widthInPixel, game.heightInPixel);
-		
-		megaman = new Megaman();
-		megaman.load(Gdx.files.local("res\\megaman\\megaman.json"));
-		game.runtime.player1 = megaman;
 	}
 
 	@Override
 	public void show() {
-		System.out.println(getClass().getName());
 		GameRuntime runtime = game.runtime;
 		
 		/*
@@ -89,8 +79,15 @@ public class LevelScreen implements Screen, IPhysicsStep {
 		runtime.room = region.spawnRoom;
 		world.setCurrentRoom(runtime.curRegion.rooms[runtime.room]);
 		
-		megaman.setBlockPos(region.spawnx, region.spawny);
+		megaman = (Megaman) game.characterBuilder.create("megaman",
+				CharacterParameter.newInstance().setBoxAnchor(region.spawnx + 0.5f, region.spawny).get());
+//		megaman.load(Gdx.files.local("res\\characters\\megaman\\megaman.json"));
+		game.runtime.player1 = megaman;
+//		megaman.setBlockPos(region.spawnx, region.spawny);
 		megaman.createBody(world);
+		
+		// 设置控制端. 这里不一定是 megaman 要注意
+		megaman.bindController(game.input.p1);
 		
 //		Room curRoom = region.rooms[runtime.room];
 		
@@ -100,33 +97,6 @@ public class LevelScreen implements Screen, IPhysicsStep {
 		fixMapRender();
 		
 		batch.setProjectionMatrix(worldCamera.combined);
-		
-		// 设置控制端. 这里不一定是 megaman 要注意
-		megaman.bindController(game.input.p1);
-		
-		
-		// 测试部分: 向 world 添加方块
-		BodyDef bodyDef = new BodyDef();
-		bodyDef.type = BodyType.KinematicBody;
-		bodyDef.position.set(16, 2.5f); // 锚点位置
-		bodyDef.gravityScale = 0;
-		bodyDef.fixedRotation = true; // 不旋转
-		testBody = world.world.createBody(bodyDef);
-		testBody.setUserData(OtherBodyParam.INSTANCE);
-		PolygonShape shape = new PolygonShape();
-		shape.setAsBox(1, 1);
-		FixtureDef fixtureDef = new FixtureDef();
-		fixtureDef.shape = shape;
-		fixtureDef.density = 0f;
-		fixtureDef.friction = 0f; // 摩擦因子
-		fixtureDef.restitution = 0.6f;
-		testFixture = testBody.createFixture(fixtureDef);
-		testBody.setLinearVelocity(0, 30f);
-		shape.dispose();
-		Filter filter = new Filter();
-		filter.categoryBits = 0x4;
-		filter.maskBits = 0x1;
-		testFixture.setFilterData(filter);
 	}
 	
 	// 测试的
@@ -179,9 +149,7 @@ public class LevelScreen implements Screen, IPhysicsStep {
 		mapRender.render();
 		
 		batch.setProjectionMatrix(worldCamera.combined);
-		megaman.draw(batch);
-		
-		world.debugRenderer.render(world.world, worldCamera.combined);
+		game.runtime.drawEntries(batch, worldCamera);
 	}
 
 	@Override

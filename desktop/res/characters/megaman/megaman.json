@@ -1,0 +1,18 @@
+{
+	"name":"megaman",
+	"class":"zdream.rockchronicle.character.megaman.Megaman",
+	"box":
+	{
+		"inTerrain":true,
+		"rect":
+		{
+			"width":0.916667,
+			"height":1.5,
+			"x":-0.458333,
+			"y":0
+		}
+	},
+	"textures":[
+		"sprites/megaman7sheet.json"
+	]
+}
