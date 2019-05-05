@@ -21,13 +21,12 @@ public class MMBuster extends CharacterEntry {
 	private IBulletDisappearCallback<MMBuster> callback;
 	boolean destroyed = false;
 
-	private MMBuster() {
+	public MMBuster() {
 		motion = new MMBusterMotion(this);
 		sprite = new MMBusterSprite(this);
 		
 		this.addModule(motion);
 		this.addModule(sprite);
-		
 	}
 
 	@Override

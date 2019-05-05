@@ -89,8 +89,8 @@ public class MegamanMotionModule extends MotionModule {
 		// 初始锚点位置
 		JsonValue oanchor = object.get("anchor");
 		if (oanchor != null) {
-			box.anchor.x = oanchor.getInt("x", 0);
-			box.anchor.y = oanchor.getInt("y", 0);
+			box.anchor.x = oanchor.getFloat("x", 0f);
+			box.anchor.y = oanchor.getFloat("y", 0f);
 		}
 	}
 

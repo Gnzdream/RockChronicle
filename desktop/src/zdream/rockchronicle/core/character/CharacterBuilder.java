@@ -141,7 +141,6 @@ public class CharacterBuilder {
 			
 			// 合并 json
 			JsonValue data = mergeJson(jreader.parse(def.data), customData);
-			System.out.println(data);
 			
 			// 添加 modules
 			// TODO

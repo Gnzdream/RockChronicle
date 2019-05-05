@@ -28,12 +28,33 @@ public class MMBusterMotion extends MotionModule {
 	
 	@Override
 	public void init(FileHandle file, JsonValue value) {
-		box.box.set(-0.1f, -0.1f, 0.2f, 0.2f);
+		initCollideRect(value.get("box"));
+		
+		// motion
+		initMotion(value.get("motion"));
+	}
+
+	@Override
+	public void initCollideRect(JsonValue object) {
+		box.inTerrain = object.getBoolean("inTerrain", true);
+		
+		JsonValue orect = object.get("rect");
+		// TODO 暂时不考虑 def
+		box.box.width = orect.getFloat("width");
+		box.box.height = orect.getFloat("height");
+		box.box.x = orect.getFloat("x");
+		box.box.y = orect.getFloat("y");
+		
+		// 初始锚点位置
+		JsonValue oanchor = object.get("anchor");
+		if (oanchor != null) {
+			box.anchor.x = oanchor.getFloat("x", 0f);
+			box.anchor.y = oanchor.getFloat("y", 0f);
+		}
 	}
 	
-	public void set(float x, float y, boolean orientation) {
-		this.box.setAnchor(x, y);
-		this.orientation = orientation;
+	private void initMotion(JsonValue object) {
+		this.orientation = object.getBoolean("orientation");
 		
 		if (this.orientation) {
 			box.setVelocity(0.2f, 0);
@@ -41,12 +62,7 @@ public class MMBusterMotion extends MotionModule {
 			box.setVelocity(-0.2f, 0);
 		}
 	}
-
-	@Override
-	public void initCollideRect(JsonValue rectArray) {
-		// TODO 这里先写死
-	}
-
+	
 	@Override
 	protected void createBody(LevelWorld world) {
 		world.addBox(box);
