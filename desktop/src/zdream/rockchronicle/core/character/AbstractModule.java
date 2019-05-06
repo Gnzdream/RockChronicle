@@ -4,6 +4,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
 
+import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.core.character.parameter.JsonCollector;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
@@ -108,6 +109,10 @@ public abstract class AbstractModule {
 	 */
 	public boolean setJson(String first, JsonValue value) {
 		return false;
+	}
+	
+	public void receiveEvent(CharacterEvent event) {
+		
 	}
 
 }

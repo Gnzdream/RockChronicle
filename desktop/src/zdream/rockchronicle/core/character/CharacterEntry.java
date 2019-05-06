@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
 
+import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.desktop.RockChronicleDesktop;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
@@ -167,8 +168,23 @@ public abstract class CharacterEntry {
 	 *   本帧是否还会再调用
 	 */
 	public void determine(LevelWorld world, int index, boolean hasNext) {
-		for (int i = 0; i < modules.size; i++) {
+		AbstractModule[] ms = modules.toArray(AbstractModule.class);
+		for (int i = 0; i < ms.length; i++) {
 			modules.get(i).determine(world, index, hasNext);
+			
+			// 事件
+			while (events.size != 0) {
+				CharacterEvent event = events.removeIndex(0);
+				Array<AbstractModule> array = this.subscribes.get(event.name);
+				if (array == null) {
+					continue;
+				}
+				
+				AbstractModule[] subscribes = array.toArray(AbstractModule.class);
+				for (int j = 0; j < subscribes.length; j++) {
+					subscribes[i].receiveEvent(event);
+				}
+			}
 		}
 	}
 	
@@ -182,7 +198,7 @@ public abstract class CharacterEntry {
 	 *   本帧是否还会再调用
 	 */
 	public void step(LevelWorld world, int index, boolean hasNext) {
-		((MotionModule) moduleMap.get(MotionModule.NAME)).step(world, index, hasNext);
+		getMotion().step(world, index, hasNext);
 	}
 
 	public void onStepFinished(LevelWorld levelWorld, boolean isPause) {
@@ -206,6 +222,14 @@ public abstract class CharacterEntry {
 	 * 所有对相应的资源数据的查询、设置数据都将指向该模块.
 	 */
 	private HashMap<String, AbstractModule> resources = new HashMap<>();
+	/*
+	 * 模拟 RSS 订阅
+	 */
+	private HashMap<String, Array<AbstractModule>> subscribes = new HashMap<>();
+	/*
+	 * 所有的事件都是异步的. 等待中的事件列表
+	 */
+	private Array<CharacterEvent> events = new Array<>();
 	
 	/**
 	 * 绑定模块与资源的一级子数据集
@@ -243,6 +267,54 @@ public abstract class CharacterEntry {
 		}
 	}
 	
+	/**
+	 * 添加订阅
+	 * @param event
+	 * @param module
+	 */
+	public void addSubscribe(String event, AbstractModule module) {
+		Array<AbstractModule> array = subscribes.get(event);
+		if (array == null) {
+			array = new Array<>();
+			subscribes.put(event, array);
+		}
+		if (!array.contains(module, true)) {
+			array.add(module);
+		}
+	}
+	
+	/**
+	 * 删除订阅
+	 * @param event
+	 * @param module
+	 */
+	public void removeSubscribe(String event, AbstractModule module) {
+		Array<AbstractModule> array = subscribes.get(event);
+		if (array == null) {
+			return;
+		}
+		array.removeValue(module, true);
+		if (array.size == 0) {
+			subscribes.remove(event);
+		}
+	}
+	
+	/**
+	 * 删除某个模块的所有的订阅
+	 * @param module
+	 */
+	public void removeSubscribe(AbstractModule module) {
+		for (Iterator<Entry<String, Array<AbstractModule>>> it = subscribes.entrySet().iterator(); it.hasNext();){
+			Entry<String, Array<AbstractModule>> item = it.next();
+			Array<AbstractModule> array = item.getValue();
+			
+			array.removeValue(module, true);
+			if (array.size == 0) {
+				it.remove();
+			}
+		}
+	}
+	
 	public int getInt(String[] path, int defValue) {
 		AbstractModule module = resources.get(path[0]);
 		return (module != null) ? module.getInt(path, defValue) : defValue;
@@ -270,6 +342,13 @@ public abstract class CharacterEntry {
 	public boolean setJson(String first, JsonValue value) {
 		AbstractModule module = resources.get(first);
 		return (module != null) ? module.setJson(first, value) : false;
+	}
+	
+	/**
+	 * 发布事件
+	 */
+	public void publish(CharacterEvent event) {
+		this.events.add(event);
 	}
 
 }
