@@ -93,8 +93,8 @@ Character Initialization JSON Data Format Description
 	<br/>string
 	<br/>角色的碰撞盒子的参数定位符。
 	<br/>适用于存在不同形状的角色。洛克人拥有直立和滑铲（以及更多）状态，而每种状态的形状并不同，
-	因此可以在 state.rect 中定义每个状态的碰撞盒子，
-	并使用 box.rect.def 等于 state.rect 中的任意一个键。
+	因此可以在 motion.state 中定义每个状态的碰撞盒子，
+	并使用 box.rect.def 等于 motion.state 中的任意一个键。
 	
 *	box.velocity
 	<br/>object
@@ -116,5 +116,36 @@ Character Initialization JSON Data Format Description
 	<br/>boolean
 	<br/>水平方向的朝向。右为 true，左为 false
 
+*	motion.state
+	<br/>object
+	<br/>角色的各个形态。每个形态的名称 {state_name} 将作为一个 key 加入到 motion.state 中
 
+*	motion.state.{state_name}.rect
+	<br/>object | undefined
+	<br/>某个形态的碰撞盒子相对于其锚点的位置及大小。
+	<br/>如果存在一个实体有多个碰撞盒子，则该值为 undefined，另外 motion.state.{state_name}.rects 则存在。
+
+*	motion.state.{state_name}.rect.x
+	<br/>double
+	<br/>某个形态下，角色的碰撞盒子左下角点相对于锚点的横坐标。
+
+*	motion.state.{state_name}.rect.y
+	<br/>double
+	<br/>某个形态下，角色的碰撞盒子左下角点相对于锚点的纵坐标。
+
+*	motion.state.{state_name}.rect.width
+	<br/>double
+	<br/>某个形态下，角色的碰撞盒子的宽度。
+
+*	motion.state.{state_name}.rect.height
+	<br/>double
+	<br/>某个形态下，角色的碰撞盒子的高度。
+
+*	motion.state.{state_name}.rects
+	<br/>array{object} | undefined
+	<br/>某个形态的碰撞盒子相对于其锚点的位置及大小组成的列表。
+	<br/>这里认为该状态下的碰撞盒子存在多个，每个碰撞盒子的定义在 motion.state.{state_name}.rects[index] 中。
+	另外，如果该项存在，则 motion.state.{state_name}.rect 一定为 undefined
+	<br/>相反，motion.state.{state_name}.rects 为 undefined 说明 
+	otion.state.{state_name}.rect 存在，碰撞盒子只有一个。
 

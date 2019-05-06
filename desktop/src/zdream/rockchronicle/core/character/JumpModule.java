@@ -10,7 +10,6 @@ package zdream.rockchronicle.core.character;
 public abstract class JumpModule extends AbstractModule {
 	
 	public static final String NAME = "Jump";
-	
 
 	public JumpModule(CharacterEntry ch) {
 		super(ch);
@@ -19,8 +18,7 @@ public abstract class JumpModule extends AbstractModule {
 
 	@Override
 	public String name() {
-		// TODO Auto-generated method stub
-		return null;
+		return NAME;
 	}
 
 }
