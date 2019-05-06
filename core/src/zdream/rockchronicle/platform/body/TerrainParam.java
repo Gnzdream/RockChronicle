@@ -30,5 +30,10 @@ public class TerrainParam extends BodyParam implements ITerrainStatic {
 	public final TerrainParam getAsTerrain() {
 		return this;
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("(%d,%d)-%d", x, y, terrain);
+	}
 
 }

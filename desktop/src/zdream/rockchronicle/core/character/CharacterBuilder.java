@@ -11,6 +11,8 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
 import com.badlogic.gdx.utils.JsonWriter.OutputType;
 
+import zdream.rockchronicle.desktop.RockChronicleDesktop;
+
 /**
  * <p>人物的 {@link CharacterEntry} 的默认创建工具.
  * <p>利用 Json 数据构造 CharacterEntry 以及其拥有的 Module
@@ -23,10 +25,6 @@ public class CharacterBuilder {
 	
 	final JsonReader jreader = new JsonReader();
 
-	{
-		
-	}
-	
 	public void init() {
 		rescan(Paths.get("res", "characters"));
 	}
@@ -146,6 +144,10 @@ public class CharacterBuilder {
 			// TODO
 			
 			entry.init(Gdx.files.local(def.path), data);
+			
+			// 将角色的碰撞方块 (或其它形状, 可能不止一个 Box) 添加到世界中
+			entry.createBody(RockChronicleDesktop.INSTANCE.runtime.levelWorld);
+			
 			return entry;
 			
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {

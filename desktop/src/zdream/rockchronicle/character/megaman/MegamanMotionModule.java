@@ -1,16 +1,14 @@
 package zdream.rockchronicle.character.megaman;
 
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.bullet.base.MMBuster;
-import zdream.rockchronicle.core.character.MotionModule;
+import zdream.rockchronicle.core.character.motion.SingleBoxMotionModule;
 import zdream.rockchronicle.core.character.parameter.CharacterParameter;
 import zdream.rockchronicle.desktop.RockChronicleDesktop;
-import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
-public class MegamanMotionModule extends MotionModule {
+public class MegamanMotionModule extends SingleBoxMotionModule {
 	
 	Megaman parent;
 	
@@ -30,8 +28,6 @@ public class MegamanMotionModule extends MotionModule {
 	 * 子弹的剩余个数
 	 */
 	int bulletCount = 3;
-	
-	public final Box box = new Box();
 	
 	/*
 	 * 移动静态参数: 格子 / 秒
@@ -76,29 +72,6 @@ public class MegamanMotionModule extends MotionModule {
 		this.box.maxDropVelocity = -28 * LevelWorld.TIME_STEP;
 	}
 	
-	public void initCollideRect(JsonValue object) {
-		box.inTerrain = object.getBoolean("inTerrain", true);
-		
-		JsonValue orect = object.get("rect");
-		// TODO 暂时不考虑 def
-		box.box.width = orect.getFloat("width");
-		box.box.height = orect.getFloat("height");
-		box.box.x = orect.getFloat("x");
-		box.box.y = orect.getFloat("y");
-		
-		// 初始锚点位置
-		JsonValue oanchor = object.get("anchor");
-		if (oanchor != null) {
-			box.anchor.x = oanchor.getFloat("x", 0f);
-			box.anchor.y = oanchor.getFloat("y", 0f);
-		}
-	}
-
-	@Override
-	public void determine(LevelWorld world, int index, boolean hasNext) {
-		
-	}
-	
 	@Override
 	public void step(LevelWorld world, int index, boolean hasNext) {
 		Vector2 vel = box.velocity; // 速度
@@ -107,10 +80,9 @@ public class MegamanMotionModule extends MotionModule {
 		// 1. 判断重合以及补救方法
 		
 		// 2. 判断角色状态
-		boolean bottomStop = world.bottomStop(box); // 无论速度是否向上, 开始的落地检测都不能少
-		boolean topStop = world.topStop(box);
 		
 		// 3. 执行上下移动 TODO
+		boolean bottomStop = box.onTheGround();
 		if (bottomStop) {
 			vy = 0;
 			if (jump) {
@@ -123,7 +95,7 @@ public class MegamanMotionModule extends MotionModule {
 				vy = box.maxDropVelocity;
 			}
 		}
-		if (vy > 0 && (jumpEnd || topStop)) {
+		if (vy > 0 && (jumpEnd || box.topStop)) {
 			vy = 0;
 		}
 		
@@ -132,10 +104,9 @@ public class MegamanMotionModule extends MotionModule {
 		world.execVerticalMotion(box);
 		
 		// 4. 执行左右移动
-		boolean leftStop = world.leftStop(box), rightStop = world.rightStop(box);
-		if (leftStop) {
+		if (box.leftStop) {
 			System.out.println("l");
-		} else if (rightStop) {
+		} else if (box.rightStop) {
 			System.out.println("r");
 		}
 		// 正常情况下, 每秒增加 horizontalVelDelta 的水平速度, horizontalVelMax 为最值.
@@ -143,7 +114,7 @@ public class MegamanMotionModule extends MotionModule {
 			orientation = false;
 			if (bottomStop) {
 				vx -= horizontalVelDelta;
-				if (vx > 0 || leftStop) {
+				if (vx > 0 || box.leftStop) {
 					vx = 0;
 				} else if (vx < -horizontalVelMax) {
 					vx = -horizontalVelMax;
@@ -155,7 +126,7 @@ public class MegamanMotionModule extends MotionModule {
 			orientation = true;
 			if (bottomStop) {
 				vx += horizontalVelDelta;
-				if (vx < 0 || rightStop) {
+				if (vx < 0 || box.rightStop) {
 					vx = 0;
 				} else if (vx > horizontalVelMax) {
 					vx = horizontalVelMax;
@@ -235,12 +206,6 @@ public class MegamanMotionModule extends MotionModule {
 				break;
 			}
 		}
-		
-	}
-
-	@Override
-	public void createBody(LevelWorld world) {
-		world.addBox(box);
 	}
 
 }

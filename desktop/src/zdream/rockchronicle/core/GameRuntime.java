@@ -125,9 +125,16 @@ public class GameRuntime {
 			}
 		}
 		
-		if (entrise.size > 2) {
-			Gdx.app.log("GameRuntime", "实体个数 : " + entrise.size);
+		if (entrise.size != lastEntriseSize) {
+			lastEntriseSize = entrise.size;
+			Gdx.app.log("GameRuntime", "实体个数 : " + lastEntriseSize);
+		}
+		if (levelWorld.count() != lastWorldCount) {
+			lastWorldCount = levelWorld.count();
+			Gdx.app.log("GameRuntime", "碰撞块个数 : " + lastWorldCount);
 		}
 	}
+	
+	int lastEntriseSize = 0, lastWorldCount = 0;
 
 }

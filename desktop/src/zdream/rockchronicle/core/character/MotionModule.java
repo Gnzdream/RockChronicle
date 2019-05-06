@@ -1,8 +1,10 @@
 package zdream.rockchronicle.core.character;
 
-import com.badlogic.gdx.physics.box2d.Shape;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.JsonValue.ValueType;
 
+import zdream.rockchronicle.core.character.parameter.JsonCollector;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
 /**
@@ -12,6 +14,7 @@ import zdream.rockchronicle.platform.world.LevelWorld;
 public abstract class MotionModule extends AbstractModule {
 	
 	public static final String NAME = "Motion";
+	protected JsonCollector motionc;
 	
 	/*
 	 * 定义的运动:
@@ -30,16 +33,6 @@ public abstract class MotionModule extends AbstractModule {
 	 */
 	protected boolean orientation = true;
 	
-	/**
-	 * 在碰撞盒子中记录的, 自己的 ID
-	 */
-	protected int collisionId;
-	
-	/*
-	 * 新补充数据
-	 */
-	protected Shape shape;
-	
 	protected LevelWorld world;
 	
 
@@ -51,9 +44,23 @@ public abstract class MotionModule extends AbstractModule {
 	public String name() {
 		return NAME;
 	}
-
-	public abstract void initCollideRect(JsonValue rectArray);
 	
+	@Override
+	public void init(FileHandle file, JsonValue value) {
+		super.init(file, value);
+
+		initMotion(value.get("motion"));
+		collectors.add(motionc = new JsonCollector(this::getMotionJson, "motion"));
+	}
+
+	private void initMotion(JsonValue object) {
+		if (object == null) {
+			orientation = true;
+			return;
+		}
+		orientation = object.getBoolean("orientation", true);
+	}
+
 	/**
 	 * 收到从控制端 (一般直接从 {@link ControlModule}) 中的消息, 更改这个人物的状态.
 	 * @param infos
@@ -63,9 +70,13 @@ public abstract class MotionModule extends AbstractModule {
 		// do nothing
 	}
 	
-	public final void doCreateModule(LevelWorld world) {
+	public final void doCreateBody(LevelWorld world) {
 		this.world = world;
-		this.createBody(world);
+		this.createBody();
+	}
+	
+	public final void doDestroyBody() {
+		this.destroyBody();
 	}
 	
 	/**
@@ -81,11 +92,24 @@ public abstract class MotionModule extends AbstractModule {
 		// do nothing
 	}
 
-	protected abstract void createBody(LevelWorld world);
+	protected abstract void createBody();
+	protected abstract void destroyBody();
 	
 	@Override
 	public int priority() {
 		return 0x100;
 	}
-	
+
+	/* **********
+	 * 资源事件 *
+	 ********** */
+	/*
+	 * 允许获取与修改:
+	 * motion.orientation
+	 */
+	public JsonValue getMotionJson() {
+		JsonValue v = new JsonValue(ValueType.object);
+		v.addChild("orientation", new JsonValue(orientation));
+		return v;
+	}
 }

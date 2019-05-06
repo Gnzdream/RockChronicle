@@ -25,7 +25,7 @@ public abstract class SpriteModule extends AbstractModule {
 	
 	@Override
 	public void init(FileHandle file, JsonValue value) {
-		motion = ((MotionModule) ch.getModule(MotionModule.NAME));
+		motion = ((MotionModule) parent.getModule(MotionModule.NAME));
 		
 		if (value.has("textures")) {
 			// 场一般没有 textures

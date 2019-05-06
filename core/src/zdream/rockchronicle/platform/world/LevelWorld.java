@@ -82,6 +82,10 @@ public class LevelWorld implements ITerrainStatic {
 	public void removeBox(Box box) {
 		boxs.removeValue(box, true);
 	}
+
+	public int count() {
+		return boxs.size;
+	}
 	
 	/**
 	 * 清空世界中的物体
@@ -327,13 +331,13 @@ public class LevelWorld implements ITerrainStatic {
 			
 			for (int y = ybottom; y <= ytop; y++) {
 				int terrain = getTerrain(xdleft, y);
-				
 				if (terrain == TERRAIN_SOLID) { // TODO 其它实体块
 					// 最后向左移动的结果就是撞到该格子
 					box.addAnchorX(xsleft - fxsleft);
 					return;
 				}
 			}
+			
 			box.addAnchorX(vx);
 		} else { // vx > 0
 			float fxsright = rect.x + rect.width; // src
@@ -441,6 +445,182 @@ public class LevelWorld implements ITerrainStatic {
 	}
 	
 	/**
+	 * 判断是否重合
+	 */
+	private boolean isBoxOverlap(Rectangle rect) {
+		// 判断重合
+		float fxstart = rect.x;
+		float fxend = fxstart + rect.width;
+		float fystart = rect.y;
+		float fyend = fystart + rect.height;
+		int xstart = (int) Math.floor(fxstart);
+		int xend = (int) Math.ceil(fxend);
+		int ystart = (int) Math.floor(fystart);
+		int yend = (int) Math.ceil(fyend);
+		
+		for (int x = xstart; x < xend; x++) {
+			for (int y = ystart; y < yend; y++) {
+				int terrain = getTerrain(x, y);
+				
+				if (terrain == TERRAIN_SOLID) { // TODO 其它实体块
+					// 最后向左移动的结果就是撞到该格子
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	
+	/**
+	 * <p>盒子的位置重合修正
+	 * <p>由于一系列原因导致盒子与不能重合的物体重合了 (比如地形、不穿透刚体等).
+	 * 造成该类原因有些是陷阱、不穿透怪物等自身运动导致和其它物体重合,
+	 * 有些是浮点数的计算精度缺陷 (比如 16 计算成 15.999999)
+	 * <p>修正的方式是将该盒子移出重合区. 本函数将尝试向上下左右四个方向将物体移出重合区,
+	 * 但最大移动距离设置为 1 格 (以下). 如果盒子无法移出重合区, 将会返回 false,
+	 * 让盒子的持有者自行决定如何处理.
+	 * </p>
+	 */
+	public boolean correctOverlapBox(Box box) {
+		if (!box.inTerrain) {
+			return true; // 不用管
+		}
+		
+		// 判断重合
+		Rectangle rect = box.getPosition();
+		float fxstart = rect.x;
+		float fxend = fxstart + rect.width;
+		float fystart = rect.y;
+		float fyend = fystart + rect.height;
+		int xstart = (int) Math.floor(fxstart);
+		int xend = (int) Math.ceil(fxend);
+		int ystart = (int) Math.floor(fystart);
+		int yend = (int) Math.ceil(fyend);
+		Array<TerrainParam> overlaps = new Array<>();
+		
+		for (int x = xstart; x < xend; x++) {
+			for (int y = ystart; y < yend; y++) {
+				int terrain = getTerrain(x, y);
+				
+				if (terrain == TERRAIN_SOLID) { // TODO 其它实体块
+					// 最后向左移动的结果就是撞到该格子
+					overlaps.add(new TerrainParam(x, y, terrain));
+				}
+			}
+		}
+		
+		// TODO 除了地形以外的重合判定
+		
+		if (overlaps.size == 0) {
+			return true;
+		}
+		
+		// 修正部分
+//		{
+//			StringBuilder b = new StringBuilder(128);
+//			b.append("x:").append(fxstart).append("-").append(fxend).append(" ");
+//			b.append("y:").append(fystart).append("-").append(fyend).append(" ");
+//			b.append(overlaps);
+//			System.out.println(b);
+//		}
+		
+		Rectangle rn = new Rectangle(rect);
+		// 如果采用左右上下移动, 将最少使用的偏移量
+		float ldelta, rdelta, udelta, ddelta;
+		float rightMax = Float.MIN_VALUE, leftMin = Float.MAX_VALUE,
+				topMax = Float.MIN_VALUE, bottomMin = Float.MAX_VALUE;
+		for (int i = 0; i < overlaps.size; i++) {
+			TerrainParam t = overlaps.get(i);
+			
+			if (t.terrain == TERRAIN_SOLID) { // TODO 其它实体块
+				rightMax = (t.x + 1 > rightMax) ? t.x + 1 : rightMax;
+				leftMin = (t.x < leftMin) ? t.x : leftMin;
+				topMax = (t.y + 1 > topMax) ? t.y + 1 : topMax;
+				bottomMin = (t.y < bottomMin) ? t.y : bottomMin;
+			}
+		}
+		ldelta = Math.abs(fxend - leftMin);
+		rdelta = Math.abs(fxstart - rightMax);
+		udelta = Math.abs(fyend - topMax);
+		ddelta = Math.abs(fystart - bottomMin);
+		// 按左右上下取最小值
+		boolean l = ldelta < 1, r = rdelta < 1, u = udelta < 1, d = ddelta < 1;
+		int loopCount = l ? 1 : 0;
+		loopCount = r ? loopCount + 1 : loopCount;
+		loopCount = u ? loopCount + 1 : loopCount;
+		loopCount = d ? loopCount + 1 : loopCount;
+		
+		float delta ; // 记录移动的数量
+		for (int i = 0; i < loopCount; i++) {
+			int choose = 0; // 1:左, 2:右, 3:上, 4:下
+			delta = 1;
+			
+			if (l && ldelta < delta) {
+				choose = 1;
+				delta = ldelta;
+			}
+			if (r && rdelta < delta) {
+				choose = 2;
+				delta = rdelta;
+			}
+			if (u && udelta < delta) {
+				choose = 3;
+				delta = udelta;
+			}
+			if (d && ddelta < delta) {
+				choose = 4;
+				delta = ddelta;
+			}
+			
+			// 执行
+			switch (choose) {
+			case 1:
+				rn.x = rect.x - delta;
+				l = false;
+				break;
+			case 2:
+				rn.x = rect.x + delta;
+				r = false;
+				break;
+			case 3:
+				rn.y = rect.y + delta;
+				u = false;
+				break;
+			case 4:
+				rn.y = rect.y - delta;
+				d = false;
+				break;
+			default:
+				return false;
+			}
+			
+			if (isBoxOverlap(rn)) {
+				continue;
+			}
+			
+			// 修正成功
+			switch (choose) {
+			case 1:
+				box.addAnchorX(-delta);
+				return true;
+			case 2:
+				box.addAnchorX(delta);
+				return true;
+			case 3:
+				box.addAnchorY(delta);
+				return true;
+			case 4:
+				box.addAnchorY(-delta);
+				return true;
+			}
+			
+		}
+		
+		return true;
+	}
+	
+	/**
 	 * <p>获得地形数据.
 	 * <li>当 x 出界时, 返回 TERRAIN_SOLID
 	 * <li>当 y 向上出界时, 返回 room.terrains[room.height - 1]
@@ -465,6 +645,5 @@ public class LevelWorld implements ITerrainStatic {
 		}
 		return currentRoom.terrains[x][y];
 	}
-	
 
 }

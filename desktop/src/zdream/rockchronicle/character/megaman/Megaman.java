@@ -30,7 +30,7 @@ public class Megaman extends CharacterEntry {
 		
 		// rect 碰撞块
 		JsonValue rectArray = json.get("box");
-		motion.initCollideRect(rectArray);
+		motion.initBox(rectArray);
 		
 		ctrl.init(file, json);
 		motion.init(file, json);

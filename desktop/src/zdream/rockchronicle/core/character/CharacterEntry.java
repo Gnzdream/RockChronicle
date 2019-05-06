@@ -1,25 +1,54 @@
 package zdream.rockchronicle.core.character;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
 
+import zdream.rockchronicle.desktop.RockChronicleDesktop;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
 /**
- * 人物
+ * 角色
+ * 
  * @author Zdream
+ * @since v0.0.1
+ * @date 2019-05-06 (modify)
  */
 public abstract class CharacterEntry {
 	
+	/**
+	 * 是否存在. 如果该角色已被删除, 该值设为 false
+	 */
 	private boolean exists = true;
+	/**
+	 * 是否完成初始化
+	 */
 	private boolean inited = false;
 	
+	/* **********
+	 * 生命周期 *
+	 ********** */
+	/*
+	 * 角色删除的步骤:
+	 * 1. 自己或者其它角色调用 willDestroy 方法进行销毁
+	 *    销毁的结果是:
+	 *    a) 自己加入 GameRuntime 的销毁列表
+	 *    b) 依次调用所有模块的 willDestroy 方法
+	 *    c) 从 LevelWorld 中删除碰撞方块 (如果有). 这一步在行动模块调用 willDestroy 之后
+	 *    d) 存在参数 exists 设为 false
+	 * 2. 由 GameRuntime 调用 dispose 方法. 该方法只能由 GameRuntime 调用.
+	 *    a) 依次调用所有模块的 dispose 方法
+	 */
+	
+	/**
+	 * @see #exists
+	 */
 	public boolean isExists() {
 		return exists;
 	}
@@ -33,28 +62,53 @@ public abstract class CharacterEntry {
 		inited = true;
 	}
 	
-	public Sprite getSprite() {
-		if (moduleMap.containsKey(SpriteModule.NAME)) {
-			return ((SpriteModule) moduleMap.get(SpriteModule.NAME)).sprite;
-		}
-		
-		return null;
-	}
-	
 	/**
-	 * 获得该人物的碰撞单位
+	 * 向世界里放置该角色的碰撞单位
 	 * @return
 	 */
 	public void createBody(LevelWorld world) {
-		if (moduleMap.containsKey(MotionModule.NAME)) {
-			((MotionModule) moduleMap.get(MotionModule.NAME)).doCreateModule(world);
-		}
-	}
-
-	{
-		
+		getMotion().doCreateBody(world);
 	}
 	
+	/**
+	 * 向世界里删除该角色的碰撞单位.
+	 * 注意, 不是删除角色, 所以 exists 不一定变化
+	 * @return
+	 */
+	public void destroyBody() {
+		getMotion().doDestroyBody();
+	}
+	
+	/**
+	 * 自行销毁, 等待 GameRuntime 回收
+	 */
+	public void willDestroy() {
+		RockChronicleDesktop.INSTANCE.runtime.removeEntry(this);
+		moduleMap.forEach((n, m) -> {
+			try {
+				m.willDestroy();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
+		
+		destroyBody();
+		exists = false;
+	}
+	
+	/**
+	 * 回收. 该方法由系统 (GameRuntime) 调用, 自己不能调用
+	 */
+	public void dispose() {
+		moduleMap.forEach((n, m) -> {
+			try {
+				m.dispose();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
+	}
+
 	/* **********
 	 * 模块管理 *
 	 ********** */
@@ -88,6 +142,20 @@ public abstract class CharacterEntry {
 			return b.priority() - a.priority();
 		});
 	}
+	
+	/**
+	 * <p>获得行动模块.
+	 * <p>规定任何一个角色都必须含有行动模块
+	 * </p>
+	 * @return
+	 */
+	public MotionModule getMotion() {
+		return ((MotionModule) getModule(MotionModule.NAME));
+	}
+
+	/* **********
+	 * 事务执行 *
+	 ********** */
 	
 	/**
 	 * 状态确定
@@ -127,15 +195,81 @@ public abstract class CharacterEntry {
 	 * 绘画的位置是由碰撞块的位置和纹理的属性 (纹理的锚点位置与碰撞块的有一定的差值) 来决定的
 	 */
 	public abstract void draw(SpriteBatch batch, OrthographicCamera camera);
+
+	/* **********
+	 * 资源事件 *
+	 ********** */
+	/*
+	 * 所有的角色实例的数据均能转变成 Json 数据格式.
+	 * 
+	 * 每个模块在启动时绑定一个或多个一级数据源, 它等同于该 Json 数据的一级子数据集
+	 * 所有对相应的资源数据的查询、设置数据都将指向该模块.
+	 */
+	private HashMap<String, AbstractModule> resources = new HashMap<>();
 	
-	public void dispose() {
-		moduleMap.forEach((n, m) -> {
-			try {
-				m.dispose();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		});
+	/**
+	 * 绑定模块与资源的一级子数据集
+	 * @param key
+	 * @param module
+	 * @throws IllegalArgumentException
+	 *   当 key 已经被绑定时
+	 */
+	public void bindResource(String key, AbstractModule module) {
+		if (resources.containsKey(key)) {
+			throw new IllegalArgumentException(
+					String.format("角色 %s 的资源键 %s 已经被模块 %s 绑定, 无法与 %s 绑定",
+					this, key, resources.get(key), module));
+		}
+		resources.put(key, module);
+	}
+	
+	/**
+	 * 解绑模块与资源的一级子数据集
+	 * @param key
+	 */
+	public void unbindResource(String key) {
+		resources.remove(key);
+	}
+	
+	/**
+	 * 解绑某个模块的所有的资源
+	 * @param module
+	 */
+	public void unbindResource(AbstractModule module) {
+		for (Iterator<Entry<String, AbstractModule>> it = resources.entrySet().iterator(); it.hasNext();){
+			Entry<String, AbstractModule> item = it.next();
+		    if (item.getValue() == module)
+		    	it.remove();
+		}
+	}
+	
+	public int getInt(String[] path, int defValue) {
+		AbstractModule module = resources.get(path[0]);
+		return (module != null) ? module.getInt(path, defValue) : defValue;
+	}
+	public String getString(String[] path, String defValue) {
+		AbstractModule module = resources.get(path[0]);
+		return (module != null) ? module.getString(path, defValue) : defValue;
+	}
+	public float getFloat(String[] path, float defValue) {
+		AbstractModule module = resources.get(path[0]);
+		return (module != null) ? module.getFloat(path, defValue) : defValue;
+	}
+	public boolean getBoolean(String[] path, boolean defValue) {
+		AbstractModule module = resources.get(path[0]);
+		return (module != null) ? module.getBoolean(path, defValue) : defValue;
+	}
+	public JsonValue getJson(String[] path) {
+		AbstractModule module = resources.get(path[0]);
+		return (module != null) ? module.getJson(path) : null;
+	}
+	
+	/*
+	 * 返回值: 是否修改被允许 (accepted)
+	 */
+	public boolean setJson(String first, JsonValue value) {
+		AbstractModule module = resources.get(first);
+		return (module != null) ? module.setJson(first, value) : false;
 	}
 
 }

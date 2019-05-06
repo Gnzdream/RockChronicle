@@ -7,7 +7,6 @@ import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.bullet.IBulletDisappearCallback;
 import zdream.rockchronicle.core.character.CharacterEntry;
-import zdream.rockchronicle.desktop.RockChronicleDesktop;
 
 /**
  * 洛克人的基础子弹
@@ -19,7 +18,6 @@ public class MMBuster extends CharacterEntry {
 	MMBusterSprite sprite;
 	
 	private IBulletDisappearCallback<MMBuster> callback;
-	boolean destroyed = false;
 
 	public MMBuster() {
 		motion = new MMBusterMotion(this);
@@ -37,22 +35,22 @@ public class MMBuster extends CharacterEntry {
 		motion.init(file, json);
 		sprite.init(file, json);
 	}
-
-	@Override
-	public void draw(SpriteBatch batch, OrthographicCamera camera) {
-		sprite.draw(batch, camera);
-	}
 	
 	/**
 	 * 一般是 motion 调用, 它让该物体销毁
 	 */
-	public void execDestroy() {
-		this.destroyed = true;
+	@Override
+	public void willDestroy() {
 		if (callback != null) {
 			callback.onDisappear(this);
 		}
 		
-		RockChronicleDesktop.INSTANCE.runtime.removeEntry(this);
+		super.willDestroy();
+	}
+
+	@Override
+	public void draw(SpriteBatch batch, OrthographicCamera camera) {
+		sprite.draw(batch, camera);
 	}
 	
 	public void setDisappearCallback(IBulletDisappearCallback<MMBuster> callback) {

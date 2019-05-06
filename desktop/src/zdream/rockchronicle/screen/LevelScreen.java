@@ -84,7 +84,6 @@ public class LevelScreen implements Screen, IPhysicsStep {
 //		megaman.load(Gdx.files.local("res\\characters\\megaman\\megaman.json"));
 		game.runtime.player1 = megaman;
 //		megaman.setBlockPos(region.spawnx, region.spawny);
-		megaman.createBody(world);
 		
 		// 设置控制端. 这里不一定是 megaman 要注意
 		megaman.bindController(game.input.p1);
