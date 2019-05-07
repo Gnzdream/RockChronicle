@@ -20,5 +20,10 @@ public abstract class JumpModule extends AbstractModule {
 	public String name() {
 		return NAME;
 	}
+	
+	@Override
+	public int priority() {
+		return 0x80;
+	}
 
 }

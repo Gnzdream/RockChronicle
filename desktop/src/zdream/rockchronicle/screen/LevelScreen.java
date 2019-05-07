@@ -96,6 +96,9 @@ public class LevelScreen implements Screen, IPhysicsStep {
 		fixMapRender();
 		
 		batch.setProjectionMatrix(worldCamera.combined);
+		
+		// 测试帧率部分
+		frameTimestamp = System.currentTimeMillis();
 	}
 	
 	// 测试的
@@ -149,7 +152,26 @@ public class LevelScreen implements Screen, IPhysicsStep {
 		
 		batch.setProjectionMatrix(worldCamera.combined);
 		game.runtime.drawEntries(batch, worldCamera);
+		
+		// 帧率
+		long now = System.currentTimeMillis();
+		if (now - frameTimestamp > 1000) {
+			lastFrameCount = frameCount;
+			frameCount = 0;
+			while (now - frameTimestamp > 1000) {
+				frameTimestamp += 1000;
+			}
+		}
+		frameCount++;
+		game.batch.begin();
+		game.font.draw(game.batch, "帧率: " + lastFrameCount, 10, 20);
+		game.batch.end();
 	}
+	
+	// 测试帧率的数据
+	int frameCount;
+	long frameTimestamp;
+	int lastFrameCount;
 
 	@Override
 	public void step(LevelWorld world, int index, boolean hasNext) {

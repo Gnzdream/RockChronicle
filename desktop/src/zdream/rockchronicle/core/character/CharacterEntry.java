@@ -176,13 +176,13 @@ public abstract class CharacterEntry {
 			while (events.size != 0) {
 				CharacterEvent event = events.removeIndex(0);
 				Array<AbstractModule> array = this.subscribes.get(event.name);
-				if (array == null) {
+				if (array == null || array.size == 0) {
 					continue;
 				}
 				
 				AbstractModule[] subscribes = array.toArray(AbstractModule.class);
 				for (int j = 0; j < subscribes.length; j++) {
-					subscribes[i].receiveEvent(event);
+					subscribes[j].receiveEvent(event);
 				}
 			}
 		}

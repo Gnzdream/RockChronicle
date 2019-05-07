@@ -4,6 +4,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.core.character.ControlModule;
+import zdream.rockchronicle.core.character.event.CharacterEventCreator;
 import zdream.rockchronicle.core.input.InputCenter;
 import zdream.rockchronicle.core.input.PlayerInput;
 import zdream.rockchronicle.platform.world.LevelWorld;
@@ -11,50 +12,30 @@ import zdream.rockchronicle.platform.world.LevelWorld;
 public class MegamanControlModule extends ControlModule {
 	
 	Megaman parent;
-	
-	MegamanMotionModule to;
+	CharacterEventCreator creator;
+
+	boolean lastLeft, lastRight, lastUp, lastDown;
+	boolean lastJump, lastAttack, lastSlide;
 	
 	public MegamanControlModule(Megaman ch) {
 		super(ch);
 		this.parent = ch;
+		creator = new CharacterEventCreator();
 	}
 	
 	@Override
 	public void init(FileHandle file, JsonValue value) {
 		super.init(file, value);
-		to = parent.motion;
 	}
 
 	@Override
 	public void onKeyPressed(int mapkey, PlayerInput in) {
 		// 这里忽略方向键
-		
-		switch (mapkey) {
-		case InputCenter.MAP_JUMP:
-			to.recvControl(new String[] {MegamanMotionModule.INFO_JUMP});
-			break;
-			
-		case InputCenter.MAP_ATTACK:
-			to.recvControl(new String[] {MegamanMotionModule.INFO_ATTACK_BEGIN});
-			break;
-
-		default:
-			break;
-		}
 	}
 
 	@Override
 	public void onKeyReleased(int mapkey, PlayerInput in) {
 		// 这里忽略方向键
-		
-		switch (mapkey) {
-		case InputCenter.MAP_JUMP:
-			to.recvControl(new String[] {MegamanMotionModule.INFO_JUMP_END});
-			break;
-
-		default:
-			break;
-		}
 	}
 	
 	@Override
@@ -66,20 +47,35 @@ public class MegamanControlModule extends ControlModule {
 		// 横向
 		boolean left = in.isMapKeyDown(InputCenter.MAP_LEFT),
 				right = in.isMapKeyDown(InputCenter.MAP_RIGHT);
-		
-		if (left && !right) {
-			to.recvControl(new String[] {MegamanMotionModule.INFO_LEFT});
-		} else if (!left && right) {
-			to.recvControl(new String[] {MegamanMotionModule.INFO_RIGHT});
+		boolean up = in.isMapKeyDown(InputCenter.MAP_UP),
+				down = in.isMapKeyDown(InputCenter.MAP_DOWN);
+		if (left && right) {
+			left = right = false;
+		}
+		if (up && down) {
+			up = down = false;
+		}
+		if (left != lastLeft || right != lastRight || up != lastUp || down != lastDown) {
+			parent.publish(creator.ctrlAxis(left, right, up, down).get());
+			lastLeft = left;
+			lastRight = right;
+			lastUp = up;
+			lastDown = down;
 		}
 		
-		// 攻击状态
-		if (in.isMapKeyDown(InputCenter.MAP_ATTACK)) {
-			to.recvControl(new String[] {MegamanMotionModule.INFO_IN_ATTACK});
+		// 行动状态
+		boolean attack = in.isMapKeyDown(InputCenter.MAP_ATTACK),
+				jump = in.isMapKeyDown(InputCenter.MAP_JUMP),
+				slide = in.isMapKeyDown(InputCenter.MAP_RUSH);
+		if (attack != lastAttack || jump != lastJump || slide != lastSlide) {
+			parent.publish(
+					creator.ctrlMotion(attack, attack != lastAttack,
+					jump, jump != lastJump, slide,
+					slide != lastSlide).get());
+			lastAttack = attack;
+			lastJump = jump;
+			lastSlide = slide;
 		}
-		
-		// 向 to 发送消息
-		
 	}
 
 }

@@ -1,8 +1,11 @@
 package zdream.rockchronicle.character.megaman;
 
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.bullet.base.MMBuster;
+import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.core.character.motion.SingleBoxMotionModule;
 import zdream.rockchronicle.core.character.parameter.CharacterParameter;
 import zdream.rockchronicle.desktop.RockChronicleDesktop;
@@ -48,17 +51,6 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 	 */
 	public float horizontalVelMax;
 	
-	/**
-	 * Megaman 中使用的消息
-	 */
-	public static final String
-		INFO_LEFT = "left",
-		INFO_RIGHT = "right",
-		INFO_JUMP = "jump",
-		INFO_ATTACK_BEGIN = "a_b",
-		INFO_IN_ATTACK = "a_i",
-		INFO_JUMP_END = "jump_end";
-
 	public MegamanMotionModule(Megaman parent) {
 		super(parent);
 		this.parent = parent;
@@ -70,6 +62,15 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 		this.box.jumpImpulse = 21.36f * LevelWorld.TIME_STEP;
 		this.box.jumpDecay = -72 * LevelWorld.TIME_STEP * LevelWorld.TIME_STEP;
 		this.box.maxDropVelocity = -28 * LevelWorld.TIME_STEP;
+	}
+	
+	@Override
+	public void init(FileHandle file, JsonValue value) {
+		super.init(file, value);
+		
+		// 添加事件监听
+		parent.addSubscribe("ctrl_axis", this);
+		parent.addSubscribe("ctrl_motion", this);
 	}
 	
 	@Override
@@ -104,11 +105,11 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 		world.execVerticalMotion(box);
 		
 		// 4. 执行左右移动
-		if (box.leftStop) {
-			System.out.println("l");
-		} else if (box.rightStop) {
-			System.out.println("r");
-		}
+//		if (box.leftStop) {
+//			System.out.println("l");
+//		} else if (box.rightStop) {
+//			System.out.println("r");
+//		}
 		// 正常情况下, 每秒增加 horizontalVelDelta 的水平速度, horizontalVelMax 为最值.
 		if (left) {
 			orientation = false;
@@ -159,53 +160,42 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 		}
 		
 		// 重置参数
-		if (!hasNext) {
-			resetControl();
-		}
 		this.jump = false;
 		this.jumpEnd = false;
 		this.attackBegin = false;
 	}
 	
-	/**
-	 * 将控制洛克人的键位、命令进行重置
-	 */
-	private void resetControl() {
-		left = false;
-		right = false;
+	@Override
+	public void receiveEvent(CharacterEvent event) {
+		switch (event.name) {
+		case "ctrl_axis":
+			recvCtrlAxis(event);
+			break;
+		case "ctrl_motion":
+			recvCtrlMotion(event);
+			break;
+
+		default:
+			super.receiveEvent(event);
+			break;
+		}
 	}
 	
-	@Override
-	public void recvControl(String[] infos) {
-		for (int i = 0; i < infos.length; i++) {
-			if (infos[i] == null) {
-				continue;
-			}
-			
-			switch (infos[i]) {
-			case INFO_LEFT:
-				left = true;
-				break;
-			case INFO_RIGHT:
-				right = true;
-				break;
-			case INFO_JUMP:
-				jump = true;
-				break;
-			case INFO_JUMP_END:
-				jumpEnd = true;
-				break;
-			case INFO_ATTACK_BEGIN:
-				attackBegin = true;
-				break;
-			case INFO_IN_ATTACK:
-				inAttack = true;
-				break;
-
-			default:
-				break;
-			}
-		}
+	private void recvCtrlAxis(CharacterEvent event) {
+		left = event.value.getBoolean("left");
+		right = event.value.getBoolean("right");
+	}
+	
+	private void recvCtrlMotion(CharacterEvent event) {
+		inAttack = event.value.getBoolean("attack");
+		boolean attackChange = event.value.getBoolean("attack_change");
+		jump = event.value.getBoolean("jump");
+		boolean jumpChange = event.value.getBoolean("jump_change");
+//		boolean slide = event.value.getBoolean("slide");
+//		boolean slideChange = event.value.getBoolean("slide_change");
+		
+		attackBegin = (inAttack && attackChange);
+		jumpEnd = (!jump && jumpChange);
 	}
 
 }

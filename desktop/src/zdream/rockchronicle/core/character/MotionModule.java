@@ -61,15 +61,6 @@ public abstract class MotionModule extends AbstractModule {
 		orientation = object.getBoolean("orientation", true);
 	}
 
-	/**
-	 * 收到从控制端 (一般直接从 {@link ControlModule}) 中的消息, 更改这个人物的状态.
-	 * @param infos
-	 *   消息列表
-	 */
-	public void recvControl(String[] infos) {
-		// do nothing
-	}
-	
 	public final void doCreateBody(LevelWorld world) {
 		this.world = world;
 		this.createBody();

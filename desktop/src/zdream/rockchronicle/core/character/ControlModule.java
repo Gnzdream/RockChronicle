@@ -26,7 +26,8 @@ public abstract class ControlModule extends AbstractModule implements IControlLi
 		this.in = in;
 		// TODO 我们先尝试绑定左右方向键
 		in.addControlListener(new int[] {
-				InputCenter.MAP_LEFT, InputCenter.MAP_RIGHT, InputCenter.MAP_JUMP, InputCenter.MAP_ATTACK
+				InputCenter.MAP_LEFT, InputCenter.MAP_RIGHT, InputCenter.MAP_JUMP, InputCenter.MAP_ATTACK,
+				InputCenter.MAP_RUSH
 		}, this);
 	}
 	

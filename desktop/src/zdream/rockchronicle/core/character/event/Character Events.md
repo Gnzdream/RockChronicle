@@ -31,22 +31,44 @@ Character Events Description
 
 *	left
 	<br/>boolean
-	<br/>是否左键按下了
+	<br/>左键是否按下了
 
 *	right
 	<br/>boolean
-	<br/>是否右键按下了
+	<br/>右键是否按下了
 
 *	up
 	<br/>boolean
-	<br/>是否上键按下了
+	<br/>上键是否按下了
 
 *	down
 	<br/>boolean
-	<br/>是否下键按下了
+	<br/>下键是否按下了
 
 ##### 发布消息: ctrl_motion
 
 当攻击键和跳跃键有变化则发布一次
 
+*	attack
+	<br/>boolean
+	<br/>攻击键是否按下了
 
+*	attack_change
+	<br/>boolean
+	<br/>如果本帧攻击键发生了变化, 从按下到抬起或者从抬起到变化, 则该值为 true
+
+*	jump
+	<br/>boolean
+	<br/>跳跃键是否按下了
+
+*	jump_change
+	<br/>boolean
+	<br/>如果本帧跳跃键发生了变化, 从按下到抬起或者从抬起到变化, 则该值为 true
+
+*	slide
+	<br/>boolean
+	<br/>滑铲键是否按下了. 注意, 如果配置正确, 下加跳也构成滑铲键
+
+*	slide_change
+	<br/>boolean
+	<br/>如果本帧滑铲键发生了变化, 从按下到抬起或者从抬起到变化, 则该值为 true

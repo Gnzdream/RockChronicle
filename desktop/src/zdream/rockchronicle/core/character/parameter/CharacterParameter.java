@@ -8,15 +8,13 @@ import com.badlogic.gdx.utils.JsonValue.ValueType;
  * 
  * @author Zdream
  * @since v0.0.1
- * @date 2019-05-05 (create)
+ * @date
+ *   2019-05-05 (create)
+ *   2019-05-07 (last modify)
  */
-public class CharacterParameter {
+public class CharacterParameter implements IValueCreator<JsonValue> {
 	
 	private JsonValue value;
-	
-	{
-		
-	}
 	
 	public JsonValue get() {
 		return value;

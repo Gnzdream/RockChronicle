@@ -1,7 +1,10 @@
 package zdream.rockchronicle.desktop;
 
+import java.nio.file.Paths;
+
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
@@ -70,7 +73,7 @@ public class RockChronicleDesktop extends Game {
 		FreeTypeFontParameter parameter = new FreeTypeFontParameter();
 		
 		parameter.size = 16;
-		parameter.characters = FreeTypeFontGenerator.DEFAULT_CHARS + "这是";
+		parameter.characters = FreeTypeFontGenerator.DEFAULT_CHARS + chineseCharacter();
 		
 		font = generator.generateFont(parameter);
 		generator.dispose();
@@ -78,6 +81,12 @@ public class RockChronicleDesktop extends Game {
 		// , FreeTypeFontGenerator.DEFAULT_CHARS+ "歌唱我们亲爱的祖国,从今走向繁荣富强", false
 		
 		// font = new UnicodeFont("res\\font\\msyhbd.ttc", "");
+	}
+	
+	private String chineseCharacter() {
+		FileHandle f = Gdx.files.local(Paths.get("res", "conf", "chinese_character.txt").toString());
+		String str = f.readString("UTF-8");
+		return str.replaceAll("\\\n", "");
 	}
 	
 	private void initControl() {
