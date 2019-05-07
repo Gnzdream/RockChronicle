@@ -80,7 +80,9 @@ public class LevelScreen implements Screen, IPhysicsStep {
 		world.setCurrentRoom(runtime.curRegion.rooms[runtime.room]);
 		
 		megaman = (Megaman) game.characterBuilder.create("megaman",
-				CharacterParameter.newInstance().setBoxAnchor(region.spawnx + 0.5f, region.spawny).get());
+				CharacterParameter.newInstance().setBoxAnchor(region.spawnx + 0.5f, region.spawny)
+				.setCamp(1)
+				.get());
 //		megaman.load(Gdx.files.local("res\\characters\\megaman\\megaman.json"));
 		game.runtime.player1 = megaman;
 //		megaman.setBlockPos(region.spawnx, region.spawny);

@@ -173,4 +173,20 @@ Character Initialization JSON Data Format Description
 *	jump.param.maxDropVelocity
 	<br/>double
 	<br/>最大的掉落速度（负数）。单位：格子 / 秒
+	
+*	camp
+	<br/>object
+	<br/>阵营模块
+	
+*	camp.camp
+	<br/>integer
+	<br/>角色所在的阵营
+	
+*	camp.attackAccepted
+	<br/>object {integer : boolean}
+	<br/>角色作为攻击方，攻击其它阵营是否被接受。如果该 object 没有写明的，默认为 true
+	
+*	camp.defenseAccepted
+	<br/>object {integer : boolean}
+	<br/>角色作为防御方，是否接受其它阵营的攻击。如果该 object 没有写明的，默认为 true
 

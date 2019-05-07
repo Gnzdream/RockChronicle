@@ -5,5 +5,12 @@
 			"name":"base",
 			"class":"zdream.rockchronicle.core.character.jump.BaseJumpModule"
 		}
+	],
+	"camp":
+	[
+		{
+			"name":"base",
+			"class":"zdream.rockchronicle.core.character.camp.BaseCampModule"
+		}
 	]
 }

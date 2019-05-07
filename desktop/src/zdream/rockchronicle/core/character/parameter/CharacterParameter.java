@@ -40,6 +40,14 @@ public class CharacterParameter implements IValueCreator<JsonValue> {
 		return this;
 	}
 	
+	public CharacterParameter setCamp(int camp) {
+		JsonValue current = value;
+		current = createIfNotExist(current, "camp");
+		
+		current.addChild("camp", new JsonValue(camp));
+		return this;
+	}
+	
 	public static CharacterParameter newInstance() {
 		CharacterParameter p = new CharacterParameter();
 		p.value = new JsonValue(ValueType.object);

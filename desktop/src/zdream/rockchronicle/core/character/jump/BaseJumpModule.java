@@ -77,7 +77,7 @@ public class BaseJumpModule extends JumpModule {
 		float vy = ovy;
 		if (bottomStop) {
 			vy = 0;
-			if (inJump) {
+			if (jumpStart) {
 				// 执行跳跃
 				vy = impulse;
 			}

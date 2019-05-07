@@ -3,7 +3,8 @@
 	"class":"zdream.rockchronicle.character.megaman.Megaman",
 	"modules":
 	{
-		"jump":"base"
+		"jump":"base",
+		"camp":"base"
 	},
 	"box":
 	{

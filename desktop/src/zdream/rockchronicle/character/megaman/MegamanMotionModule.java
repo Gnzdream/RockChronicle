@@ -130,6 +130,7 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 					CharacterParameter.newInstance()
 						.setBoxAnchor(x, box.anchor.y + 0.75f)
 						.setMotionOrientation(orientation)
+						.setCamp(parent.getInt(new String[] {"camp", "camp"}, 0))
 						.get());
 			buster.setDisappearCallback((b) -> {this.bulletCount++;});
 			RockChronicleDesktop.INSTANCE.runtime.addEntry(buster);
