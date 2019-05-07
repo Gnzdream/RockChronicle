@@ -32,7 +32,7 @@ public class SingleBoxMotionModule extends MotionModule {
 		super.init(file, value);
 		
 		initBox(value.get("box"));
-		this.collectors.add(boxc = new JsonCollector(this::getBoxJson, "box"));
+		addCollector(boxc = new JsonCollector(this::getBoxJson, "box"));
 	}
 
 	public void initBox(JsonValue object) {
@@ -73,6 +73,7 @@ public class SingleBoxMotionModule extends MotionModule {
 			world.topStop(box);
 			world.leftStop(box);
 			world.rightStop(box);
+			super.motionc.clear();
 			
 			// 位置重合修正
 			boolean glitch = world.correctOverlapBox(box);
@@ -115,6 +116,54 @@ public class SingleBoxMotionModule extends MotionModule {
 		ovelocity.addChild("y", new JsonValue(box.velocity.y));
 		
 		return v;
+	}
+	
+	@Override
+	public JsonValue getMotionJson() {
+		JsonValue v = super.getMotionJson();
+		v.addChild("bottomStop", new JsonValue(box.onTheGround()));
+		v.addChild("topStop", new JsonValue(box.topStop));
+		v.addChild("leftStop", new JsonValue(box.leftStop));
+		v.addChild("rightStop", new JsonValue(box.rightStop));
+		return v;
+	}
+	
+	@Override
+	public boolean setJson(String first, JsonValue value) {
+		if ("box".equals(first)) {
+			
+			boolean modified = false;
+			for (JsonValue entry = value.child; entry != null; entry = entry.next) {
+				switch (entry.name) {
+				case "anchor": {
+					JsonValue ax = entry.get("x");
+					JsonValue ay = entry.get("y");
+					if (ax != null) {
+						box.anchor.x = ax.asFloat(); modified = true;
+					}
+					if (ay != null) {
+						box.anchor.y = ay.asFloat(); modified = true;
+					}
+				} break;
+				case "velocity": {
+					JsonValue vx = entry.get("x");
+					JsonValue vy = entry.get("y");
+					if (vx != null) {
+						box.anchor.x = vx.asFloat(); modified = true;
+					}
+					if (vy != null) {
+						box.velocity.y = vy.asFloat(); modified = true;
+					}
+				} break;
+
+				default:
+					break;
+				}
+			}
+			
+			return modified;
+		}
+		return super.setJson(first, value);
 	}
 
 }

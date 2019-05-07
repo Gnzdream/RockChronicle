@@ -1,15 +1,17 @@
 package zdream.rockchronicle.core.character;
 
+import java.lang.reflect.Constructor;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
 import com.badlogic.gdx.utils.JsonWriter.OutputType;
+import com.badlogic.gdx.utils.ObjectMap;
 
 import zdream.rockchronicle.desktop.RockChronicleDesktop;
 
@@ -19,17 +21,54 @@ import zdream.rockchronicle.desktop.RockChronicleDesktop;
  * </p>
  * @author Zdream
  * @since v0.0.1
- * @date 2019-05-05 (create)
+ * @date
+ *   2019-05-05 (create)
+ *   2019-05-07 (last modified)
  */
 public class CharacterBuilder {
 	
 	final JsonReader jreader = new JsonReader();
+	private int idCount = 1;
 
 	public void init() {
+		loadModuleDefs();
 		rescan(Paths.get("res", "characters"));
 	}
 	
-	private final HashMap<String, CharacterDef> defs = new HashMap<>();
+	/**
+	 * 角色名 - 角色预定义的初始化数据封装类
+	 */
+	private final ObjectMap<String, CharacterDef> defs = new ObjectMap<>();
+	
+	/**
+	 * 模块种类 - 该种类的模块列表
+	 */
+	private final ObjectMap<String, Array<ModuleDef>> mdefs = new ObjectMap<>(16);
+	
+	private void loadModuleDefs() {
+		Path path = Paths.get("res", "conf", "modules.json");
+		FileHandle f = Gdx.files.local(path.toString());
+		
+		if (!f.exists()) {
+			throw new IllegalStateException(path + " 无法读取模块定义文件信息");
+		}
+		
+		JsonValue v = jreader.parse(f);
+		for (JsonValue entry = v.child; entry != null; entry = entry.next) {
+			String species = entry.name;
+			
+			Array<ModuleDef> defs = new Array<>();
+			// entry 是一个 array
+			for (JsonValue item = entry.child; item != null; item = item.next) {
+				ModuleDef def = new ModuleDef();
+				def.name = item.getString("name");
+				def.className = item.getString("class");
+				def.species = species;
+				defs.add(def);
+			}
+			mdefs.put(species, defs);
+		}
+	}
 	
 	/**
 	 * <p>初始化人物创建工具, 加载所有的 module 的初始化 json 文件
@@ -44,7 +83,6 @@ public class CharacterBuilder {
 	 * @param dir
 	 *   搜索的路径
 	 */
-	
 	public void rescan(Path path) {
 		FileHandle f = Gdx.files.local(path.toString());
 		
@@ -122,7 +160,7 @@ public class CharacterBuilder {
 		CharacterDef def = defs.get(name);
 		
 		if (def == null) {
-			throw new NullPointerException(String.format("不存在 %s 的人物数据", name));
+			throw new NullPointerException(String.format("不存在 %s 的角色数据", name));
 		}
 		
 		Class<?> c;
@@ -130,18 +168,30 @@ public class CharacterBuilder {
 			c = Class.forName(def.className);
 			if (!CharacterEntry.class.isAssignableFrom(c)) {
 				defs.remove(name);
-				throw new IllegalArgumentException(String.format("%s 的人物数据中, 初始化类名错误", name));
+				throw new IllegalStateException(String.format("%s 的角色数据中, 初始化类名错误", name));
 			}
 			
 			@SuppressWarnings("unchecked")
 			Class<? extends CharacterEntry> cc = (Class<? extends CharacterEntry>) c;
-			CharacterEntry entry = cc.newInstance();
+			Constructor<? extends CharacterEntry> constractors = cc.getConstructor(int.class);
+			
+			CharacterEntry entry = constractors.newInstance(idCount++);
 			
 			// 合并 json
 			JsonValue data = mergeJson(jreader.parse(def.data), customData);
 			
 			// 添加 modules
-			// TODO
+			{
+				JsonValue modules = data.get("modules");
+				if (modules != null) {
+					for (JsonValue item = modules.child; item != null; item = item.next) {
+						AbstractModule m = createModule(entry, item.name, item.asString());
+						if (m != null) {
+							entry.addModule(m);
+						}
+					}
+				}
+			}
 			
 			entry.init(Gdx.files.local(def.path), data);
 			
@@ -150,10 +200,47 @@ public class CharacterBuilder {
 			
 			return entry;
 			
-		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+		} catch (Exception e) {
 			defs.remove(name);
-			throw new IllegalArgumentException(String.format("%s 的人物数据中, 初始化类创建失败", name), e);
+			throw new IllegalStateException(String.format("%s 的角色数据中, 初始化类创建失败", name), e);
 		}
+	}
+	
+	private AbstractModule createModule(CharacterEntry parent, String species, String name) {
+		Array<ModuleDef> array = this.mdefs.get(species);
+		if (array == null) {
+			return null;
+		}
+		
+		for (int i = 0; i < array.size; i++) {
+			ModuleDef def = array.get(i);
+			if (name.equals(def.name)) {
+				try {
+					return createModule(parent, def);
+				} catch (Exception e) {
+					throw new IllegalStateException(
+							String.format("%s 的角色中的 %s 模块初始化错误", parent, def), e);
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	private AbstractModule createModule(CharacterEntry parent, ModuleDef def)
+			throws Exception {
+		Class<?> c = Class.forName(def.className);
+		if (!AbstractModule.class.isAssignableFrom(c)) {
+			throw new IllegalStateException(String.format("%s 的角色中的 %s 模块, 初始化类名错误", parent, def));
+		}
+		
+		@SuppressWarnings("unchecked")
+		Class<? extends AbstractModule> cc = (Class<? extends AbstractModule>) c;
+		
+		Constructor<? extends AbstractModule> constractors = cc.getConstructor(CharacterEntry.class);
+		AbstractModule m = constractors.newInstance(parent);
+		
+		return m;
 	}
 	
 	/**

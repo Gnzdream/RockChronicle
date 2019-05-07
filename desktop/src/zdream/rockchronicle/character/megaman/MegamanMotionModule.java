@@ -20,10 +20,6 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 	 */
 	boolean left, right;
 	/**
-	 * 跳跃暂存
-	 */
-	boolean jump, jumpEnd;
-	/**
 	 * 攻击暂存. attackBegin 为暂存, inAttack 为状态
 	 */
 	boolean attackBegin, inAttack;
@@ -58,10 +54,6 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 		this.horizontalVelDelta =
 				HORIZONTAL_VELOCITY_DELTA * LevelWorld.TIME_STEP * LevelWorld.TIME_STEP;
 		this.horizontalVelMax = HORIZONTAL_VELOCITY_MAX * LevelWorld.TIME_STEP;
-		
-		this.box.jumpImpulse = 21.36f * LevelWorld.TIME_STEP;
-		this.box.jumpDecay = -72 * LevelWorld.TIME_STEP * LevelWorld.TIME_STEP;
-		this.box.maxDropVelocity = -28 * LevelWorld.TIME_STEP;
 	}
 	
 	@Override
@@ -84,21 +76,6 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 		
 		// 3. 执行上下移动 TODO
 		boolean bottomStop = box.onTheGround();
-		if (bottomStop) {
-			vy = 0;
-			if (jump) {
-				// 执行跳跃
-				vy = box.jumpImpulse;
-			}
-		} else if (!bottomStop) {
-			vy += box.jumpDecay;
-			if (vy < box.maxDropVelocity) {
-				vy = box.maxDropVelocity;
-			}
-		}
-		if (vy > 0 && (jumpEnd || box.topStop)) {
-			vy = 0;
-		}
 		
 		// 设置的最终速度 Y
 		box.setVelocityY(vy);
@@ -160,8 +137,6 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 		}
 		
 		// 重置参数
-		this.jump = false;
-		this.jumpEnd = false;
 		this.attackBegin = false;
 	}
 	
@@ -189,13 +164,10 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 	private void recvCtrlMotion(CharacterEvent event) {
 		inAttack = event.value.getBoolean("attack");
 		boolean attackChange = event.value.getBoolean("attackChange");
-		jump = event.value.getBoolean("jump");
-		boolean jumpChange = event.value.getBoolean("jumpChange");
 //		boolean slide = event.value.getBoolean("slide");
 //		boolean slideChange = event.value.getBoolean("slideChange");
 		
 		attackBegin = (inAttack && attackChange);
-		jumpEnd = (!jump && jumpChange);
 	}
 
 }

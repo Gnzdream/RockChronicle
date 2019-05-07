@@ -50,7 +50,7 @@ public abstract class MotionModule extends AbstractModule {
 		super.init(file, value);
 
 		initMotion(value.get("motion"));
-		collectors.add(motionc = new JsonCollector(this::getMotionJson, "motion"));
+		addCollector(motionc = new JsonCollector(this::getMotionJson, "motion"));
 	}
 
 	private void initMotion(JsonValue object) {

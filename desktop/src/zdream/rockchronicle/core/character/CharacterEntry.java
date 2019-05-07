@@ -32,6 +32,12 @@ public abstract class CharacterEntry {
 	 */
 	private boolean inited = false;
 	
+	public final int id;
+	
+	public CharacterEntry(int id) {
+		this.id = id;
+	}
+	
 	/* **********
 	 * 生命周期 *
 	 ********** */
@@ -54,12 +60,20 @@ public abstract class CharacterEntry {
 		return exists;
 	}
 	
-	protected void init(FileHandle file, JsonValue json) {
+	/**
+	 * 所有的角色在该方法中执行所有模块的 init 方法
+	 */
+	protected void init(FileHandle file, JsonValue value) {
 		if (inited) {
 			return;
 		}
 		
 		sortModules();
+		
+		for (int i = 0; i < modules.size; i++) {
+			modules.get(i).init(file, value);
+		}
+		
 		inited = true;
 	}
 	
@@ -131,6 +145,17 @@ public abstract class CharacterEntry {
 		}
 	}
 	
+	/**
+	 * 删除模块. 请尽量在 onStepFinished 方法中执行删除, 而不要在 determined 方法执行
+	 * @param module
+	 */
+	public void removeModule(AbstractModule module) {
+		moduleMap.remove(module.name());
+		if (inited) {
+			sortModules();
+		}
+	}
+	
 	public AbstractModule getModule(String name) {
 		return moduleMap.get(name);
 	}
@@ -170,7 +195,7 @@ public abstract class CharacterEntry {
 	public void determine(LevelWorld world, int index, boolean hasNext) {
 		AbstractModule[] ms = modules.toArray(AbstractModule.class);
 		for (int i = 0; i < ms.length; i++) {
-			modules.get(i).determine(world, index, hasNext);
+			ms[i].determine(world, index, hasNext);
 			
 			// 事件
 			while (events.size != 0) {
@@ -201,9 +226,11 @@ public abstract class CharacterEntry {
 		getMotion().step(world, index, hasNext);
 	}
 
-	public void onStepFinished(LevelWorld levelWorld, boolean isPause) {
-		// TODO Auto-generated method stub
-		
+	public void onStepFinished(LevelWorld world, boolean isPause) {
+		AbstractModule[] ms = modules.toArray(AbstractModule.class);
+		for (int i = 0; i < ms.length; i++) {
+			ms[i].onStepFinished(world, isPause);
+		}
 	}
 	
 	/**
@@ -341,7 +368,7 @@ public abstract class CharacterEntry {
 	 */
 	public boolean setJson(String first, JsonValue value) {
 		AbstractModule module = resources.get(first);
-		return (module != null) ? module.setJson(first, value) : false;
+		return (module != null) ? module.setJson0(first, value) : false;
 	}
 	
 	/**

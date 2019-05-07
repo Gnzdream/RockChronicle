@@ -157,16 +157,20 @@ Character Initialization JSON Data Format Description
 	<br/>object
 	<br/>跳跃模块
 	
-*	jump.impulse
+*	jump.param
+	<br/>object
+	<br/>跳跃模块原始参数
+	
+*	jump.param.impulse
 	<br/>double
 	<br/>跳跃的向上的冲量，即跳跃的第一帧，每步向上的格子数。单位：格子 / 秒
 	
-*	jump.decay
+*	jump.param.decay
 	<br/>double
 	<br/>在跳跃时，向上的速度会逐渐降下来。(负数)
 	<br/>每过一步的时间，每步向上的格子数。单位：格子 / (秒^2)
 	
-*	jump.maxDropVelocity
+*	jump.param.maxDropVelocity
 	<br/>double
 	<br/>最大的掉落速度（负数）。单位：格子 / 秒
 

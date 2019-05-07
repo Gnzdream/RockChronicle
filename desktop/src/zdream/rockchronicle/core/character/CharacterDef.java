@@ -3,7 +3,7 @@ package zdream.rockchronicle.core.character;
 import java.util.HashMap;
 
 /**
- * 人物启动参数
+ * 角色预定义的初始化数据封装类
  * @author Zdream
  * @since v0.0.1
  * @date 2019-05-05 (create)

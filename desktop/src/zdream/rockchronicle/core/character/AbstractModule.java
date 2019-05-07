@@ -35,6 +35,17 @@ public abstract class AbstractModule {
 		// do nothing
 	}
 
+	/**
+	 * 子类如果要继承, 请在方法最后加上 super.onStepFinished
+	 * @param world
+	 * @param isPause
+	 */
+	public void onStepFinished(LevelWorld world, boolean isPause) {
+		for (int i = 0; i < collectors.size; i++) {
+			collectors.get(i).clear();
+		}
+	}
+
 	public void willDestroy() {
 		
 	}
@@ -56,7 +67,17 @@ public abstract class AbstractModule {
 	/* **********
 	 * 资源事件 *
 	 ********** */
-	protected final Array<JsonCollector> collectors = new Array<>();
+	private final Array<JsonCollector> collectors = new Array<>();
+	
+	protected void addCollector(JsonCollector collector) {
+		parent.bindResource(collector.first, this);
+		collectors.add(collector);
+	}
+	
+	protected void removeCollector(JsonCollector collector) {
+		parent.unbindResource(collector.first);
+		collectors.removeValue(collector, true);
+	}
 	
 	public int getInt(String[] path, int defValue) {
 		for (int i = 0; i < collectors.size; i++) {
@@ -107,7 +128,25 @@ public abstract class AbstractModule {
 	/*
 	 * 返回值: 是否修改被允许 (accepted)
 	 */
-	public boolean setJson(String first, JsonValue value) {
+	public final boolean setJson0(String first, JsonValue value) {
+		boolean b = setJson(first, value);
+		
+		if (b) {
+			for (int i = 0; i < collectors.size; i++) {
+				JsonCollector c = collectors.get(i);
+				if (first.equals(c.first)) {
+					c.clear();
+				}
+			}
+		}
+		
+		return b;
+	}
+	
+	/*
+	 * 返回值: 是否修改被允许 (accepted)
+	 */
+	protected boolean setJson(String first, JsonValue value) {
 		return false;
 	}
 	

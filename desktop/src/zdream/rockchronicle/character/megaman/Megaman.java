@@ -1,15 +1,17 @@
 package zdream.rockchronicle.character.megaman;
 
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.input.PlayerInput;
 
 public class Megaman extends CharacterEntry {
 	
+	public Megaman(int id) {
+		super(id);
+	}
+
 	MegamanControlModule ctrl;
 	MegamanMotionModule motion;
 	MegamanSpriteModule sprite;
@@ -22,19 +24,6 @@ public class Megaman extends CharacterEntry {
 		this.addModule(ctrl);
 		this.addModule(motion);
 		this.addModule(sprite);
-	}
-	
-	@Override
-	protected void init(FileHandle file, JsonValue json) {
-		super.init(file, json);
-		
-		// rect 碰撞块
-		JsonValue rectArray = json.get("box");
-		motion.initBox(rectArray);
-		
-		ctrl.init(file, json);
-		motion.init(file, json);
-		sprite.init(file, json);
 	}
 	
 	/**

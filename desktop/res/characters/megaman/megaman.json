@@ -22,8 +22,11 @@
 	],
 	"jump":
 	{
-		"impulse":21.36,
-		"decay":-72,
-		"maxDropVelocity":-28
+		"param":
+		{
+			"impulse":21.36,
+			"decay":-72,
+			"maxDropVelocity":-28
+		}
 	}
 }

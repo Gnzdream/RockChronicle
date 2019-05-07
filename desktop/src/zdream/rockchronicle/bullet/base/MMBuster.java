@@ -1,9 +1,7 @@
 package zdream.rockchronicle.bullet.base;
 
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.bullet.IBulletDisappearCallback;
 import zdream.rockchronicle.core.character.CharacterEntry;
@@ -19,7 +17,8 @@ public class MMBuster extends CharacterEntry {
 	
 	private IBulletDisappearCallback<MMBuster> callback;
 
-	public MMBuster() {
+	public MMBuster(int id) {
+		super(id);
 		motion = new MMBusterMotion(this);
 		sprite = new MMBusterSprite(this);
 		
@@ -27,15 +26,6 @@ public class MMBuster extends CharacterEntry {
 		this.addModule(sprite);
 	}
 
-	@Override
-	protected void init(FileHandle file, JsonValue json) {
-		super.init(file, json);
-		// TODO 这里先写死
-		
-		motion.init(file, json);
-		sprite.init(file, json);
-	}
-	
 	/**
 	 * 一般是 motion 调用, 它让该物体销毁
 	 */

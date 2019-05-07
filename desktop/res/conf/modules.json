@@ -1,0 +1,9 @@
+{
+	"jump":
+	[
+		{
+			"name":"base",
+			"class":"zdream.rockchronicle.core.character.jump.BaseJumpModule"
+		}
+	]
+}
