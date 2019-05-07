@@ -62,11 +62,11 @@ public class CharacterEventCreator implements IValueCreator<CharacterEvent> {
 		event.value = v;
 		
 		v.addChild("attack", new JsonValue(attack));
-		v.addChild("attack_change", new JsonValue(attackChange));
+		v.addChild("attackChange", new JsonValue(attackChange));
 		v.addChild("jump", new JsonValue(jump));
-		v.addChild("jump_change", new JsonValue(jumpChange));
+		v.addChild("jumpChange", new JsonValue(jumpChange));
 		v.addChild("slide", new JsonValue(slide));
-		v.addChild("slide_change", new JsonValue(slideChange));
+		v.addChild("slideChange", new JsonValue(slideChange));
 		
 		return this;
 	}

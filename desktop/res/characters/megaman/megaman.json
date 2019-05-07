@@ -1,6 +1,10 @@
 {
 	"name":"megaman",
 	"class":"zdream.rockchronicle.character.megaman.Megaman",
+	"modules":
+	{
+		"jump":"base"
+	},
 	"box":
 	{
 		"inTerrain":true,
@@ -12,7 +16,14 @@
 			"y":0
 		}
 	},
-	"textures":[
+	"textures":
+	[
 		"sprites/megaman7sheet.json"
-	]
+	],
+	"jump":
+	{
+		"impulse":21.36,
+		"decay":-72,
+		"maxDropVelocity":-28
+	}
 }

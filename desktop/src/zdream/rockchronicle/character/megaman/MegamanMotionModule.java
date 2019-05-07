@@ -188,11 +188,11 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 	
 	private void recvCtrlMotion(CharacterEvent event) {
 		inAttack = event.value.getBoolean("attack");
-		boolean attackChange = event.value.getBoolean("attack_change");
+		boolean attackChange = event.value.getBoolean("attackChange");
 		jump = event.value.getBoolean("jump");
-		boolean jumpChange = event.value.getBoolean("jump_change");
+		boolean jumpChange = event.value.getBoolean("jumpChange");
 //		boolean slide = event.value.getBoolean("slide");
-//		boolean slideChange = event.value.getBoolean("slide_change");
+//		boolean slideChange = event.value.getBoolean("slideChange");
 		
 		attackBegin = (inAttack && attackChange);
 		jumpEnd = (!jump && jumpChange);

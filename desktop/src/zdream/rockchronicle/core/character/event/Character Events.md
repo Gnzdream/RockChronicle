@@ -53,7 +53,7 @@ Character Events Description
 	<br/>boolean
 	<br/>攻击键是否按下了
 
-*	attack_change
+*	attackChange
 	<br/>boolean
 	<br/>如果本帧攻击键发生了变化, 从按下到抬起或者从抬起到变化, 则该值为 true
 
@@ -61,7 +61,7 @@ Character Events Description
 	<br/>boolean
 	<br/>跳跃键是否按下了
 
-*	jump_change
+*	jumpChange
 	<br/>boolean
 	<br/>如果本帧跳跃键发生了变化, 从按下到抬起或者从抬起到变化, 则该值为 true
 
@@ -69,6 +69,6 @@ Character Events Description
 	<br/>boolean
 	<br/>滑铲键是否按下了. 注意, 如果配置正确, 下加跳也构成滑铲键
 
-*	slide_change
+*	slideChange
 	<br/>boolean
 	<br/>如果本帧滑铲键发生了变化, 从按下到抬起或者从抬起到变化, 则该值为 true
