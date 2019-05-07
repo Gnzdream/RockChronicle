@@ -2,6 +2,10 @@ package zdream.rockchronicle.core.input;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.controllers.Controller;
+import com.badlogic.gdx.controllers.Controllers;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.IntIntMap;
 
 /**
  * 配置键位
@@ -44,13 +48,23 @@ public class InputCenter {
 	
 	public InputCenter() {
 		p1 = new PlayerInput((byte) 1);
-		p2 = new PlayerInput((byte) 2);
+		p1.setEnable(true);
+		
+//		p2 = new PlayerInput((byte) 2);
 	}
 	
-	public final PlayerInput p1, p2;
+	public final PlayerInput p1/*, p2*/;
+	
+	/**
+	 * 键盘键位的绑定
+	 */
+	public IntIntMap keyTable;
 
 	public void init() {
 		Gdx.input.setInputProcessor(l);
+		
+		// 控制手柄
+		initController();
 	}
 	
 	class InputListener implements InputProcessor {
@@ -58,14 +72,14 @@ public class InputCenter {
 		@Override
 		public boolean keyDown(int keycode) {
 			p1.keyPressed(keycode);
-			p2.keyPressed(keycode);
+//			p2.keyPressed(keycode);
 			return false;
 		}
 
 		@Override
 		public boolean keyUp(int keycode) {
 			p1.keyReleased(keycode);
-			p2.keyReleased(keycode);
+//			p2.keyReleased(keycode);
 			return false;
 		}
 
@@ -107,5 +121,22 @@ public class InputCenter {
 		
 	}
 	InputListener l = new InputListener();
+	
+	
+	/* **********
+	 * 手柄部分 *
+	 ********** */
+	
+	/**
+	 * <p>初始手柄分配原则：
+	 * <p>如果有手柄, 第一个分配给 p1, 第二个分配给 p2
+	 * </p>
+	 */
+	private void initController() {
+		Array<Controller> ctrls = Controllers.getControllers();
+		if (ctrls.size != 0) {
+			p1.bindController(ctrls.get(0));
+		}
+	}
 
 }

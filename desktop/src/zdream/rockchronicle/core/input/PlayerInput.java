@@ -1,16 +1,36 @@
 package zdream.rockchronicle.core.input;
 
+import static zdream.rockchronicle.core.input.InputCenter.MAP_ATTACK;
+import static zdream.rockchronicle.core.input.InputCenter.MAP_BACK;
+import static zdream.rockchronicle.core.input.InputCenter.MAP_DOWN;
+import static zdream.rockchronicle.core.input.InputCenter.MAP_JUMP;
+import static zdream.rockchronicle.core.input.InputCenter.MAP_L1;
+import static zdream.rockchronicle.core.input.InputCenter.MAP_LEFT;
+import static zdream.rockchronicle.core.input.InputCenter.MAP_LSWITCH;
+import static zdream.rockchronicle.core.input.InputCenter.MAP_RIGHT;
+import static zdream.rockchronicle.core.input.InputCenter.MAP_RSWITCH;
+import static zdream.rockchronicle.core.input.InputCenter.MAP_RUSH;
+import static zdream.rockchronicle.core.input.InputCenter.MAP_SPECIAL;
+import static zdream.rockchronicle.core.input.InputCenter.MAP_START;
+import static zdream.rockchronicle.core.input.InputCenter.MAP_STRONG;
+import static zdream.rockchronicle.core.input.InputCenter.MAP_UP;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.controllers.Controller;
+import com.badlogic.gdx.controllers.ControllerAdapter;
+import com.badlogic.gdx.controllers.PovDirection;
 
 /**
- * 玩家的键位设置
+ * <p>玩家的键位设置.
+ * <p>这里设置的是单个玩家或控制源的键位输入.
+ * 控制游戏时, 键盘输入和手柄输入可以同时监听.
+ * </p>
+ * 
  * @author Zdream
- *
  */
 public class PlayerInput {
 	
@@ -108,8 +128,12 @@ public class PlayerInput {
 	 */
 	public void bindKeyboard() {
 		device = DEVICE_KEYBOARD;
-		this.ctrl = null;
-		// TODO
+
+		if (this.ctrl != null) {
+			Gdx.app.log("InputCenter", "用户 " + seq + " 解除绑定手柄: " + ctrl.getName());
+			ctrl.removeListener(cl);
+			this.ctrl = null;
+		}
 	}
 	/**
 	 * 设置将由控制器控制角色
@@ -117,7 +141,9 @@ public class PlayerInput {
 	public void bindController(Controller ctrl) {
 		device = DEVICE_CONTROLLER;
 		this.ctrl = ctrl;
-		// TODO
+		
+		Gdx.app.log("InputCenter", "用户 " + seq + " 绑定手柄: " + ctrl.getName());
+		ctrl.addListener(cl);
 	}
 	
 	public Controller getCtrl() {
@@ -139,33 +165,33 @@ public class PlayerInput {
 	void defaultKeyMap() {
 		mapping.clear();
 		
-		putKeyMap(InputCenter.MAP_UP, new int[] {Keys.W, Keys.UP});
-		putKeyMap(InputCenter.MAP_DOWN, new int[] {Keys.S, Keys.DOWN});
-		putKeyMap(InputCenter.MAP_LEFT, new int[] {Keys.A, Keys.LEFT});
-		putKeyMap(InputCenter.MAP_RIGHT, new int[] {Keys.D, Keys.RIGHT});
-		putKeyMap(InputCenter.MAP_BACK, new int[] {Keys.X, Keys.ESCAPE, Keys.BACKSPACE});
-		putKeyMap(InputCenter.MAP_START, new int[] {Keys.Z, Keys.ENTER});
-		putKeyMap(InputCenter.MAP_ATTACK, new int[] {Keys.J});
-		putKeyMap(InputCenter.MAP_JUMP, new int[] {Keys.K, Keys.SPACE});
+		putKeyMap(MAP_UP, new int[] {Keys.W, Keys.UP});
+		putKeyMap(MAP_DOWN, new int[] {Keys.S, Keys.DOWN});
+		putKeyMap(MAP_LEFT, new int[] {Keys.A, Keys.LEFT});
+		putKeyMap(MAP_RIGHT, new int[] {Keys.D, Keys.RIGHT});
+		putKeyMap(MAP_BACK, new int[] {Keys.X, Keys.ESCAPE, Keys.BACKSPACE});
+		putKeyMap(MAP_START, new int[] {Keys.Z, Keys.ENTER});
+		putKeyMap(MAP_ATTACK, new int[] {Keys.J});
+		putKeyMap(MAP_JUMP, new int[] {Keys.K, Keys.SPACE});
 		
-		putKeyMap(InputCenter.MAP_SPECIAL, new int[] {Keys.I});
-		putKeyMap(InputCenter.MAP_RUSH, new int[] {Keys.U});
-		putKeyMap(InputCenter.MAP_STRONG, new int[] {Keys.H});
-		putKeyMap(InputCenter.MAP_LSWITCH, new int[] {Keys.N});
-		putKeyMap(InputCenter.MAP_RSWITCH, new int[] {Keys.M});
+		putKeyMap(MAP_SPECIAL, new int[] {Keys.I});
+		putKeyMap(MAP_RUSH, new int[] {Keys.U});
+		putKeyMap(MAP_STRONG, new int[] {Keys.H});
+		putKeyMap(MAP_LSWITCH, new int[] {Keys.N});
+		putKeyMap(MAP_RSWITCH, new int[] {Keys.M});
 	}
 	
 	void defaultCtrlMap() {
-		btnCtrlMap[InputCenter.MAP_BACK & 0xF] = InputCenter.XBOX_BACK;
-		btnCtrlMap[InputCenter.MAP_START & 0xF] = InputCenter.XBOX_START;
-		btnCtrlMap[InputCenter.MAP_ATTACK & 0xF] = InputCenter.XBOX_X;
-		btnCtrlMap[InputCenter.MAP_JUMP & 0xF] = InputCenter.XBOX_A;
-		btnCtrlMap[InputCenter.MAP_SPECIAL & 0xF] = InputCenter.XBOX_Y;
-		btnCtrlMap[InputCenter.MAP_STRONG & 0xF] = InputCenter.XBOX_B;
-		btnCtrlMap[InputCenter.MAP_RUSH & 0xF] = InputCenter.XBOX_RB;
-		btnCtrlMap[InputCenter.MAP_LSWITCH & 0xF] = InputCenter.XBOX_LT;
-		btnCtrlMap[InputCenter.MAP_RSWITCH & 0xF] = InputCenter.XBOX_RT;
-		btnCtrlMap[InputCenter.MAP_L1 & 0xF] = -1;
+		btnCtrlMap[MAP_BACK & 0xF] = InputCenter.XBOX_BACK;
+		btnCtrlMap[MAP_START & 0xF] = InputCenter.XBOX_START;
+		btnCtrlMap[MAP_ATTACK & 0xF] = InputCenter.XBOX_X;
+		btnCtrlMap[MAP_JUMP & 0xF] = InputCenter.XBOX_A;
+		btnCtrlMap[MAP_SPECIAL & 0xF] = InputCenter.XBOX_Y;
+		btnCtrlMap[MAP_STRONG & 0xF] = InputCenter.XBOX_B;
+		btnCtrlMap[MAP_RUSH & 0xF] = InputCenter.XBOX_RB;
+		btnCtrlMap[MAP_LSWITCH & 0xF] = InputCenter.XBOX_LT;
+		btnCtrlMap[MAP_RSWITCH & 0xF] = InputCenter.XBOX_RT;
+		btnCtrlMap[MAP_L1 & 0xF] = -1;
 	}
 	
 	/**
@@ -217,9 +243,43 @@ public class PlayerInput {
 			}
 			
 			if (mapKey < 0xF) {
-				// 方向
-				// TODO
+				// 现在确定方向. 十字键与左摇杆都可以, 但是两者会冲突.
 				
+				// 如果 Pov 有效, 则按照 Pov, 否则 Axis
+				PovDirection dir = ctrl.getPov(0);
+				if (dir != PovDirection.center) {
+					System.out.println(dir);
+					switch (mapKey) {
+					case MAP_UP:
+						return (dir == PovDirection.north || dir == PovDirection.northEast || dir == PovDirection.northWest);
+					case MAP_DOWN:
+						return (dir == PovDirection.south || dir == PovDirection.southEast || dir == PovDirection.southWest);
+					case MAP_LEFT:
+						return (dir == PovDirection.west || dir == PovDirection.northWest || dir == PovDirection.southWest);
+					case MAP_RIGHT:
+						return (dir == PovDirection.east || dir == PovDirection.northEast || dir == PovDirection.southEast);
+					default:
+						return false;
+					}
+				}
+				
+				// Axis
+				float y = ctrl.getAxis(0);
+				float x = ctrl.getAxis(1);
+				
+				switch (mapKey) {
+				case MAP_UP:
+					return y < -0.2f;
+				case MAP_DOWN:
+					return y > 0.2f;
+				case MAP_LEFT:
+					return x < -0.2f;
+				case MAP_RIGHT:
+					return x > 0.2f;
+
+				default:
+					return false;
+				}
 			} else {
 				// button
 				int key = btnCtrlMap[mapKey & 0xF];
@@ -236,6 +296,11 @@ public class PlayerInput {
 		return false;
 	}
 
+	/**
+	 * 由用户调用
+	 * @param mapKeys
+	 * @param l
+	 */
 	public void addControlListener(int[] mapKeys, IControlListener l) {
 		int key, idx;
 		boolean isDirection;
@@ -298,5 +363,47 @@ public class PlayerInput {
 			l.onKeyReleased(mapKey, this);
 		}
 	}
-
+	
+	/*
+	 * Xbox 手柄说明:
+	 * 
+	 * --- 键位按下:
+	 * A : button 0
+	 * B : button 1
+	 * X : button 2
+	 * Y : button 3
+	 * LB : button 4
+	 * RB : button 5
+	 * Back : button 6
+	 * Start : button 7
+	 * 左摇杆 : button 8
+	 * 右摇杆 : button 9
+	 * 
+	 * --- 十字键
+	 * axisMoved,
+	 * 方向是八个再加没有动静, 共 9 种可能
+	 * 
+	 * --- 左右摇杆
+	 * axisMoved,
+	 * 当左摇杆上下移动 (y 变化), axisCode = 0, 上为负, 下为正, 范围 -1 至 1
+	 * 当左摇杆左右移动 (x 变化), axisCode = 1, 左为负, 右为正, 范围 -1 至 1
+	 * 当右摇杆上下移动 (y 变化), axisCode = 2, 上为负, 下为正, 范围 -1 至 1
+	 * 当右摇杆左右移动 (x 变化), axisCode = 3, 左为负, 右为正, 范围 -1 至 1
+	 * 
+	 * --- 扳机
+	 * axisMoved,
+	 * 左右扳机合起来操纵 axisCode = 4 一个值, 具体是:
+	 * 左扳机为正 (0 ~ 1), 右扳机为负 (-1 ~ 0), 如果两个一起按, axisCode = 左 + 右
+	 */
+	
+	/**
+	 * 只用于检测连接是否断了. 如果断了, 则换回键盘
+	 */
+	ControllerAdapter cl = new ControllerAdapter() {
+		@Override
+		public void disconnected(Controller controller) {
+			PlayerInput.this.bindKeyboard();
+		}
+	};
+	
 }
