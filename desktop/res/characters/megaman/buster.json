@@ -1,6 +1,6 @@
 {
 	"name":"megaman_buster",
-	"class":"zdream.rockchronicle.bullet.base.MMBuster",
+	"class":"zdream.rockchronicle.sprite.bullet.base.MMBuster",
 	"modules":
 	{
 		"camp":"base"

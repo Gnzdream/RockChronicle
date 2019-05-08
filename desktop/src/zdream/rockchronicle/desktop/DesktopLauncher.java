@@ -11,6 +11,6 @@ public class DesktopLauncher {
 		config.height = 336; // 14 * 24
 		config.title = "Rock Chronicle";
 		
-		new LwjglApplication(RockChronicleDesktop.INSTANCE, config);
+		new LwjglApplication(new RockChronicleDesktop(), config);
 	}
 }
