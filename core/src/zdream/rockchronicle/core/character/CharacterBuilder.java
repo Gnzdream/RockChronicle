@@ -9,13 +9,13 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.JsonValue.ValueType;
 import com.badlogic.gdx.utils.JsonWriter.OutputType;
 import com.badlogic.gdx.utils.ObjectMap;
 
 import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.character.module.AbstractModule;
 import zdream.rockchronicle.core.character.module.ModuleDef;
+import zdream.rockchronicle.utils.JsonUtils;
 
 /**
  * <p>人物的 {@link CharacterEntry} 的默认创建工具.
@@ -29,7 +29,7 @@ import zdream.rockchronicle.core.character.module.ModuleDef;
  */
 public class CharacterBuilder {
 	
-	final JsonReader jreader = new JsonReader();
+	final JsonReader jreader = JsonUtils.jreader;
 	private int idCount = 1;
 
 	public void init() {
@@ -180,7 +180,7 @@ public class CharacterBuilder {
 			CharacterEntry entry = constractors.newInstance(idCount++);
 			
 			// 合并 json
-			JsonValue data = mergeJson(jreader.parse(def.data), customData);
+			JsonValue data = JsonUtils.mergeJson(jreader.parse(def.data), customData);
 			
 			// 添加 modules
 			{
@@ -245,65 +245,4 @@ public class CharacterBuilder {
 		return m;
 	}
 	
-	/**
-	 * 合并 json 数据. 现阶段只合并 json 类型为 object 的数据
-	 * @param src
-	 * @param dest
-	 */
-	private JsonValue mergeJson(JsonValue src, JsonValue dest) {
-		if (dest == null) {
-			return src;
-		}
-		if (src == null) {
-			return getJsonClone(dest);
-		}
-		
-		ValueType type = src.type();
-		switch (type) {
-		case nullValue:
-		case booleanValue:
-		case longValue:
-		case doubleValue:
-		case stringValue:
-			switch (dest.type()) {
-			case nullValue:
-			case booleanValue:
-			case longValue:
-			case doubleValue:
-			case stringValue:
-				return getJsonClone(dest);
-			default:
-				return src;
-			}
-		case array:
-			if (dest.type() == type) {
-				return getJsonClone(dest);
-			}
-			break;
-		case object: {
-			if (dest.type() != type) {
-				return src;
-			}
-			for (JsonValue child : dest) {
-				String key = child.name;
-				JsonValue v = mergeJson(src.get(key), child);
-				if (v != src) {
-					src.remove(key);
-					v.next = v.prev = null; // 这是原引擎的 BUG
-					src.addChild(key, v);
-				}
-			}
-		} break;
-
-		default:
-			break;
-		}
-		
-		return src;
-	}
-	
-	public JsonValue getJsonClone(JsonValue src) {
-		return jreader.parse(src.toJson(OutputType.minimal));
-	}
-
 }

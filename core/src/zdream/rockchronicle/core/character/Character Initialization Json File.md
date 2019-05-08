@@ -189,4 +189,10 @@ Character Initialization JSON Data Format Description
 *	camp.defenseAccepted
 	<br/>object {integer : boolean}
 	<br/>角色作为防御方，是否接受其它阵营的攻击。如果该 object 没有写明的，默认为 true
+	
+*	collision
+	<br/>object
+	<br/>碰撞模块
+	
+*	collision.
 

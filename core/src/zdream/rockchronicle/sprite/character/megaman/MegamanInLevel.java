@@ -6,9 +6,9 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.input.PlayerInput;
 
-public class Megaman extends CharacterEntry {
+public class MegamanInLevel extends CharacterEntry {
 	
-	public Megaman(int id) {
+	public MegamanInLevel(int id) {
 		super(id);
 	}
 

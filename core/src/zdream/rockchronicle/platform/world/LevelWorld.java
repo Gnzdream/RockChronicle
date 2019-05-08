@@ -1,5 +1,7 @@
 package zdream.rockchronicle.platform.world;
 
+import java.util.function.Predicate;
+
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.utils.Array;
@@ -138,6 +140,38 @@ public class LevelWorld implements ITerrainStatic {
 	}
 	
 	private Filter terrainCollisionFilter;
+	
+	/**
+	 * 查看与指定的盒子发生碰撞的盒子, 并逐个进行判断.
+	 * @param box
+	 *   指定的碰撞盒子
+	 * @param test
+	 *   对碰撞的盒子进行判断. 返回 false 则继续判断后面的盒子, 否则停止
+	 */
+	public void overlaps(Box box, Predicate<Box> test) {
+		Rectangle pos = box.getPosition();
+		float fxleft = pos.x;
+		float fxright = fxleft + pos.width;
+		float fybottom = pos.y;
+		float fytop = fybottom + pos.height;
+		
+		for (int i = 0; i < boxs.size; i++) {
+			Box other = boxs.get(i);
+			if (other != box) {
+				Rectangle otherPos = other.getPosition();
+				boolean b = otherPos.x <= fxright &&
+						otherPos.x + otherPos.width >= fxleft &&
+						otherPos.y <= fytop &&
+						otherPos.y + otherPos.height >= fybottom; // pos.overlaps(otherPos) 加强版
+				if (!b) {
+					continue;
+				}
+				if (test.test(other)) {
+					return;
+				}
+			}
+		}
+	}
 	
 	/**
 	 * <p>判断一个物体是否在地上.

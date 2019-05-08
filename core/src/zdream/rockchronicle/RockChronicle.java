@@ -1,22 +1,18 @@
 package zdream.rockchronicle;
 
-import java.nio.file.Paths;
-
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
-import com.badlogic.gdx.utils.JsonReader;
 
 import zdream.rockchronicle.core.Config;
 import zdream.rockchronicle.core.GameRuntime;
-import zdream.rockchronicle.core.character.CharacterBuilder;
 import zdream.rockchronicle.core.input.InputCenter;
-import zdream.rockchronicle.platform.region.RegionBuilder;
 import zdream.rockchronicle.screen.MainMenuScreen;
+import zdream.rockchronicle.utils.FilePathUtil;
+import zdream.rockchronicle.utils.JsonUtils;
 
 /**
  * 游戏主体
@@ -52,11 +48,6 @@ public class RockChronicle {
 	public final String projectPath;
 	public final InputCenter input;
 	public final GameRuntime runtime;
-
-	// 共用工具
-	public final JsonReader jreader = new JsonReader();
-	public final RegionBuilder regionBuilder = new RegionBuilder();
-	public final CharacterBuilder characterBuilder = new CharacterBuilder();
 	
 	// 与引擎相关的
 	
@@ -68,7 +59,6 @@ public class RockChronicle {
 		// 初始化
 		initConfig();
 		initControl();
-		characterBuilder.init();
 		
 		widthInPixel = width * Config.INSTANCE.blockWidth;
 		heightInPixel = height * Config.INSTANCE.blockHeight;
@@ -78,7 +68,7 @@ public class RockChronicle {
 		game.setScreen(new MainMenuScreen());
 		
 		// font
-		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.local("res\\font\\msyhbd.ttc"));
+		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(FilePathUtil.localFiles("res", "font", "msyhbd.ttc"));
 		FreeTypeFontParameter parameter = new FreeTypeFontParameter();
 		
 		parameter.size = 16;
@@ -90,12 +80,13 @@ public class RockChronicle {
 		// , FreeTypeFontGenerator.DEFAULT_CHARS+ "歌唱我们亲爱的祖国,从今走向繁荣富强", false
 		
 		// font = new UnicodeFont("res\\font\\msyhbd.ttc", "");
+		runtime.init();
 	}
 	
 	private String chineseCharacter() {
-		FileHandle f = Gdx.files.local(Paths.get("res", "conf", "chinese_character.txt").toString());
-		String str = f.readString("UTF-8");
-		return str.replaceAll("\\\n", "");
+		FileHandle f = FilePathUtil.localFiles("res", "conf", "chinese_character.txt");
+		String str = f.readString("UTF-8").replaceAll("\n|\r|\t|\\s*", "");
+		return str;
 	}
 	
 	private void initControl() {
@@ -103,7 +94,8 @@ public class RockChronicle {
 	}
 	
 	private void initConfig() {
-		Config.INSTANCE.init(jreader.parse(Gdx.files.local("res\\conf\\conf.json")));
+		Config.INSTANCE.init(JsonUtils.jreader.parse(
+				FilePathUtil.localFiles("res", "conf", "conf.json")));
 	}
 	
 }

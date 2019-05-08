@@ -4,9 +4,9 @@ import zdream.rockchronicle.core.character.module.SpriteModule;
 
 public class MegamanSpriteModule extends SpriteModule {
 	
-	Megaman parent;
+	MegamanInLevel parent;
 
-	public MegamanSpriteModule(Megaman parent) {
+	public MegamanSpriteModule(MegamanInLevel parent) {
 		super(parent);
 		this.parent = parent;
 	}

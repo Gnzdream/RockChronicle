@@ -13,7 +13,7 @@ import zdream.rockchronicle.sprite.bullet.base.MMBuster;
 
 public class MegamanMotionModule extends SingleBoxMotionModule {
 	
-	Megaman parent;
+	MegamanInLevel parent;
 	
 	/**
 	 * 是否向左或向右移动. 左和右不会同时为 true.
@@ -47,7 +47,7 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 	 */
 	public float horizontalVelMax;
 	
-	public MegamanMotionModule(Megaman parent) {
+	public MegamanMotionModule(MegamanInLevel parent) {
 		super(parent);
 		this.parent = parent;
 		
@@ -126,7 +126,7 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 		// 其它 : 是否攻击
 		if (bulletCount > 0 && attackBegin) {
 			float x = (orientation) ? box.anchor.x + 0.5f : box.anchor.x - 0.5f;
-			MMBuster buster = (MMBuster) RockChronicle.INSTANCE.characterBuilder.create("megaman_buster",
+			MMBuster buster = (MMBuster) RockChronicle.INSTANCE.runtime.characterBuilder.create("megaman_buster",
 					CharacterParameter.newInstance()
 						.setBoxAnchor(x, box.anchor.y + 0.75f)
 						.setMotionOrientation(orientation)

@@ -18,7 +18,7 @@ import zdream.rockchronicle.platform.region.Region;
 import zdream.rockchronicle.platform.region.Room;
 import zdream.rockchronicle.platform.world.IPhysicsStep;
 import zdream.rockchronicle.platform.world.LevelWorld;
-import zdream.rockchronicle.sprite.character.megaman.Megaman;
+import zdream.rockchronicle.sprite.character.megaman.MegamanInLevel;
 
 public class LevelScreen implements Screen, IPhysicsStep {
 	
@@ -41,7 +41,7 @@ public class LevelScreen implements Screen, IPhysicsStep {
 	/*
 	 * 缓存人物
 	 */
-	Megaman megaman;
+	MegamanInLevel megaman;
 	
 	SpriteBatch batch = new SpriteBatch();
 	
@@ -50,7 +50,7 @@ public class LevelScreen implements Screen, IPhysicsStep {
 		app.runtime.levelWorld = new LevelWorld();
 		
 		// tiled 地图
-		region = app.regionBuilder.buildForTerrainOnly("res\\level\\level1\\cut.json");
+		region = app.runtime.regionBuilder.buildForTerrainOnly("res\\level\\level1\\cut.json");
 		
 		worldCamera = new OrthographicCamera();
 		worldCamera.setToOrtho(false, app.width, app.height); // y 轴方向朝上
@@ -79,7 +79,7 @@ public class LevelScreen implements Screen, IPhysicsStep {
 		runtime.room = region.spawnRoom;
 		world.setCurrentRoom(runtime.curRegion.rooms[runtime.room]);
 		
-		megaman = (Megaman) app.characterBuilder.create("megaman",
+		megaman = (MegamanInLevel) app.runtime.characterBuilder.create("megaman",
 				CharacterParameter.newInstance().setBoxAnchor(region.spawnx + 0.5f, region.spawny)
 				.setCamp(1)
 				.get());

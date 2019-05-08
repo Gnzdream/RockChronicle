@@ -1,6 +1,6 @@
 {
 	"name":"megaman",
-	"class":"zdream.rockchronicle.sprite.character.megaman.Megaman",
+	"class":"zdream.rockchronicle.sprite.character.megaman.MegamanInLevel",
 	"modules":
 	{
 		"jump":"base",

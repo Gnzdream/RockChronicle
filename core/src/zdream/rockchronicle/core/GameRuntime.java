@@ -5,8 +5,11 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 
+import zdream.rockchronicle.cast.CastList;
+import zdream.rockchronicle.core.character.CharacterBuilder;
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.platform.region.Region;
+import zdream.rockchronicle.platform.region.RegionBuilder;
 import zdream.rockchronicle.platform.region.Room;
 import zdream.rockchronicle.platform.world.IPhysicsStep;
 import zdream.rockchronicle.platform.world.LevelWorld;
@@ -41,12 +44,42 @@ public class GameRuntime {
 		return curRegion.rooms[room];
 	}
 	
+	// 共用工具
+	public final CastList cast = new CastList();
+	public final RegionBuilder regionBuilder = new RegionBuilder();
+	public final CharacterBuilder characterBuilder = new CharacterBuilder();
+
+	public void init() {
+		characterBuilder.init();
+	}
+	
 	/**
 	 * 除了控制端以外的, 所有子弹、怪物的集合
 	 */
 	public final Array<CharacterEntry> entrise = new Array<>();
 	private final Array<CharacterEntry> entriseWaitingForAdd = new Array<>();
 	private final Array<CharacterEntry> entriseWaitingForRemove = new Array<>();
+	
+	/**
+	 * 用 id 来寻找角色.
+	 * @param id
+	 * @return
+	 *   可能为 null
+	 */
+	public CharacterEntry findEntry(int id) {
+		if (player1 != null && player1.id == id) {
+			return player1;
+		}
+		
+		for (int i = 0; i < entrise.size; i++) {
+			CharacterEntry entry = entrise.get(i);
+			if (entry.id == id) {
+				return entry;
+			}
+		}
+		
+		return null;
+	}
 	
 	public void addEntry(CharacterEntry entry) {
 		entriseWaitingForAdd.add(entry);
@@ -66,8 +99,9 @@ public class GameRuntime {
 	public void onWorldSteped(int index, boolean hasNext) {
 		
 		// 确定状态部分
-		
-		player1.determine(levelWorld, index, hasNext);
+		if (player1 != null) {
+			player1.determine(levelWorld, index, hasNext);
+		}
 		
 		for (int i = 0; i < entrise.size; i++) {
 			try {
@@ -85,8 +119,9 @@ public class GameRuntime {
 		entriseWaitingForRemove.clear();
 		
 		// 移动部分
-		
-		player1.step(levelWorld, index, hasNext);
+		if (player1 != null) {
+			player1.step(levelWorld, index, hasNext);
+		}
 		
 		for (int i = 0; i < entrise.size; i++) {
 			try {
@@ -103,7 +138,9 @@ public class GameRuntime {
 	 *   本帧是否在暂停状态
 	 */
 	public void onStepFinished(boolean isPause) {
-		player1.onStepFinished(levelWorld, isPause);
+		if (player1 != null) {
+			player1.onStepFinished(levelWorld, isPause);
+		}
 		
 		for (int i = 0; i < entrise.size; i++) {
 			try {
@@ -115,7 +152,9 @@ public class GameRuntime {
 	}
 
 	public void drawEntries(SpriteBatch batch, OrthographicCamera camera) {
-		player1.draw(batch, camera);
+		if (player1 != null) {
+			player1.draw(batch, camera);
+		}
 		
 		for (int i = 0; i < entrise.size; i++) {
 			try {

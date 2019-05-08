@@ -11,13 +11,13 @@ import zdream.rockchronicle.platform.world.LevelWorld;
 
 public class MegamanControlModule extends ControlModule {
 	
-	Megaman parent;
+	MegamanInLevel parent;
 	CharacterEventCreator creator;
 
 	boolean lastLeft, lastRight, lastUp, lastDown;
 	boolean lastJump, lastAttack, lastSlide;
 	
-	public MegamanControlModule(Megaman ch) {
+	public MegamanControlModule(MegamanInLevel ch) {
 		super(ch);
 		this.parent = ch;
 		creator = new CharacterEventCreator();

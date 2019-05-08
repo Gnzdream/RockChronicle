@@ -8,6 +8,20 @@ import zdream.rockchronicle.platform.world.LevelWorld;
 
 public class Box {
 	
+	private static int idCount = 1;
+	
+	/**
+	 * @param parentId
+	 *   该 Box 所属的角色的 id
+	 */
+	public Box(int parentId) {
+		this.id = idCount++;
+		this.parentId = parentId;
+	}
+	
+	public final int id;
+	public final int parentId;
+	
 	/*
 	 * 静态参数部分
 	 */

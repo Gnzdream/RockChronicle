@@ -1,5 +1,7 @@
 package zdream.rockchronicle.utils;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.StringTokenizer;
 
 import com.badlogic.gdx.Gdx;
@@ -31,6 +33,11 @@ public class FilePathUtil {
 	
 	public static FileHandle relativeFileHandle (String filepath, String path) {
 		return relativeFileHandle(Gdx.files.local(filepath), path);
+	}
+	
+	public static FileHandle localFiles(String first, String... more) {
+		Path path = Paths.get(first, more);
+		return Gdx.files.local(path.toString());
 	}
 
 }

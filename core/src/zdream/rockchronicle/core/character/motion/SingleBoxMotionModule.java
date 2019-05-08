@@ -18,13 +18,14 @@ import zdream.rockchronicle.platform.world.LevelWorld;
  * @since v0.0.1
  * @date 2019-05-06 (create)
  */
-public class SingleBoxMotionModule extends MotionModule {
+public class SingleBoxMotionModule extends MotionModule implements IBoxHolder {
 	
-	public final Box box = new Box();
+	public final Box box;
 	protected JsonCollector boxc;
 
 	public SingleBoxMotionModule(CharacterEntry ch) {
 		super(ch);
+		box = new Box(ch.id);
 	}
 	
 	@Override
@@ -164,6 +165,11 @@ public class SingleBoxMotionModule extends MotionModule {
 			return modified;
 		}
 		return super.setJson(first, value);
+	}
+
+	@Override
+	public Box getBox() {
+		return box;
 	}
 
 }
