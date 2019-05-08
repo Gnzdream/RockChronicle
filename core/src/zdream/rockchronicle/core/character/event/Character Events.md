@@ -72,3 +72,31 @@ Character Events Description
 *	slideChange
 	<br/>boolean
 	<br/>如果本帧滑铲键发生了变化, 从按下到抬起或者从抬起到变化, 则该值为 true
+
+##### 发布消息: outside_collision
+
+当角色作为防御方，被其它攻击方进行碰撞伤害时，由攻击方向防御方发布该消息。指定调用 publishNow() 方法发布消息。
+
+*	attackId
+	<br/>integer
+	<br/>攻击方的角色 id
+
+*	attackCamp
+	<br/>integer
+	<br/>攻击方的阵营
+	
+*	damage
+	<br/>double
+	<br/>伤害
+
+*	properties
+	<br/>array {object} | undefined
+	<br/>其它效果
+	
+*	result
+	<br/>string
+	<br/>效果结果。该值由防御方接收到消息之后填写。
+	*	"accepted"：效果被接受
+	*	"ignored"：效果被忽略，即不接受。默认是它。
+	*	"immune"：效果被接受，但是不触发效果。比如子弹攻击被弹飞这类。
+

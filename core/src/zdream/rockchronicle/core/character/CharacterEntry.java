@@ -35,9 +35,16 @@ public abstract class CharacterEntry {
 	private boolean inited = false;
 	
 	public final int id;
+	public final String name;
 	
-	public CharacterEntry(int id) {
+	public CharacterEntry(int id, String name) {
 		this.id = id;
+		this.name = name;
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("Character#%d: %s", id, name);
 	}
 	
 	/* **********
@@ -374,10 +381,25 @@ public abstract class CharacterEntry {
 	}
 	
 	/**
-	 * 发布事件
+	 * 发布事件, 异步执行
 	 */
 	public void publish(CharacterEvent event) {
 		this.events.add(event);
+	}
+	
+	/**
+	 * 立即发布事件
+	 */
+	public void publishNow(CharacterEvent event) {
+		Array<AbstractModule> array = this.subscribes.get(event.name);
+		if (array == null || array.size == 0) {
+			return;
+		}
+		
+		AbstractModule[] subscribes = array.toArray(AbstractModule.class);
+		for (int j = 0; j < subscribes.length; j++) {
+			subscribes[j].receiveEvent(event);
+		}
 	}
 
 }

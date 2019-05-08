@@ -8,8 +8,8 @@ import zdream.rockchronicle.core.input.PlayerInput;
 
 public class MegamanInLevel extends CharacterEntry {
 	
-	public MegamanInLevel(int id) {
-		super(id);
+	public MegamanInLevel(int id, String name) {
+		super(id, name);
 	}
 
 	MegamanControlModule ctrl;

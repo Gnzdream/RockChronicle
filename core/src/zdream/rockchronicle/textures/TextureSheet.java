@@ -40,8 +40,6 @@ public class TextureSheet {
 		this();
 		
 		imagePath = json.getString("image");
-		System.out.println("image : " + imagePath);
-		
 		FileHandle f = new FileHandle(jsonFile.file().getParentFile() + File.separator + imagePath);
 		this.texture = new Texture(f);
 		
@@ -63,8 +61,6 @@ public class TextureSheet {
 			entry.region = new TextureRegion(texture, entry.x, entry.y, entry.width, entry.height);
 			entrys.put(entry.name, entry);
 		}
-		
-		System.out.println(texArray.size);
 	}
 	
 	/**

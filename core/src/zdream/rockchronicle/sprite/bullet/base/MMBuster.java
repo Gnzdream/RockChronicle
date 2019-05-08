@@ -17,8 +17,8 @@ public class MMBuster extends CharacterEntry {
 	
 	private IBulletDisappearCallback<MMBuster> callback;
 
-	public MMBuster(int id) {
-		super(id);
+	public MMBuster(int id, String name) {
+		super(id, name);
 		motion = new MMBusterMotion(this);
 		sprite = new MMBusterSprite(this);
 		

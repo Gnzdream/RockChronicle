@@ -3,7 +3,8 @@
 	"class":"zdream.rockchronicle.sprite.bullet.base.MMBuster",
 	"modules":
 	{
-		"camp":"base"
+		"camp":"base",
+		"collision":"bullet"
 	},
 	"box":
 	{
@@ -16,4 +17,9 @@
 			"y":-0.125
 		}
 	},
+	"collision":
+	{
+		"damage":1,
+		"execute":"once"
+	}
 }

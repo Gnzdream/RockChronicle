@@ -175,9 +175,9 @@ public class CharacterBuilder {
 			
 			@SuppressWarnings("unchecked")
 			Class<? extends CharacterEntry> cc = (Class<? extends CharacterEntry>) c;
-			Constructor<? extends CharacterEntry> constractors = cc.getConstructor(int.class);
+			Constructor<? extends CharacterEntry> constractors = cc.getConstructor(int.class, String.class);
 			
-			CharacterEntry entry = constractors.newInstance(idCount++);
+			CharacterEntry entry = constractors.newInstance(idCount++, name);
 			
 			// 合并 json
 			JsonValue data = JsonUtils.mergeJson(jreader.parse(def.data), customData);
