@@ -91,15 +91,15 @@ public class CampModule extends AbstractModule {
 		JsonValue v = new JsonValue(ValueType.object);
 		v.addChild("camp", new JsonValue(camp));
 		
-		JsonValue attArray = new JsonValue(ValueType.array);
-		v.addChild(attArray);
+		JsonValue attArray = new JsonValue(ValueType.object);
+		v.addChild("attackAccepted", attArray);
 		for (Iterator<Entry> iterator = attackTable.iterator(); iterator.hasNext();) {
 			Entry e = iterator.next();
 			attArray.addChild(Integer.toString(e.key), new JsonValue(e.value));
 		}
 		
-		JsonValue defArray = new JsonValue(ValueType.array);
-		v.addChild(defArray);
+		JsonValue defArray = new JsonValue(ValueType.object);
+		v.addChild("defenseAccepted", defArray);
 		for (Iterator<Entry> iterator = defenseTable.iterator(); iterator.hasNext();) {
 			Entry e = iterator.next();
 			defArray.addChild(Integer.toString(e.key), new JsonValue(e.value));

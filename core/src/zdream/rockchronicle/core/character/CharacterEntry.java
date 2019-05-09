@@ -14,6 +14,7 @@ import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.core.character.module.AbstractModule;
 import zdream.rockchronicle.core.character.module.MotionModule;
+import zdream.rockchronicle.core.character.module.SpriteModule;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
 /**
@@ -246,7 +247,12 @@ public abstract class CharacterEntry {
 	 * 绘画. 在屏幕上画出这个人物.
 	 * 绘画的位置是由碰撞块的位置和纹理的属性 (纹理的锚点位置与碰撞块的有一定的差值) 来决定的
 	 */
-	public abstract void draw(SpriteBatch batch, OrthographicCamera camera);
+	public void draw(SpriteBatch batch, OrthographicCamera camera) {
+		AbstractModule m = getModule(SpriteModule.NAME);
+		if (m != null) {
+			((SpriteModule) m).draw(batch, camera);
+		}
+	}
 
 	/* **********
 	 * 资源事件 *

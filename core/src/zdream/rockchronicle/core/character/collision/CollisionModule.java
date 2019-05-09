@@ -55,6 +55,19 @@ public abstract class CollisionModule extends AbstractModule {
 		executeType = ocollisionc.getString("execute", "repeat");
 		
 		addCollector(collisionc = new JsonCollector(this::getCollisionJson, "collision"));
+		parent.addSubscribe("health_exhausted", this);
+	}
+	
+	@Override
+	public void willDestroy() {
+		parent.removeSubscribe("health_exhausted", this);
+		super.willDestroy();
+	}
+	
+	@Override
+	public void determine(LevelWorld world, int index, boolean hasNext) {
+		super.determine(world, index, hasNext);
+		this.searchOverlapsBox(getSingleBox(), world);
 	}
 	
 	@Override
@@ -122,6 +135,9 @@ public abstract class CollisionModule extends AbstractModule {
 	}
 	
 	protected void searchOverlapsBox(Box box, LevelWorld world) {
+		if (box == null) {
+			return;
+		}
 		if (isFunctioned) {
 			world.overlaps(box, this::doForOverlapsBox);
 		}
@@ -139,33 +155,41 @@ public abstract class CollisionModule extends AbstractModule {
 		// 阵营判断部分
 		int camp = parent.getInt(path, 0);
 		int targetId = box.parentId;
-		CharacterEntry target = RockChronicle.INSTANCE.runtime.findEntry(targetId);
-		int targetCamp = target.getInt(path, 0);
 		
-		JsonValue jattackAccepted = parent.getJson(new String[] {"camp", "attackAccepted"});
-		boolean attackAccepted = jattackAccepted.getBoolean(Integer.toString(targetCamp), true);
-		if (!attackAccepted) {
-			return true; // 自己不能够攻击对方
-		}
-		
-		JsonValue jdefenseAccepted = target.getJson(new String[] {"camp", "defenseAccepted"});
-		boolean defenseAccepted = jdefenseAccepted.getBoolean(Integer.toString(camp), true);
-		if (!defenseAccepted) {
-			return true; // 对方不接受这次攻击
-		}
-		
-		// 攻击实施部分
-		CharacterEvent event = new CharacterEvent("outside_collision");
-		JsonValue v = new JsonValue(ValueType.object);
-		event.value = v;
-		v.addChild("attackId", new JsonValue(parent.id));
-		v.addChild("attackCamp", new JsonValue(camp));
-		v.addChild("damage", new JsonValue(damage));
-		target.publishNow(event);
-		
-		// 结果比对部分
-		String result = event.value.getString("result", "ignored");
-		if ("ignored".equals(result)) {
+		try {
+			CharacterEntry target = RockChronicle.INSTANCE.runtime.findEntry(targetId);
+			int targetCamp = target.getInt(path, 0);
+			
+			JsonValue jattackAccepted = parent.getJson(new String[] {"camp", "attackAccepted"});
+			boolean attackAccepted = jattackAccepted.getBoolean(Integer.toString(targetCamp), true);
+			if (!attackAccepted) {
+				return true; // 自己不能够攻击对方
+			}
+			
+			JsonValue jdefenseAccepted = target.getJson(new String[] {"camp", "defenseAccepted"});
+			boolean defenseAccepted = jdefenseAccepted.getBoolean(Integer.toString(camp), true);
+			if (!defenseAccepted) {
+				return true; // 对方不接受这次攻击
+			}
+			
+			// 攻击实施部分
+			CharacterEvent event = new CharacterEvent("outside_collision");
+			JsonValue v = new JsonValue(ValueType.object);
+			event.value = v;
+			v.addChild("attackId", new JsonValue(parent.id));
+			v.addChild("attackCamp", new JsonValue(camp));
+			v.addChild("damage", new JsonValue(damage));
+			target.publishNow(event);
+			
+			// 结果比对部分
+			String result = event.value.getString("result", "ignored");
+			System.out.println(String.format("CollisionModule: 碰撞结果为 %s", result));
+//			if ("ignored".equals(result)) {
+//				return false;
+//			}
+		} catch (RuntimeException e) {
+			e.printStackTrace();
+			System.err.println(String.format("CollisionModule: 角色#%d, 对方#%d", parent.id, targetId));
 			return false;
 		}
 		
@@ -174,6 +198,15 @@ public abstract class CollisionModule extends AbstractModule {
 			willDelete = true;
 		}
 		return isFunctioned;
+	}
+	
+	@Override
+	public void receiveEvent(CharacterEvent event) {
+		if ("health_exhausted".equals(event.name)) {
+			isFunctioned = false;
+			return;
+		}
+		super.receiveEvent(event);
 	}
 
 }

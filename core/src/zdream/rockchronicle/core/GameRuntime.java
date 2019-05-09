@@ -53,12 +53,24 @@ public class GameRuntime {
 		characterBuilder.init();
 	}
 	
+	public void putPlayer(int seq, CharacterEntry entry) {
+		switch (seq) {
+		case 1:
+			this.player1 = entry;
+			entry.createBody(levelWorld);
+			break;
+
+		default:
+			throw new IllegalArgumentException(String.format("无法设置玩家 %d 的角色", seq));
+		}
+	}
+	
 	/**
 	 * 除了控制端以外的, 所有子弹、怪物的集合
 	 */
-	public final Array<CharacterEntry> entrise = new Array<>();
-	private final Array<CharacterEntry> entriseWaitingForAdd = new Array<>();
-	private final Array<CharacterEntry> entriseWaitingForRemove = new Array<>();
+	public final Array<CharacterEntry> entries = new Array<>();
+	private final Array<CharacterEntry> entriesWaitingForAdd = new Array<>();
+	private final Array<CharacterEntry> entriesWaitingForRemove = new Array<>();
 	
 	/**
 	 * 用 id 来寻找角色.
@@ -71,8 +83,8 @@ public class GameRuntime {
 			return player1;
 		}
 		
-		for (int i = 0; i < entrise.size; i++) {
-			CharacterEntry entry = entrise.get(i);
+		for (int i = 0; i < entries.size; i++) {
+			CharacterEntry entry = entries.get(i);
 			if (entry.id == id) {
 				return entry;
 			}
@@ -82,11 +94,11 @@ public class GameRuntime {
 	}
 	
 	public void addEntry(CharacterEntry entry) {
-		entriseWaitingForAdd.add(entry);
+		entriesWaitingForAdd.add(entry);
 	}
 	
 	public void removeEntry(CharacterEntry entry) {
-		entriseWaitingForRemove.add(entry);
+		entriesWaitingForRemove.add(entry);
 	}
 	
 	/**
@@ -103,29 +115,29 @@ public class GameRuntime {
 			player1.determine(levelWorld, index, hasNext);
 		}
 		
-		for (int i = 0; i < entrise.size; i++) {
+		for (int i = 0; i < entries.size; i++) {
 			try {
-				entrise.get(i).determine(levelWorld, index, hasNext);
+				entries.get(i).determine(levelWorld, index, hasNext);
 			} catch (RuntimeException e) {
 				e.printStackTrace();
 			}
 		}
 		
 		// 进行删增工作
-		entrise.addAll(entriseWaitingForAdd);
-		entriseWaitingForAdd.clear();
-		
-		entrise.removeAll(entriseWaitingForRemove, true);
-		entriseWaitingForRemove.clear();
+		entries.removeAll(entriesWaitingForRemove, true);
+		entriesWaitingForRemove.clear();
+		entries.addAll(entriesWaitingForAdd);
+		entriesWaitingForAdd.forEach(entry -> entry.createBody(levelWorld));
+		entriesWaitingForAdd.clear();
 		
 		// 移动部分
 		if (player1 != null) {
 			player1.step(levelWorld, index, hasNext);
 		}
 		
-		for (int i = 0; i < entrise.size; i++) {
+		for (int i = 0; i < entries.size; i++) {
 			try {
-				entrise.get(i).step(levelWorld, index, hasNext);
+				entries.get(i).step(levelWorld, index, hasNext);
 			} catch (RuntimeException e) {
 				e.printStackTrace();
 			}
@@ -142,9 +154,9 @@ public class GameRuntime {
 			player1.onStepFinished(levelWorld, isPause);
 		}
 		
-		for (int i = 0; i < entrise.size; i++) {
+		for (int i = 0; i < entries.size; i++) {
 			try {
-				entrise.get(i).onStepFinished(levelWorld, isPause);
+				entries.get(i).onStepFinished(levelWorld, isPause);
 			} catch (RuntimeException e) {
 				e.printStackTrace();
 			}
@@ -156,16 +168,16 @@ public class GameRuntime {
 			player1.draw(batch, camera);
 		}
 		
-		for (int i = 0; i < entrise.size; i++) {
+		for (int i = 0; i < entries.size; i++) {
 			try {
-				entrise.get(i).draw(batch, camera);
+				entries.get(i).draw(batch, camera);
 			} catch (RuntimeException e) {
 				e.printStackTrace();
 			}
 		}
 		
-		if (entrise.size != lastEntriseSize) {
-			lastEntriseSize = entrise.size;
+		if (entries.size != lastEntriseSize) {
+			lastEntriseSize = entries.size;
 			Gdx.app.log("GameRuntime", "实体个数 : " + lastEntriseSize);
 		}
 		if (levelWorld.count() != lastWorldCount) {

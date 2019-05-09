@@ -15,7 +15,6 @@ public abstract class JumpModule extends AbstractModule {
 
 	public JumpModule(CharacterEntry ch) {
 		super(ch);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override

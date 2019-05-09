@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.JsonReader;
@@ -11,6 +12,8 @@ import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.core.Config;
 import zdream.rockchronicle.core.character.CharacterEntry;
+import zdream.rockchronicle.core.character.motion.IBoxHolder;
+import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.textures.TextureSheet;
 import zdream.rockchronicle.textures.TextureSheetEntry;
 
@@ -91,7 +94,7 @@ public abstract class SpriteModule extends AbstractModule {
 		return sprite;
 	}
 	
-	public void draw(SpriteBatch batch) {
+	public void draw(SpriteBatch batch, OrthographicCamera camera) {
 		TextureSheetEntry entry = getCurrentTexture();
 		float x, // 单位: 像素 -> 格子
 				y = getY() + entry.offsety / (float) Config.INSTANCE.blockHeight; // 单位: 像素 -> 格子
@@ -112,15 +115,42 @@ public abstract class SpriteModule extends AbstractModule {
 		batch.end();
 	}
 	
+	private static final String[] PATH_ANCHOR_X = {"box", "anchor", "x"};
+	private static final String[] PATH_ANCHOR_Y = {"box", "anchor", "y"};
+	
 	/**
 	 * 获取 x 坐标.
 	 */
-	public abstract float getX();
+	public float getX() {
+		Box box = getSingleBox();
+		if (box != null) {
+			return box.anchor.x;
+		}
+		return parent.getFloat(PATH_ANCHOR_X, 0);
+	}
 	
 	/**
 	 * 获取 y 坐标.
 	 */
-	public abstract float getY();
+	public float getY() {
+		Box box = getSingleBox();
+		if (box != null) {
+			return box.anchor.y;
+		}
+		return parent.getFloat(PATH_ANCHOR_Y, 0);
+	}
+	
+	/**
+	 * 如果本角色只有一个碰撞盒子, 则调用该方法来获取其碰撞盒子
+	 * @return
+	 */
+	protected Box getSingleBox() {
+		MotionModule mm = parent.getMotion();
+		if (mm instanceof IBoxHolder) {
+			return ((IBoxHolder) mm).getBox();
+		}
+		return null;
+	}
 	
 	@Override
 	public int priority() {

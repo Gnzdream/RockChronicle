@@ -42,7 +42,7 @@ public class MegamanInLevel extends CharacterEntry {
 	
 	@Override
 	public void draw(SpriteBatch batch, OrthographicCamera camera) {
-		sprite.draw(batch);
+		sprite.draw(batch, camera);
 	}
 	
 }

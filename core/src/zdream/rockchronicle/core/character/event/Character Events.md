@@ -100,3 +100,7 @@ Character Events Description
 	*	"ignored"：效果被忽略，即不接受。默认是它。
 	*	"immune"：效果被接受，但是不触发效果。比如子弹攻击被弹飞这类。
 
+##### 发布消息: health_exhausted
+
+当生命值耗尽时触发。届时角色自己的碰撞应该不能再生效。
+

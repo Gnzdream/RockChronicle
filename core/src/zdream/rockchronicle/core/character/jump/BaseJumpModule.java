@@ -67,6 +67,12 @@ public class BaseJumpModule extends JumpModule {
 	}
 	
 	@Override
+	public void willDestroy() {
+		parent.removeSubscribe("ctrl_motion", this);
+		super.willDestroy();
+	}
+	
+	@Override
 	public void determine(LevelWorld world, int index, boolean hasNext) {
 		super.determine(world, index, hasNext);
 		

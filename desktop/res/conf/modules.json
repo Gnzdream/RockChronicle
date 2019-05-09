@@ -1,4 +1,11 @@
 {
+	"motion":
+	[
+		{
+			"name":"single-box",
+			"class":"zdream.rockchronicle.core.character.motion.SingleBoxMotionModule"
+		}
+	],
 	"jump":
 	[
 		{
@@ -18,6 +25,20 @@
 		{
 			"name":"bullet",
 			"class":"zdream.rockchronicle.core.character.collision.BulletCollisionModule"
+		}
+	],
+	"sprite":
+	[
+		{
+			"name":"shape",
+			"class":"zdream.rockchronicle.core.character.sprite.ShapeSpriteModule"
+		}
+	],
+	"health":
+	[
+		{
+			"name":"base",
+			"class":"zdream.rockchronicle.core.character.health.HealthModule"
 		}
 	]
 }

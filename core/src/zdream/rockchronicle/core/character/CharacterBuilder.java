@@ -3,6 +3,7 @@ package zdream.rockchronicle.core.character;
 import java.lang.reflect.Constructor;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
@@ -12,7 +13,6 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonWriter.OutputType;
 import com.badlogic.gdx.utils.ObjectMap;
 
-import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.character.module.AbstractModule;
 import zdream.rockchronicle.core.character.module.ModuleDef;
 import zdream.rockchronicle.utils.JsonUtils;
@@ -196,12 +196,9 @@ public class CharacterBuilder {
 			}
 			
 			entry.init(Gdx.files.local(def.path), data);
-			
-			// 将角色的碰撞方块 (或其它形状, 可能不止一个 Box) 添加到世界中
-			entry.createBody(RockChronicle.INSTANCE.runtime.levelWorld);
+			Objects.requireNonNull(entry.getMotion(), "角色数据的行动模块为 null");
 			
 			return entry;
-			
 		} catch (Exception e) {
 			defs.remove(name);
 			throw new IllegalStateException(String.format("%s 的角色数据中, 初始化类创建失败", name), e);

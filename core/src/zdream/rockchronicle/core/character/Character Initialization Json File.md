@@ -222,4 +222,23 @@ Character Initialization JSON Data Format Description
 	*	repeat：碰撞判断每帧进行判断，每次可同时对多个碰撞的目标产生伤害或效果
 	*	once：碰撞判断到第一个目标，产生伤害或效果，之后并不再进行判断，并在该帧结束后删除该角色
 	
-
+*	sprite
+	<br/>object
+	<br/>绘画模块
+	
+*	sprite.stroke
+	<br/>string
+	<br/>类似于 "#FF5620E7" 的字符串，指出绘画时碰撞盒子外框的颜色。只在绘画模块为“shape”时启用。
+	
+*	health
+	<br/>object
+	<br/>健康模块
+	
+*	health.hp
+	<br/>double
+	<br/>显示血量。在系统中计算的血量实际值为显示血量 * 256 向下取整。
+	
+*	health.hpMax
+	<br/>double
+	<br/>显示血量最大值。在系统中计算的血量实际值为显示血量最大值 * 256 向下取整。
+	

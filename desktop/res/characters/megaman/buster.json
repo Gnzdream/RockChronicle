@@ -4,7 +4,8 @@
 	"modules":
 	{
 		"camp":"base",
-		"collision":"bullet"
+		"collision":"bullet",
+		"sprite":"shape"
 	},
 	"box":
 	{
@@ -21,5 +22,9 @@
 	{
 		"damage":1,
 		"execute":"once"
+	},
+	"camp":
+	{
+		"camp":1
 	}
 }
