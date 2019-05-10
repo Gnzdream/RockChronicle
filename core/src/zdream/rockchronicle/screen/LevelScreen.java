@@ -95,6 +95,10 @@ public class LevelScreen implements Screen, IPhysicsStep {
 			app.runtime.addEntry(app.runtime.characterBuilder.create("testfoe",
 					CharacterParameter.newInstance().setBoxAnchor(region.spawnx + 3.5f, region.spawny)
 					.get()));
+
+			app.runtime.addEntry(app.runtime.characterBuilder.create("testfoe",
+					CharacterParameter.newInstance().setBoxAnchor(12, 8)
+					.get()));
 		}
 		
 //		Room curRoom = region.rooms[runtime.room];

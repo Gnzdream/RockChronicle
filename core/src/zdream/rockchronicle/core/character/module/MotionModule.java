@@ -80,7 +80,7 @@ public abstract class MotionModule extends AbstractModule {
 	 * @param hasNext
 	 *   本帧是否还会再调用
 	 */
-	public void step(LevelWorld world, int index, boolean hasNext) {
+	public void resetPosition(LevelWorld world, int index, boolean hasNext) {
 		// do nothing
 	}
 

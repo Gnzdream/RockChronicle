@@ -80,14 +80,14 @@ public class CampModule extends AbstractModule {
 			}
 		}
 		
-		addCollector(campc = new JsonCollector(this::getCampJson, "camp"));
+		addCollector(campc = new JsonCollector(this::createCampJson, "camp"));
 	}
 	
 	public void setCamp(int camp) {
 		this.camp = camp;
 	}
 	
-	public JsonValue getCampJson() {
+	public JsonValue createCampJson() {
 		JsonValue v = new JsonValue(ValueType.object);
 		v.addChild("camp", new JsonValue(camp));
 		

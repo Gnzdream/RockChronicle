@@ -161,6 +161,11 @@ public abstract class CharacterEntry {
 	 */
 	public void removeModule(AbstractModule module) {
 		moduleMap.remove(module.name());
+		
+		// 清理工作
+		this.removeSubscribe(module);
+		this.unbindResource(module);
+		
 		if (inited) {
 			sortModules();
 		}
@@ -221,6 +226,10 @@ public abstract class CharacterEntry {
 				}
 			}
 		}
+		
+		for (int i = 0; i < ms.length; i++) {
+			ms[i].stepPassed();
+		}
 	}
 	
 	/**
@@ -233,7 +242,7 @@ public abstract class CharacterEntry {
 	 *   本帧是否还会再调用
 	 */
 	public void step(LevelWorld world, int index, boolean hasNext) {
-		getMotion().step(world, index, hasNext);
+		getMotion().resetPosition(world, index, hasNext);
 	}
 
 	public void onStepFinished(LevelWorld world, boolean isPause) {

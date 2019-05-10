@@ -79,11 +79,12 @@ public class BaseJumpModule extends JumpModule {
 		boolean bottomStop = parent.getBoolean(new String[] {"motion", "bottomStop"}, false);
 		boolean topStop = parent.getBoolean(new String[] {"motion", "topStop"}, false);
 		float ovy = parent.getFloat(new String[] {"box", "velocity", "y"}, 0);
+		boolean stiffness = parent.getBoolean(new String[] {"state", "stiffness"}, false);
 		
 		float vy = ovy;
 		if (bottomStop) {
 			vy = 0;
-			if (jumpStart) {
+			if (jumpStart && !stiffness) {
 				// 执行跳跃
 				vy = impulse;
 			}
@@ -93,7 +94,7 @@ public class BaseJumpModule extends JumpModule {
 				vy = maxDropVelocity;
 			}
 		}
-		if (vy > 0 && (jumpEnd || topStop)) {
+		if (vy > 0 && (jumpEnd || topStop || stiffness)) {
 			vy = 0;
 		}
 		
@@ -101,11 +102,11 @@ public class BaseJumpModule extends JumpModule {
 	}
 	
 	@Override
-	public void onStepFinished(LevelWorld world, boolean isPause) {
+	public void stepPassed() {
 		jumpEnd = false;
 		jumpStart = false;
 		
-		super.onStepFinished(world, isPause);
+		super.stepPassed();
 	}
 	
 	public JsonValue getJumpJson() {

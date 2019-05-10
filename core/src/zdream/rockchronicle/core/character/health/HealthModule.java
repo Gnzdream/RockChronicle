@@ -2,7 +2,6 @@ package zdream.rockchronicle.core.character.health;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.JsonValue.ValueType;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
@@ -17,21 +16,11 @@ import zdream.rockchronicle.core.character.parameter.JsonCollector;
  * @since v0.0.1
  * @date
  *   2019-05-06 (create)
- *   2019-05-09 (last modified)
+ *   2019-05-10 (last modified)
  */
-public class HealthModule extends AbstractModule {
+public abstract class HealthModule extends AbstractModule {
 	
 	public static final String NAME = "Health";
-	
-	/**
-	 * 实际血量 = 显示血量 * 256 (左移 8 位)
-	 */
-	public int hp;
-	/**
-	 * 实际血量最大值 = 显示血量最大值 * 256 (左移 8 位)
-	 * 28 * 256 = 7168
-	 */
-	public int hpMax;
 
 	public HealthModule(CharacterEntry ch) {
 		super(ch);
@@ -52,26 +41,9 @@ public class HealthModule extends AbstractModule {
 		parent.removeSubscribe("outside_collision", this);
 	}
 	
-	protected void initHealthArguments(JsonValue root) {
-		JsonValue v = root.get("health");
-		
-		this.hpMax = (int) (v.getFloat("hpMax") * 256);
-		if (v.has("hp")) {
-			this.hp = (int) (v.getFloat("hp") * 256);
-		} else {
-			this.hp = hpMax;
-		}
-		
-	}
+	protected abstract void initHealthArguments(JsonValue root);
 	
-	public JsonValue getHealthJson() {
-		JsonValue v = new JsonValue(ValueType.object);
-		
-		v.addChild("realHp", new JsonValue(hp));
-		v.addChild("realHpMax", new JsonValue(hpMax));
-		
-		return v;
-	}
+	public abstract JsonValue getHealthJson();
 
 	@Override
 	public String name() {
@@ -80,7 +52,7 @@ public class HealthModule extends AbstractModule {
 	
 	@Override
 	public int priority() {
-		return -0x100;
+		return -0xE0;
 	}
 	
 	@Override
@@ -97,22 +69,20 @@ public class HealthModule extends AbstractModule {
 	}
 	
 	protected void recvOutsideCollision(CharacterEvent event) {
-		JsonValue v = event.value;
-		float fdamage = v.getFloat("damage");
-		int damage = (int) (fdamage * 256);
+		// 前置判断
+		CharacterEvent before = new CharacterEvent("before_damage");
+		before.value = event.value;
+		parent.publishNow(before);
 		
-		hp -= damage;
-		if (hp <= 0) {
-			hp = 0;
-			CharacterEvent ne = new CharacterEvent("health_exhausted");
-			ne.value = new JsonValue(ValueType.object);
-			parent.publish(ne); // 将在这个或下个周期生效
-			
-			// TODO 这部分代码不应该在这里写的
-			parent.willDestroy();
-		}
+		// 结算
+		executeDamageFromOutside(event);
 		
-		v.addChild("result", new JsonValue("accepted"));
+		// 后置处理
+		CharacterEvent after = new CharacterEvent("after_damage");
+		after.value = event.value;
+		parent.publishNow(after);
 	}
+	
+	protected abstract void executeDamageFromOutside(CharacterEvent event);
 
 }

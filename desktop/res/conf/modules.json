@@ -38,7 +38,18 @@
 	[
 		{
 			"name":"base",
-			"class":"zdream.rockchronicle.core.character.health.HealthModule"
+			"class":"zdream.rockchronicle.core.character.health.BaseHealthModule"
+		},
+		{
+			"name":"reference",
+			"class":"zdream.rockchronicle.core.character.health.ReferenceHealthModule"
+		}
+	],
+	"state":
+	[
+		{
+			"name":"base",
+			"class":"zdream.rockchronicle.core.character.state.StateModule"
 		}
 	]
 }

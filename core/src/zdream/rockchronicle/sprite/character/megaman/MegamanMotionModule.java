@@ -33,7 +33,8 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 	 */
 	public static final float
 		HORIZONTAL_VELOCITY_DELTA = 50,
-		HORIZONTAL_VELOCITY_MAX = 5;
+		HORIZONTAL_VELOCITY_MAX = 5,
+		PARRY_VELOCITY = 1;
 	
 	/*
 	 * 移动参数
@@ -46,6 +47,10 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 	 * 水平速度最大值, 单位: 格子 / 步
 	 */
 	public float horizontalVelMax;
+	/**
+	 * 击退时的速度, 单位: 格子 / 步
+	 */
+	public float parryVel;
 	
 	public MegamanMotionModule(MegamanInLevel parent) {
 		super(parent);
@@ -54,6 +59,8 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 		this.horizontalVelDelta =
 				HORIZONTAL_VELOCITY_DELTA * LevelWorld.TIME_STEP * LevelWorld.TIME_STEP;
 		this.horizontalVelMax = HORIZONTAL_VELOCITY_MAX * LevelWorld.TIME_STEP;
+		this.parryVel = PARRY_VELOCITY * LevelWorld.TIME_STEP;
+		// boolean immune = parent.getBoolean(new String[] {"state", "immune"}, false);
 	}
 	
 	@Override
@@ -66,7 +73,7 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 	}
 	
 	@Override
-	public void step(LevelWorld world, int index, boolean hasNext) {
+	public void resetPosition(LevelWorld world, int index, boolean hasNext) {
 		Vector2 vel = box.velocity; // 速度
 		float vx = vel.x, vy = vel.y;
 		
@@ -87,33 +94,43 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 //		} else if (box.rightStop) {
 //			System.out.println("r");
 //		}
-		// 正常情况下, 每秒增加 horizontalVelDelta 的水平速度, horizontalVelMax 为最值.
-		if (left) {
-			orientation = false;
-			if (bottomStop) {
-				vx -= horizontalVelDelta;
-				if (vx > 0 || box.leftStop) {
-					vx = 0;
-				} else if (vx < -horizontalVelMax) {
+		boolean stiffness = parent.getBoolean(new String[] {"state", "stiffness"}, false);
+		if (stiffness) {
+			// 在击退 / 硬直状态下
+			if (orientation) {
+				vx = -parryVel;
+			} else {
+				vx = parryVel;
+			}
+		} else {
+			// 正常情况下, 每秒增加 horizontalVelDelta 的水平速度, horizontalVelMax 为最值.
+			if (left) {
+				orientation = false;
+				if (bottomStop) {
+					vx -= horizontalVelDelta;
+					if (vx > 0 || box.leftStop) {
+						vx = 0;
+					} else if (vx < -horizontalVelMax) {
+						vx = -horizontalVelMax;
+					}
+				} else {
 					vx = -horizontalVelMax;
 				}
-			} else {
-				vx = -horizontalVelMax;
-			}
-		} else if (right) {
-			orientation = true;
-			if (bottomStop) {
-				vx += horizontalVelDelta;
-				if (vx < 0 || box.rightStop) {
-					vx = 0;
-				} else if (vx > horizontalVelMax) {
+			} else if (right) {
+				orientation = true;
+				if (bottomStop) {
+					vx += horizontalVelDelta;
+					if (vx < 0 || box.rightStop) {
+						vx = 0;
+					} else if (vx > horizontalVelMax) {
+						vx = horizontalVelMax;
+					}
+				} else {
 					vx = horizontalVelMax;
 				}
 			} else {
-				vx = horizontalVelMax;
+				vx = 0; // 不在打滑状态下, 立即停住
 			}
-		} else {
-			vx = 0; // 不在打滑状态下, 立即停住
 		}
 		
 		// 设置的最终速度 X
@@ -121,10 +138,9 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 		
 		// 最后确定并更新位置
 		world.execHorizontalMotion(box);
-//		System.out.println(box.anchor);
 		
 		// 其它 : 是否攻击
-		if (bulletCount > 0 && attackBegin) {
+		if (bulletCount > 0 && attackBegin && !stiffness) {
 			float x = (orientation) ? box.anchor.x + 0.5f : box.anchor.x - 0.5f;
 			MMBuster buster = (MMBuster) RockChronicle.INSTANCE.runtime.characterBuilder.create("megaman_buster",
 					CharacterParameter.newInstance()

@@ -24,7 +24,7 @@ public abstract class AbstractModule {
 	}
 	
 	/**
-	 * 每一帧来刷新一下状态
+	 * 每一步来刷新一下状态
 	 * @param world
 	 *   关卡世界实体
 	 * @param index
@@ -34,6 +34,15 @@ public abstract class AbstractModule {
 	 */
 	public void determine(LevelWorld world, int index, boolean hasNext) {
 		// do nothing
+	}
+	
+	/**
+	 * 用于每一步结束时的工作，包括重置临时参数、删除模块
+	 */
+	public void stepPassed() {
+		for (int i = 0; i < collectors.size; i++) {
+			collectors.get(i).clear();
+		}
 	}
 
 	/**

@@ -237,8 +237,31 @@ Character Initialization JSON Data Format Description
 *	health.hp
 	<br/>double
 	<br/>显示血量。在系统中计算的血量实际值为显示血量 * 256 向下取整。
+	<br/>BaseHealthModule 模块中使用。
 	
 *	health.hpMax
 	<br/>double
 	<br/>显示血量最大值。在系统中计算的血量实际值为显示血量最大值 * 256 向下取整。
+	<br/>BaseHealthModule 模块中使用。
+	
+*	health.ref
+	<br/>string
+	<br/>生命值取值参数定位符。如果是特殊角色，该值将引导模块重定向角色生命值的位置。
+	<br/>ReferenceHealthModule 模块中使用。
+	
+*	state
+	<br/>object
+	<br/>其它状态记录模块
+	
+*	state.param
+	<br/>object
+	<br/>其它状态记录模块原始参数
+	
+*	state.param.stiffness
+	<br/>double
+	<br/>硬直状态产生时的持续时间，单位：秒
+	
+*	state.param.immune
+	<br/>double
+	<br/>无敌状态产生时的持续时间，单位：秒
 	

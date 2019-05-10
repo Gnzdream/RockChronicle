@@ -71,12 +71,12 @@ public abstract class CollisionModule extends AbstractModule {
 	}
 	
 	@Override
-	public void onStepFinished(LevelWorld world, boolean isPause) {
+	public void stepPassed() {
+		super.stepPassed();
+		
 		if (willDelete) {
 			parent.willDestroy();
 		}
-		
-		super.onStepFinished(world, isPause);
 	}
 	
 	/* **********
@@ -182,8 +182,8 @@ public abstract class CollisionModule extends AbstractModule {
 			target.publishNow(event);
 			
 			// 结果比对部分
-			String result = event.value.getString("result", "ignored");
-			System.out.println(String.format("CollisionModule: 碰撞结果为 %s", result));
+//			String result = event.value.getString("result", "ignored");
+//			System.out.println(String.format("CollisionModule: 碰撞结果为 %s", result));
 //			if ("ignored".equals(result)) {
 //				return false;
 //			}

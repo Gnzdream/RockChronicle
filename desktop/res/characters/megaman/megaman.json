@@ -4,7 +4,9 @@
 	"modules":
 	{
 		"jump":"base",
-		"camp":"base"
+		"camp":"base",
+		"state":"base",
+		"health":"reference"
 	},
 	"box":
 	{
@@ -29,5 +31,17 @@
 			"decay":-72,
 			"maxDropVelocity":-28
 		}
+	},
+	"state":
+	{
+		"param":
+		{
+			"stiffness":0.45,
+			"immune":1.5
+		}
+	},
+	"health":
+	{
+		"ref":"megaman"
 	}
 }

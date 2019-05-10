@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -110,8 +111,12 @@ public abstract class SpriteModule extends AbstractModule {
 			x = getX() - entry.offsetx / (float) Config.INSTANCE.blockWidth - fw;
 		}
 		
+		
 		batch.begin();
+//		batch.setBlendFunction(GL20.GL_ONE, GL20.GL_DST_ALPHA);
+//		batch.setColor(1, 1, 1, 1);
 		batch.draw(sprite, x, y, fw, fh);
+		batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		batch.end();
 	}
 	

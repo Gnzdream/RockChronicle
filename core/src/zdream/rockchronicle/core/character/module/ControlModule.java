@@ -42,7 +42,7 @@ public abstract class ControlModule extends AbstractModule implements IControlLi
 	
 	@Override
 	public int priority() {
-		return 1;
+		return 999;
 	}
 	
 }

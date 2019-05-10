@@ -11,7 +11,10 @@ package zdream.rockchronicle.cast.lead.megaman;
 public class Megaman {
 
 	public Megaman() {
-		// TODO Auto-generated constructor stub
+		
 	}
+	
+	public int hpMax = 7168; // 28 * 256
+	public int hp = hpMax;
 
 }
