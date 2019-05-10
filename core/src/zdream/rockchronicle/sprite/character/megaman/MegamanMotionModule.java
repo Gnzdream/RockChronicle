@@ -3,6 +3,7 @@ package zdream.rockchronicle.sprite.character.megaman;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.JsonValue.ValueType;
 
 import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
@@ -70,6 +71,22 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 		// 添加事件监听
 		parent.addSubscribe("ctrl_axis", this);
 		parent.addSubscribe("ctrl_motion", this);
+	}
+	
+	@Override
+	public void determine(LevelWorld world, int index, boolean hasNext) {
+		super.determine(world, index, hasNext);
+		
+		String motion = "stop";
+		if (left) {
+			motion = "left";
+		} else if (right) {
+			motion = "right";
+		}
+		JsonValue v = new JsonValue(ValueType.object);
+		v.addChild("motion", new JsonValue(motion));
+		
+		parent.setJson("state", v);
 	}
 	
 	@Override

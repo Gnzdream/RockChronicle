@@ -8,13 +8,13 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.core.Config;
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.motion.IBoxHolder;
 import zdream.rockchronicle.platform.body.Box;
+import zdream.rockchronicle.textures.TextureSequence;
 import zdream.rockchronicle.textures.TextureSheet;
 import zdream.rockchronicle.textures.TextureSheetEntry;
 
@@ -45,15 +45,16 @@ public abstract class SpriteModule extends AbstractModule {
 	
 	Sprite sprite;
 	TextureSheet textures;
-	/**
-	 * 现在所采用的纹理的名称
-	 */
-	String curTexName;
-	
 	MotionModule motion;
 	
 	File baseFile;
 	ArrayList<String> texturePaths;
+	
+	/*
+	 * 下面是计时相关的参数
+	 */
+	protected String state = "stop";
+	protected int steps;
 	
 	private void initTexturePaths(FileHandle file, JsonValue array) {
 		baseFile = file.file().getParentFile();
@@ -71,16 +72,10 @@ public abstract class SpriteModule extends AbstractModule {
 	public void loadTexture() {
 		// TODO 这里假设 texturePaths 只有一个元素
 		FileHandle texFile = new FileHandle(baseFile.getAbsolutePath() + File.separator + texturePaths.get(0));
-		JsonReader r = new JsonReader();
-		JsonValue json = r.parse(texFile);
+		textures = TextureSheet.createSheet(texFile);
 		
-		textures = new TextureSheet(texFile, json);
-		System.out.println(textures);
-		
-		// sprite 找到默认的 textures ("normal")
-		curTexName = "normal";
-		sprite = new Sprite(textures.getTextureEntry(curTexName).region);
 		// 没有设定位置, 所以默认是 0, 0
+		sprite = new Sprite();
 	}
 	
 	/**
@@ -88,7 +83,17 @@ public abstract class SpriteModule extends AbstractModule {
 	 * @return
 	 */
 	public TextureSheetEntry getCurrentTexture() {
-		return textures.getTextureEntry(curTexName);
+		TextureSequence seq;
+		if (state == null || (seq = textures.sequences.get(state)) == null) {
+			return null;
+		}
+		
+		if (seq.step <= 0) {
+			return textures.entrys.get(seq.seqs[0]);
+		} else {
+			int index = steps / seq.step;
+			return textures.entrys.get(seq.seqs[index % seq.seqs.length]);
+		}
 	}
 	
 	public Sprite getSprite() {
@@ -97,11 +102,16 @@ public abstract class SpriteModule extends AbstractModule {
 	
 	public void draw(SpriteBatch batch, OrthographicCamera camera) {
 		TextureSheetEntry entry = getCurrentTexture();
+		if (entry == null) {
+			return;
+		}
+		sprite.setRegion(entry.region);
+		
 		float x, // 单位: 像素 -> 格子
 				y = getY() + entry.offsety / (float) Config.INSTANCE.blockHeight; // 单位: 像素 -> 格子
 		
-		float fw = sprite.getWidth() / Config.INSTANCE.blockWidth,
-				fh = sprite.getHeight() / Config.INSTANCE.blockHeight;
+		float fw = (float) entry.width / Config.INSTANCE.blockWidth,
+				fh = (float) entry.height / Config.INSTANCE.blockHeight;
 		
 		if (motion.orientation) {
 			sprite.setFlip(false, false);
@@ -111,12 +121,25 @@ public abstract class SpriteModule extends AbstractModule {
 			x = getX() - entry.offsetx / (float) Config.INSTANCE.blockWidth - fw;
 		}
 		
+		int immune = parent.getInt(new String[] {"state", "immune"}, 0);
 		
+		// 绘画
 		batch.begin();
-//		batch.setBlendFunction(GL20.GL_ONE, GL20.GL_DST_ALPHA);
-//		batch.setColor(1, 1, 1, 1);
-		batch.draw(sprite, x, y, fw, fh);
-		batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		if (immune > 0) {
+			if (immune % 12 < 6) {
+				batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
+				batch.setColor(1, 1, 1, 0.6f);
+				batch.draw(sprite, x, y, fw, fh);
+				batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+				batch.setColor(1, 1, 1, 1);
+			} else {
+				batch.setColor(1, 1, 1, 0.6f);
+				batch.draw(sprite, x, y, fw, fh);
+				batch.setColor(1, 1, 1, 1);
+			}
+		} else {
+			batch.draw(sprite, x, y, fw, fh);
+		}
 		batch.end();
 	}
 	

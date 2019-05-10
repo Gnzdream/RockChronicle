@@ -150,7 +150,7 @@ public class GameScreen implements Screen {
 		// all drops
 		app.batch.begin();
 		app.font.draw(app.batch, "Drops 你收集了: " + dropsGathered, 0, 432);
-		app.batch.draw(megaman.getTextureEntry("normal").region, bucket.x, bucket.y, bucket.width, bucket.height);
+		// app.batch.draw(megaman.textureEntry.get("normal").region, bucket.x, bucket.y, bucket.width, bucket.height);
 		for (Rectangle raindrop : raindrops) {
 			app.batch.draw(dropImage, raindrop.x, raindrop.y, raindrop.width, raindrop.height);
 		}

@@ -9,11 +9,15 @@ import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
 
+import zdream.rockchronicle.platform.world.LevelWorld;
+import zdream.rockchronicle.utils.JsonUtils;
+
 public class TextureSheet {
 	
-	ObjectMap<String, TextureSheetEntry> entrys;
+	public ObjectMap<String, TextureSheetEntry> entrys;
+	public ObjectMap<String, TextureSequence> sequences;
 	
-	Texture texture;
+	public Texture texture;
 	
 	/*
 	 * 这里是 Json 文件里面的数据
@@ -24,7 +28,7 @@ public class TextureSheet {
 	String imagePath;
 	
 	public static TextureSheet createSheet(FileHandle file) {
-		JsonReader r = new JsonReader();
+		JsonReader r = JsonUtils.jreader;
 		JsonValue j = r.parse(file);
 		
 		TextureSheet sheet = new TextureSheet(file, j);
@@ -34,21 +38,38 @@ public class TextureSheet {
 	
 	public TextureSheet() {
 		entrys = new ObjectMap<>();
+		sequences = new ObjectMap<>();
 	}
 	
-	public TextureSheet(FileHandle jsonFile, JsonValue json) {
+	private TextureSheet(FileHandle jsonFile, JsonValue json) {
 		this();
 		
 		imagePath = json.getString("image");
 		FileHandle f = new FileHandle(jsonFile.file().getParentFile() + File.separator + imagePath);
 		this.texture = new Texture(f);
 		
-		JsonValue texArray = json.get("textures");
+		for (JsonValue entry = json.child; entry != null; entry = entry.next) {
+			switch (entry.name) {
+			case "textures":
+				createEntries(entry);
+				break;
+				
+			case "select":
+				createSequences(entry);
+				break;
+
+			default:
+				break;
+			}
+			
+		}
+	}
+	
+	private void createEntries(JsonValue texArray) {
 		final int len = texArray.size;
 		entrys.shrink(len * 4 / 3);
-		for (int i = 0; i < len; i++) {
+		for (JsonValue texJson = texArray.child; texJson != null; texJson = texJson.next) {
 			TextureSheetEntry entry = new TextureSheetEntry();
-			JsonValue texJson = texArray.get(i);
 			
 			entry.name = texJson.getString("name");
 			entry.width = texJson.getInt("w");
@@ -63,16 +84,29 @@ public class TextureSheet {
 		}
 	}
 	
-	/**
-	 * 这返回的是 sprite sheet 的整张图
-	 * @return
-	 */
-	public Texture getTexture() {
-		return texture;
+	private void createSequences(JsonValue texArray) {
+		final int len = texArray.size;
+		sequences.shrink(len * 4 / 3);
+		for (JsonValue texJson = texArray.child; texJson != null; texJson = texJson.next) {
+			TextureSequence seq = new TextureSequence();
+			
+			seq.state = texJson.getString("state");
+			if (texJson.has("step")) {
+				seq.step = (int) (texJson.getFloat("step") * LevelWorld.STEPS_PER_SECOND + 0.5f);
+			}
+			JsonValue array = texJson.get("sequence");
+			if (array.size == 0) {
+				continue;
+			}
+			seq.seqs = new String[array.size];
+			
+			int i = 0;
+			for (JsonValue seqItem = array.child; seqItem != null; seqItem = seqItem.next) {
+				seq.seqs[i++] = seqItem.asString();
+			}
+			
+			this.sequences.put(seq.state, seq);
+		}
 	}
 	
-	public TextureSheetEntry getTextureEntry(String name) {
-		return entrys.get(name);
-	}
-
 }

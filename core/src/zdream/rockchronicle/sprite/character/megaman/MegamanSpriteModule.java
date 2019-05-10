@@ -1,6 +1,7 @@
 package zdream.rockchronicle.sprite.character.megaman;
 
 import zdream.rockchronicle.core.character.module.SpriteModule;
+import zdream.rockchronicle.platform.world.LevelWorld;
 
 public class MegamanSpriteModule extends SpriteModule {
 	
@@ -24,5 +25,47 @@ public class MegamanSpriteModule extends SpriteModule {
 	public float getY() {
 		return parent.motion.box.anchor.y;
 	}
+	
+	String motion = "stop";
+	
+	@Override
+	public void determine(LevelWorld world, int index, boolean hasNext) {
+		super.determine(world, index, hasNext);
+		steps++;
+		
+		// 是否硬直
+		boolean stiffness = parent.getBoolean(new String[] {"state", "stiffness"}, false);
+		if (stiffness) {
+			state = motion = "stiffness";
+			steps = 0;
+			return;
+		}
+		
+		// 是否在跳跃
+		boolean bottomStop = parent.getBoolean(new String[] {"motion", "bottomStop"}, true);
+		if (!bottomStop) {
+			state = motion = "jump";
+			steps = 0;
+			return;
+		}
+		
+		String curMotion = parent.getString(new String[] {"state", "motion"}, "stop");
+		if (!curMotion.equals(motion)) {
+			switch (curMotion) {
+			case "stop":
+				state = "stop";
+				break;
+			case "left": case "right":
+				state = "walk";
+				break;
 
+			default:
+				break;
+			}
+			this.motion = curMotion;
+			steps = 0;
+		}
+		
+	}
+	
 }

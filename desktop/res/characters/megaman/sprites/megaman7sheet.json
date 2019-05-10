@@ -1,6 +1,48 @@
 {
 	"image":"megaman7sheet.gif",
-	"textures":[
+	"select":
+	[
+		{
+			"state":"stop",
+			"sequence":
+			[
+				"normal"
+			]
+		},
+		{
+			"state":"walk",
+			"sequence":
+			[
+				"walk_0",
+				"walk_1",
+				"walk_2",
+				"walk_3",
+				"walk_4",
+				"walk_5",
+				"walk_6",
+				"walk_7",
+				"walk_8",
+				"walk_9"
+			],
+			"step":0.0666667
+		},
+		{
+			"state":"stiffness",
+			"sequence":
+			[
+				"stiffness_3"
+			]
+		},
+		{
+			"state":"jump",
+			"sequence":
+			[
+				"jump_3"
+			]
+		}
+	],
+	"textures":
+	[
 		{
 			"name":"normal",
 			"x":209,
@@ -17,7 +59,7 @@
 			"w":26,
 			"h":37,
 			"offx":-15,
-			"offy":0
+			"offy":-1
 		},
 		{
 			"name":"walk_1",
@@ -26,7 +68,7 @@
 			"w":33,
 			"h":37,
 			"offx":-20,
-			"offy":0
+			"offy":-1
 		},
 		{
 			"name":"walk_2",
@@ -35,7 +77,7 @@
 			"w":44,
 			"h":37,
 			"offx":-28,
-			"offy":0
+			"offy":-1
 		},
 		{
 			"name":"walk_3",
@@ -53,7 +95,7 @@
 			"w":27,
 			"h":37,
 			"offx":-16,
-			"offy":0
+			"offy":-1
 		},
 		{
 			"name":"walk_5",
@@ -71,7 +113,7 @@
 			"w":26,
 			"h":37,
 			"offx":-15,
-			"offy":0
+			"offy":-1
 		},
 		{
 			"name":"walk_7",
@@ -89,7 +131,7 @@
 			"w":28,
 			"h":37,
 			"offx":-17,
-			"offy":0
+			"offy":-1
 		},
 		{
 			"name":"walk_9",
@@ -99,6 +141,24 @@
 			"h":35,
 			"offx":-14,
 			"offy":0
+		},
+		{
+			"name":"jump_3",
+			"x":196,
+			"y":210,
+			"w":31,
+			"h":53,
+			"offx":-15,
+			"offy":-14
+		},
+		{
+			"name":"stiffness_3",
+			"x":218,
+			"y":640,
+			"w":36,
+			"h":48,
+			"offx":-18,
+			"offy":-4
 		}
 	]
 }
