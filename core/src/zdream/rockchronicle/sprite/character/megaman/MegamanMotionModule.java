@@ -7,8 +7,8 @@ import com.badlogic.gdx.utils.JsonValue.ValueType;
 
 import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
-import zdream.rockchronicle.core.character.motion.SingleBoxMotionModule;
 import zdream.rockchronicle.core.character.parameter.CharacterParameter;
+import zdream.rockchronicle.core.module.motion.SingleBoxMotionModule;
 import zdream.rockchronicle.platform.world.LevelWorld;
 import zdream.rockchronicle.sprite.bullet.base.MMBuster;
 
@@ -158,7 +158,7 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 		
 		// 其它 : 是否攻击
 		if (bulletCount > 0 && attackBegin && !stiffness) {
-			float x = (orientation) ? box.anchor.x + 0.5f : box.anchor.x - 0.5f;
+			float x = (orientation) ? box.anchor.x + 1 : box.anchor.x - 1;
 			MMBuster buster = (MMBuster) RockChronicle.INSTANCE.runtime.characterBuilder.create("megaman_buster",
 					CharacterParameter.newInstance()
 						.setBoxAnchor(x, box.anchor.y + 0.75f)

@@ -1,6 +1,7 @@
 {
 	"name":"testfoe",
 	"class":"zdream.rockchronicle.sprite.foes.base.BaseFoe",
+	"type":"foe",
 	"modules":
 	{
 		"motion":"single-box",
@@ -22,7 +23,7 @@
 	},
 	"collision":
 	{
-		"damage":0
+		"damage":2
 	},
 	"camp":
 	{

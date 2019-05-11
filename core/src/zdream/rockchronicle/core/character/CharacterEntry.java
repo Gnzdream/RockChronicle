@@ -12,9 +12,9 @@ import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
-import zdream.rockchronicle.core.character.module.AbstractModule;
-import zdream.rockchronicle.core.character.module.MotionModule;
-import zdream.rockchronicle.core.character.module.SpriteModule;
+import zdream.rockchronicle.core.module.AbstractModule;
+import zdream.rockchronicle.core.module.MotionModule;
+import zdream.rockchronicle.core.module.sprite.SpriteModule;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
 /**
@@ -37,6 +37,20 @@ public abstract class CharacterEntry {
 	
 	public final int id;
 	public final String name;
+	/**
+	 * 角色类型. 包括但不限于:
+	 * 
+	 * <li>重要角色 "leader": 含玩家控制角色、重要官邸 BOSS 以及有分量的 NPC
+	 * <li>小怪 "foe": 含敌方小怪以及我方、敌方、中立方等召唤的喽啰
+	 * <li>子弹 "bullet": 含小怪以及重要角色释放的具有攻击或触发效果的物体角色
+	 * <li>陷阱 "trap": 除了静态地形以外的机关等
+	 * <li>道具 "mass": 含掉落物、购买商品以及其它可拾取物品,
+	 *         怪物或角色死后的收尾画面及图像
+	 * <li>场 "field": 虚拟区域, 当目标角色接触后则激活的虚拟角色
+	 * <li>贴图 "texture": 也包括剑气等传统意义的近战武器释放的物体, 以及其它没有实际意义的物体
+	 * </li>
+	 */
+	public String type;
 	
 	public CharacterEntry(int id, String name) {
 		this.id = id;
@@ -78,9 +92,11 @@ public abstract class CharacterEntry {
 			return;
 		}
 		
+		this.type = value.getString("type");
 		sortModules();
 		
-		for (int i = 0; i < modules.size; i++) {
+		AbstractModule[] ms = modules.toArray(AbstractModule.class);
+		for (int i = 0; i < ms.length; i++) {
 			modules.get(i).init(file, value);
 		}
 		

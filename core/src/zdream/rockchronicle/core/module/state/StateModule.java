@@ -1,4 +1,4 @@
-package zdream.rockchronicle.core.character.state;
+package zdream.rockchronicle.core.module.state;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
@@ -6,8 +6,8 @@ import com.badlogic.gdx.utils.JsonValue.ValueType;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
-import zdream.rockchronicle.core.character.module.AbstractModule;
 import zdream.rockchronicle.core.character.parameter.JsonCollector;
+import zdream.rockchronicle.core.module.AbstractModule;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
 /**

@@ -1,4 +1,4 @@
-package zdream.rockchronicle.core.character.collision;
+package zdream.rockchronicle.core.module.collision;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
@@ -7,10 +7,10 @@ import com.badlogic.gdx.utils.JsonValue.ValueType;
 import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
-import zdream.rockchronicle.core.character.module.AbstractModule;
-import zdream.rockchronicle.core.character.module.MotionModule;
-import zdream.rockchronicle.core.character.motion.IBoxHolder;
 import zdream.rockchronicle.core.character.parameter.JsonCollector;
+import zdream.rockchronicle.core.module.AbstractModule;
+import zdream.rockchronicle.core.module.MotionModule;
+import zdream.rockchronicle.core.module.motion.IBoxHolder;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
@@ -51,7 +51,7 @@ public abstract class CollisionModule extends AbstractModule {
 		
 		JsonValue ocollisionc = value.get("collision");
 		level = ocollisionc.getInt("level", 9);
-		damage = ocollisionc.getFloat("damage", 0);
+		damage = (int) (ocollisionc.getFloat("damage", 0) * 256);
 		executeType = ocollisionc.getString("execute", "repeat");
 		
 		addCollector(collisionc = new JsonCollector(this::getCollisionJson, "collision"));
@@ -87,9 +87,9 @@ public abstract class CollisionModule extends AbstractModule {
 	 */
 	public int level;
 	/**
-	 * 碰撞伤害. 非负数. 没有伤害的碰撞体该值为 0
+	 * 碰撞真实伤害. (显示伤害 * 256) 非负数. 没有伤害的碰撞体该值为 0
 	 */
-	public float damage;
+	public int damage;
 	/**
 	 * 执行方式
 	 */

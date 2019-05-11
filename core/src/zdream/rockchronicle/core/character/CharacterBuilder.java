@@ -13,8 +13,8 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonWriter.OutputType;
 import com.badlogic.gdx.utils.ObjectMap;
 
-import zdream.rockchronicle.core.character.module.AbstractModule;
-import zdream.rockchronicle.core.character.module.ModuleDef;
+import zdream.rockchronicle.core.module.AbstractModule;
+import zdream.rockchronicle.core.module.ModuleDef;
 import zdream.rockchronicle.utils.JsonUtils;
 
 /**

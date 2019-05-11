@@ -1,4 +1,4 @@
-package zdream.rockchronicle.core.character.motion;
+package zdream.rockchronicle.core.module.motion;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
@@ -6,8 +6,8 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
-import zdream.rockchronicle.core.character.module.MotionModule;
 import zdream.rockchronicle.core.character.parameter.JsonCollector;
+import zdream.rockchronicle.core.module.MotionModule;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
 

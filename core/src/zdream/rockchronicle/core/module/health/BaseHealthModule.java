@@ -1,4 +1,4 @@
-package zdream.rockchronicle.core.character.health;
+package zdream.rockchronicle.core.module.health;
 
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
@@ -53,15 +53,14 @@ public class BaseHealthModule extends HealthModule {
 		return v;
 	}
 	
-	protected void executeDamageFromOutside(CharacterEvent event) {
+	protected void executeOuterDamage(CharacterEvent event) {
 		boolean immune = parent.getBoolean(new String[] {"state", "immune"}, false);
 		
 		if (immune) {
 			event.value.addChild("result", new JsonValue("ignored"));
 		} else {
 			JsonValue v = event.value;
-			float fdamage = v.getFloat("damage");
-			int damage = (int) (fdamage * 256);
+			int damage = v.getInt("damage");
 			
 			hp -= damage;
 			if (hp <= 0) {
@@ -74,6 +73,17 @@ public class BaseHealthModule extends HealthModule {
 				parent.willDestroy();
 			}
 			v.addChild("result", new JsonValue("accepted"));
+		}
+	}
+	
+	@Override
+	protected void executeInnerRecovery(CharacterEvent event) {
+		int value = event.value.getInt("health");
+		
+		if (hp + value >= hpMax) {
+			hp = hpMax;
+		} else {
+			hp += value;
 		}
 	}
 

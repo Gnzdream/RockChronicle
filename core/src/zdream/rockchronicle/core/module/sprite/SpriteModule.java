@@ -1,4 +1,4 @@
-package zdream.rockchronicle.core.character.module;
+package zdream.rockchronicle.core.module.sprite;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -12,7 +12,9 @@ import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.core.Config;
 import zdream.rockchronicle.core.character.CharacterEntry;
-import zdream.rockchronicle.core.character.motion.IBoxHolder;
+import zdream.rockchronicle.core.module.AbstractModule;
+import zdream.rockchronicle.core.module.MotionModule;
+import zdream.rockchronicle.core.module.motion.IBoxHolder;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.textures.TextureSequence;
 import zdream.rockchronicle.textures.TextureSheet;

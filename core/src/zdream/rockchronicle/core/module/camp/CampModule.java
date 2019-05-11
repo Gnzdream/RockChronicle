@@ -1,4 +1,4 @@
-package zdream.rockchronicle.core.character.module;
+package zdream.rockchronicle.core.module.camp;
 
 import java.util.Iterator;
 
@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.JsonValue.ValueType;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.parameter.JsonCollector;
+import zdream.rockchronicle.core.module.AbstractModule;
 
 /**
  * <p>管理阵营参数的模块

@@ -1,6 +1,7 @@
-package zdream.rockchronicle.core.character.module;
+package zdream.rockchronicle.core.module.jump;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
+import zdream.rockchronicle.core.module.AbstractModule;
 
 /**
  * 管理跳跃参数的模块

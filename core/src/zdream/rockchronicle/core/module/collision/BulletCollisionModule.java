@@ -1,4 +1,4 @@
-package zdream.rockchronicle.core.character.collision;
+package zdream.rockchronicle.core.module.collision;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
 

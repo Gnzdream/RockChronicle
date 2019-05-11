@@ -1,7 +1,7 @@
 {
-	"name":"megaman",
+	"name":"mm2bird_spawnfield",
 	"class":"zdream.rockchronicle.sprite.character.megaman.MegamanInLevel",
-	"type":"leader",
+	"type":"field",
 	"modules":
 	{
 		"jump":"base",

@@ -1,4 +1,4 @@
-package zdream.rockchronicle.core.character.health;
+package zdream.rockchronicle.core.module.health;
 
 import java.util.Objects;
 
@@ -61,15 +61,14 @@ public class ReferenceHealthModule extends HealthModule {
 	}
 
 	@Override
-	protected void executeDamageFromOutside(CharacterEvent event) {
+	protected void executeOuterDamage(CharacterEvent event) {
 		boolean immune = parent.getBoolean(new String[] {"state", "immune"}, false);
 		
 		if (immune) {
 			event.value.addChild("result", new JsonValue("ignored"));
 		} else {
 			JsonValue v = event.value;
-			float fdamage = v.getFloat("damage");
-			int damage = (int) (fdamage * 256);
+			int damage = v.getInt("damage");
 			Gdx.app.log("ReferenceHealthModule", String.format("%s 收到伤害 %d", ref, damage));
 			
 			hpRef.hp -= damage;
@@ -83,6 +82,17 @@ public class ReferenceHealthModule extends HealthModule {
 				parent.willDestroy();
 			}
 			v.addChild("result", new JsonValue("accepted"));
+		}
+	}
+	
+	@Override
+	protected void executeInnerRecovery(CharacterEvent event) {
+		int value = event.value.getInt("health");
+		
+		if (hpRef.hp + value >= hpRef.hpMax) {
+			hpRef.hp = hpRef.hpMax;
+		} else {
+			hpRef.hp += value;
 		}
 	}
 

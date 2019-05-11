@@ -1,12 +1,12 @@
-package zdream.rockchronicle.core.character.health;
+package zdream.rockchronicle.core.module.health;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
-import zdream.rockchronicle.core.character.module.AbstractModule;
 import zdream.rockchronicle.core.character.parameter.JsonCollector;
+import zdream.rockchronicle.core.module.AbstractModule;
 
 /**
  * <p>健康与生命管理的模块
@@ -33,12 +33,14 @@ public abstract class HealthModule extends AbstractModule {
 		initHealthArguments(value);
 		addCollector(new JsonCollector(this::getHealthJson, "health"));
 		parent.addSubscribe("outside_collision", this);
+		parent.addSubscribe("inside_recovery", this);
 	}
 	
 	@Override
 	public void willDestroy() {
 		super.willDestroy();
 		parent.removeSubscribe("outside_collision", this);
+		parent.removeSubscribe("inside_recovery", this);
 	}
 	
 	protected abstract void initHealthArguments(JsonValue root);
@@ -61,13 +63,17 @@ public abstract class HealthModule extends AbstractModule {
 		case "outside_collision":
 			recvOutsideCollision(event);
 			break;
+			
+		case "inside_recovery":
+			recvInsideRecovery(event);
+			break;
 
 		default:
 			super.receiveEvent(event);
 			break;
 		}
 	}
-	
+
 	protected void recvOutsideCollision(CharacterEvent event) {
 		// 前置判断
 		CharacterEvent before = new CharacterEvent("before_damage");
@@ -75,7 +81,7 @@ public abstract class HealthModule extends AbstractModule {
 		parent.publishNow(before);
 		
 		// 结算
-		executeDamageFromOutside(event);
+		executeOuterDamage(event);
 		
 		// 后置处理
 		CharacterEvent after = new CharacterEvent("after_damage");
@@ -83,6 +89,17 @@ public abstract class HealthModule extends AbstractModule {
 		parent.publishNow(after);
 	}
 	
-	protected abstract void executeDamageFromOutside(CharacterEvent event);
+	protected void recvInsideRecovery(CharacterEvent event) {
+		// TODO 前置判断
+
+		// 结算
+		executeInnerRecovery(event);
+
+		// TODO 后置处理
+	}
+	
+	protected abstract void executeOuterDamage(CharacterEvent event);
+	
+	protected abstract void executeInnerRecovery(CharacterEvent event);
 
 }

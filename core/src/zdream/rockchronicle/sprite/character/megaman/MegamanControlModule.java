@@ -4,9 +4,9 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.core.character.event.CharacterEventCreator;
-import zdream.rockchronicle.core.character.module.ControlModule;
 import zdream.rockchronicle.core.input.InputCenter;
 import zdream.rockchronicle.core.input.PlayerInput;
+import zdream.rockchronicle.core.module.control.ControlModule;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
 public class MegamanControlModule extends ControlModule {

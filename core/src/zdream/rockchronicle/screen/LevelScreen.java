@@ -177,7 +177,11 @@ public class LevelScreen implements Screen, IPhysicsStep {
 		}
 		frameCount++;
 		app.batch.begin();
-		app.font.draw(app.batch, "帧率: " + lastFrameCount, 10, 20);
+		int displayHp = app.runtime.cast.megaman.hp;
+		displayHp = (displayHp > 256) ? displayHp / 256 : (displayHp > 256) ? 1 : 0;
+		
+		app.font.draw(app.batch, String.format("帧率: %d HP:%d",
+				lastFrameCount, displayHp), 10, 20);
 		app.batch.end();
 	}
 	

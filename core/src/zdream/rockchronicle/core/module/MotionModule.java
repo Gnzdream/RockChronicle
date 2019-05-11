@@ -1,4 +1,4 @@
-package zdream.rockchronicle.core.character.module;
+package zdream.rockchronicle.core.module;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
@@ -32,7 +32,7 @@ public abstract class MotionModule extends AbstractModule {
 	 * true: 右
 	 * false: 左
 	 */
-	protected boolean orientation = true;
+	public boolean orientation = true;
 	
 	protected LevelWorld world;
 	

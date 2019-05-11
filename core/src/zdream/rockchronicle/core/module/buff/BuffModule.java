@@ -1,6 +1,7 @@
-package zdream.rockchronicle.core.character.module;
+package zdream.rockchronicle.core.module.buff;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
+import zdream.rockchronicle.core.module.AbstractModule;
 
 /**
  * <p>管理特殊状态参数的模块

@@ -1,4 +1,4 @@
-package zdream.rockchronicle.core.character.motion;
+package zdream.rockchronicle.core.module.motion;
 
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;

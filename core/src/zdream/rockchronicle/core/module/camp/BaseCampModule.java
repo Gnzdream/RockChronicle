@@ -1,7 +1,6 @@
-package zdream.rockchronicle.core.character.camp;
+package zdream.rockchronicle.core.module.camp;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
-import zdream.rockchronicle.core.character.module.CampModule;
 
 /**
  * 默认的阵营模块

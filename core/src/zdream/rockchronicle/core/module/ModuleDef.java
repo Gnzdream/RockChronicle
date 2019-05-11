@@ -1,4 +1,4 @@
-package zdream.rockchronicle.core.character.module;
+package zdream.rockchronicle.core.module;
 
 /**
  * 角色预定义的初始化数据封装类

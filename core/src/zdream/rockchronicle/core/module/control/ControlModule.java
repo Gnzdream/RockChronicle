@@ -1,9 +1,10 @@
-package zdream.rockchronicle.core.character.module;
+package zdream.rockchronicle.core.module.control;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.input.IControlListener;
 import zdream.rockchronicle.core.input.InputCenter;
 import zdream.rockchronicle.core.input.PlayerInput;
+import zdream.rockchronicle.core.module.AbstractModule;
 
 public abstract class ControlModule extends AbstractModule implements IControlListener {
 	

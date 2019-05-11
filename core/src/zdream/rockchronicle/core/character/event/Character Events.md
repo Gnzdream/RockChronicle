@@ -86,8 +86,8 @@ Character Events Description
 	<br/>攻击方的阵营
 	
 *	damage
-	<br/>double
-	<br/>伤害
+	<br/>integer
+	<br/>实际伤害
 
 *	properties
 	<br/>array {object} | undefined
@@ -103,4 +103,16 @@ Character Events Description
 ##### 发布消息: health_exhausted
 
 当生命值耗尽时触发。届时角色自己的碰撞应该不能再生效。
+
+##### 发布消息: before_damage
+
+##### 发布消息: after_damage
+
+##### 发布消息: inside_recovery
+
+补血效果
+
+*	health
+	<br/>integer
+	<br/>补充生命值，实际血量是多少。
 

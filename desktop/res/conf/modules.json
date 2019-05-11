@@ -3,53 +3,60 @@
 	[
 		{
 			"name":"single-box",
-			"class":"zdream.rockchronicle.core.character.motion.SingleBoxMotionModule"
+			"class":"zdream.rockchronicle.core.module.motion.SingleBoxMotionModule"
 		}
 	],
 	"jump":
 	[
 		{
 			"name":"base",
-			"class":"zdream.rockchronicle.core.character.jump.BaseJumpModule"
+			"class":"zdream.rockchronicle.core.module.jump.BaseJumpModule"
 		}
 	],
 	"camp":
 	[
 		{
 			"name":"base",
-			"class":"zdream.rockchronicle.core.character.camp.BaseCampModule"
+			"class":"zdream.rockchronicle.core.module.camp.BaseCampModule"
 		}
 	],
 	"collision":
 	[
 		{
 			"name":"bullet",
-			"class":"zdream.rockchronicle.core.character.collision.BulletCollisionModule"
+			"class":"zdream.rockchronicle.core.module.collision.BulletCollisionModule"
 		}
 	],
 	"sprite":
 	[
 		{
 			"name":"shape",
-			"class":"zdream.rockchronicle.core.character.sprite.ShapeSpriteModule"
+			"class":"zdream.rockchronicle.core.module.sprite.ShapeSpriteModule"
 		}
 	],
 	"health":
 	[
 		{
 			"name":"base",
-			"class":"zdream.rockchronicle.core.character.health.BaseHealthModule"
+			"class":"zdream.rockchronicle.core.module.health.BaseHealthModule"
 		},
 		{
 			"name":"reference",
-			"class":"zdream.rockchronicle.core.character.health.ReferenceHealthModule"
+			"class":"zdream.rockchronicle.core.module.health.ReferenceHealthModule"
 		}
 	],
 	"state":
 	[
 		{
 			"name":"base",
-			"class":"zdream.rockchronicle.core.character.state.StateModule"
+			"class":"zdream.rockchronicle.core.module.state.StateModule"
+		}
+	],
+	"buff":
+	[
+		{
+			"name":"gradual_recovery",
+			"class":"zdream.rockchronicle.core.module.buff.GradualRecoveryBuffModule"
 		}
 	]
 }

@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Rectangle;
 
-import zdream.rockchronicle.core.character.module.SpriteModule;
+import zdream.rockchronicle.core.module.sprite.SpriteModule;
 
 public class MMBusterSprite extends SpriteModule {
 	
