@@ -34,7 +34,7 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 	 */
 	public static final float
 		HORIZONTAL_VELOCITY_DELTA = 50,
-		HORIZONTAL_VELOCITY_MAX = 5,
+		HORIZONTAL_VELOCITY_MAX = 5.4f,
 		PARRY_VELOCITY = 1;
 	
 	/*

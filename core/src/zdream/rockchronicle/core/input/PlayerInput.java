@@ -248,7 +248,6 @@ public class PlayerInput {
 				// 如果 Pov 有效, 则按照 Pov, 否则 Axis
 				PovDirection dir = ctrl.getPov(0);
 				if (dir != PovDirection.center) {
-					System.out.println(dir);
 					switch (mapKey) {
 					case MAP_UP:
 						return (dir == PovDirection.north || dir == PovDirection.northEast || dir == PovDirection.northWest);

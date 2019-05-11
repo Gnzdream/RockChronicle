@@ -13,9 +13,9 @@
 		"inTerrain":true,
 		"rect":
 		{
-			"width":0.916667,
+			"width":0.833334,
 			"height":1.5,
-			"x":-0.458333,
+			"x":-0.416777,
 			"y":0
 		}
 	},
@@ -27,8 +27,8 @@
 	{
 		"param":
 		{
-			"impulse":21.36,
-			"decay":-72,
+			"impulse":21,
+			"decay":-67,
 			"maxDropVelocity":-28
 		}
 	},
