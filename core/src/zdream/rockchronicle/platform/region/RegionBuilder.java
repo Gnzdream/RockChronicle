@@ -3,12 +3,14 @@ package zdream.rockchronicle.platform.region;
 import static java.util.Objects.requireNonNull;
 import static zdream.rockchronicle.platform.region.Terrains.terrainCode;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.loaders.resolvers.LocalFileHandleResolver;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -28,18 +30,111 @@ import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.JsonWriter.OutputType;
+import com.badlogic.gdx.utils.ObjectMap;
 
 import zdream.rockchronicle.core.Config;
 import zdream.rockchronicle.utils.FilePathUtil;
 import zdream.rockchronicle.utils.JsonUtils;
 
 public class RegionBuilder {
+	
+	/* **********
+	 *  初始化  *
+	 ********** */
+	
+	private final ObjectMap<String, RegionDef> levels = new ObjectMap<>();
+	
+	public void init() {
+		rescan(Paths.get("res", "level"), new String[] {"symbol", "terrain"});
+		
+		Gdx.app.log("RegionBuilder", String.format("扫描关卡共 %d 个", levels.size));
+	}
+	
+	/**
+	 * <p>初始化区域创建工具, 加载所有的关卡相关的初始化 json 文件
+	 * <p>所有的相关文件在文件夹 [dir] 中的文件的一级目录中
+	 * (满足 [dir]/?/?.json), 且 json 文件包含的说明有:
+	 * <li>name : (string, 必需) 说明人物名称
+	 * <li>class : (string, 必需) 说明人物创建的全类名
+	 * <li>modules : (object{string : string}, 不必需)
+	 *     如果模块需要按照某些模板来创建的话, 则将 key=模块属性 (比如 "sprite", "control" 等)
+	 *     value=模块模板名称 放入 modules 中.
+	 * </li>
+	 * @param dir
+	 *   搜索的路径
+	 * @param ignores
+	 *   忽略的一级目录名称
+	 */
+	private void rescan(Path path, String[] ignores) {
+		FileHandle f = Gdx.files.local(path.toString());
+		
+		if (!f.exists() || !f.isDirectory()) {
+			throw new IllegalStateException(path + " 无法读取角色创建文件信息");
+		}
+		
+		FileHandle[] children = f.list();
+		for (int i = 0; i < children.length; i++) {
+			FileHandle child = children[i];
+			
+			if (!child.isDirectory()) {
+				continue;
+			}
+			// 查看是否在忽略名单中
+			String fname = child.name();
+			boolean ignore = false;
+			for (int j = 0; j < ignores.length; j++) {
+				if (fname.equals(ignores[j])) {
+					ignore = true;
+					break;
+				}
+			}
+			if (ignore) continue;
+			
+			// 扫描
+			FileHandle[] files = child.list();
+			for (int j = 0; j < files.length; j++) {
+				FileHandle fjson = files[j];
+				
+				if (fjson.isDirectory()) {
+					continue;
+				}
+				
+				String ext = fjson.extension();
+				if (!"json".equals(ext.toLowerCase())) {
+					continue;
+				}
+				
+				try {
+					JsonValue v = jreader.parse(fjson);
+					
+					RegionDef def = new RegionDef();
+					def.name = v.getString("name");
+					def.path = fjson.path();
+					def.data = v.toJson(OutputType.minimal);
+					
+					levels.put(def.name, def);
+				} catch (RuntimeException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	public boolean has(String name) {
+		return levels.containsKey(name);
+	}
+
+
+	/* **********
+	 * 构造部分 *
+	 ********** */
 
 	/**
 	 * 处理从文件中读取 tmx 数据的类
 	 */
 	private TmxMapLoader localLoader = new TmxMapLoader(new LocalFileHandleResolver());
-	private JsonReader jreader = new JsonReader();
+	private JsonReader jreader = JsonUtils.jreader;
 	
 	public final int defRoomWidth = 25;
 	public final int defRoomHeight = 14;
@@ -53,10 +148,15 @@ public class RegionBuilder {
 	public static final String TERRAIN_PATH =
 			Paths.get("res", "level", "terrain", "terrain.png").toString();
 	
-	public Region build(String basePath) {
-		RegionBundle def = new RegionBundle(basePath);
+	public Region build(String name) {
+		RegionDef def = levels.get(name);
+		if (def == null) {
+			throw new NullPointerException(String.format("不存在 %s 的关卡数据", name));
+		}
 		
-		return build(def);
+		RegionBundle bundle = new RegionBundle(def);
+		
+		return build(bundle);
 	}
 	
 	/**
@@ -64,22 +164,26 @@ public class RegionBuilder {
 	 * @param basePath
 	 * @return
 	 */
-	public Region buildForTerrainOnly(String basePath) {
-		RegionBundle def = new RegionBundle(basePath);
+	public Region buildForTerrainOnly(String name) {
+		RegionDef def = levels.get(name);
+		if (def == null) {
+			throw new NullPointerException(String.format("不存在 %s 的关卡数据", name));
+		}
 		
-		Region r = build(def);
+		RegionBundle bundle = new RegionBundle(def);
+		Region r = build(bundle);
 		createTerrainOnlyLayer(r);
 
 		return r;
 	}
 
 	private Region build(RegionBundle bundle) {
-		JsonValue json = jreader.parse(Gdx.files.local(bundle.basePath));
+		JsonValue json = jreader.parse(Gdx.files.local(bundle.def.path));
 		parseRegionDefJson(bundle, json);
 		
 		// tmx
 		String path = bundle.tmxPath;
-		bundle.region.tmx = localLoader.load(FilePathUtil.relativeFileHandle(bundle.basePath, path).path());
+		bundle.region.tmx = localLoader.load(FilePathUtil.relativeFileHandle(bundle.def.path, path).path());
 		
 		initSymbolMap(bundle);
 		initFieldMap(bundle);

@@ -50,7 +50,8 @@ public class LevelScreen implements Screen, IPhysicsStep {
 		app.runtime.levelWorld = new LevelWorld();
 		
 		// tiled 地图
-		region = app.runtime.regionBuilder.buildForTerrainOnly("res\\level\\level1\\cut.json");
+		region = app.runtime.regionBuilder.buildForTerrainOnly("mm1cut");
+//		region = app.runtime.regionBuilder.build("mm1cut");
 		
 		worldCamera = new OrthographicCamera();
 		worldCamera.setToOrtho(false, app.width, app.height); // y 轴方向朝上
@@ -84,7 +85,7 @@ public class LevelScreen implements Screen, IPhysicsStep {
 				.setCamp(1)
 				.get());
 //		megaman.load(Gdx.files.local("res\\characters\\megaman\\megaman.json"));
-		app.runtime.putPlayer(1, megaman);
+		runtime.putPlayer(1, megaman);
 //		megaman.setBlockPos(region.spawnx, region.spawny);
 		
 		// 设置控制端. 这里不一定是 megaman 要注意
@@ -92,11 +93,11 @@ public class LevelScreen implements Screen, IPhysicsStep {
 		
 		// 测试: 放进去小怪
 		{
-			app.runtime.addEntry(app.runtime.characterBuilder.create("testfoe",
+			runtime.addEntry(app.runtime.characterBuilder.create("testfoe",
 					CharacterParameter.newInstance().setBoxAnchor(region.spawnx + 3.5f, region.spawny)
 					.get()));
 
-			app.runtime.addEntry(app.runtime.characterBuilder.create("testfoe",
+			runtime.addEntry(app.runtime.characterBuilder.create("testfoe",
 					CharacterParameter.newInstance().setBoxAnchor(12, 8)
 					.get()));
 		}

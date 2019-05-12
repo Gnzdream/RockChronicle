@@ -18,15 +18,15 @@ import com.badlogic.gdx.utils.ObjectMap;
  */
 class RegionBundle {
 	
-	public RegionBundle(String basePath) {
-		requireNonNull(basePath, "basePath == null");
-		this.basePath = basePath;
+	public RegionBundle(RegionDef def) {
+		requireNonNull(def, "def == null");
+		this.def = def;
 	}
 	
 	/**
 	 * 该 region 所在的路径.
 	 */
-	public final String basePath;
+	public final RegionDef def;
 	
 	/**
 	 * 属性 tmxPath.

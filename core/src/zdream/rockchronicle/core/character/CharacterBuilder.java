@@ -35,6 +35,8 @@ public class CharacterBuilder {
 	public void init() {
 		loadModuleDefs();
 		rescan(Paths.get("res", "characters"));
+		
+		Gdx.app.log("CharacterBuilder", String.format("扫描角色共 %d 个", defs.size));
 	}
 	
 	/**
@@ -73,7 +75,7 @@ public class CharacterBuilder {
 	}
 	
 	/**
-	 * <p>初始化人物创建工具, 加载所有的 module 的初始化 json 文件
+	 * <p>初始化人物创建工具, 加载所有的角色的初始化 json 文件
 	 * <p>所有的相关文件在文件夹 [dir] 中的文件的一级目录中
 	 * (满足 [dir]/?/?.json), 且 json 文件包含的说明有:
 	 * <li>name : (string, 必需) 说明人物名称
@@ -89,7 +91,7 @@ public class CharacterBuilder {
 		FileHandle f = Gdx.files.local(path.toString());
 		
 		if (!f.exists() || !f.isDirectory()) {
-			throw new IllegalStateException(path + " 无法读取人物创建文件信息");
+			throw new IllegalStateException(path + " 无法读取角色创建文件信息");
 		}
 		
 		FileHandle[] children = f.list();

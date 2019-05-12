@@ -51,6 +51,7 @@ public class GameRuntime {
 
 	public void init() {
 		characterBuilder.init();
+		regionBuilder.init();
 	}
 	
 	public void putPlayer(int seq, CharacterEntry entry) {
