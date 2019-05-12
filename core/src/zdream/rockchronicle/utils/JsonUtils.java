@@ -9,6 +9,11 @@ public class JsonUtils {
 	
 	public static final JsonReader jreader = new JsonReader();
 	
+	/**
+	 * 克隆的结果中 name = null
+	 * @param src
+	 * @return
+	 */
 	public static JsonValue clone(JsonValue src) {
 		String text = src.toJson(OutputType.minimal);
 		return jreader.parse(text);

@@ -14,7 +14,10 @@ import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapLayers;
+import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.MapProperties;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
@@ -26,7 +29,9 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 
+import zdream.rockchronicle.core.Config;
 import zdream.rockchronicle.utils.FilePathUtil;
+import zdream.rockchronicle.utils.JsonUtils;
 
 public class RegionBuilder {
 
@@ -47,27 +52,9 @@ public class RegionBuilder {
 	private Texture terrainTexture;
 	public static final String TERRAIN_PATH =
 			Paths.get("res", "level", "terrain", "terrain.png").toString();
-
-	public Region build(RegionDef def) {
-		requireNonNull(def, "def == null");
-		Region region = new Region();
-		
-		// tmx
-		String path = def.tmxPath;
-		region.tmx = localLoader.load(FilePathUtil.relativeFileHandle(def.basePath, path).path());
-		
-		initSymbolMap(region);
-		// TODO
-		
-		
-		return region;
-	}
 	
 	public Region build(String basePath) {
-		RegionDef def = new RegionDef(basePath);
-		
-		JsonValue json = jreader.parse(Gdx.files.local(basePath));
-		def.tmxPath = json.getString("tmxPath");
+		RegionBundle def = new RegionBundle(basePath);
 		
 		return build(def);
 	}
@@ -78,29 +65,54 @@ public class RegionBuilder {
 	 * @return
 	 */
 	public Region buildForTerrainOnly(String basePath) {
-		RegionDef def = new RegionDef(basePath);
-		
-		JsonValue json = jreader.parse(Gdx.files.local(basePath));
-		def.tmxPath = json.getString("tmxPath");
+		RegionBundle def = new RegionBundle(basePath);
 		
 		Region r = build(def);
 		createTerrainOnlyLayer(r);
 
 		return r;
 	}
+
+	private Region build(RegionBundle bundle) {
+		JsonValue json = jreader.parse(Gdx.files.local(bundle.basePath));
+		parseRegionDefJson(bundle, json);
+		
+		// tmx
+		String path = bundle.tmxPath;
+		bundle.region.tmx = localLoader.load(FilePathUtil.relativeFileHandle(bundle.basePath, path).path());
+		
+		initSymbolMap(bundle);
+		initFieldMap(bundle);
+		
+		return bundle.region;
+	}
 	
 	/* **********
 	 *  初始化  *
 	 ********** */
 	
+	private void parseRegionDefJson(RegionBundle bundle, JsonValue json) {
+		bundle.tmxPath = json.getString("tmxPath");
+		
+		// fields
+		JsonValue afields = json.get("fields");
+		if (afields != null && afields.size > 0) {
+			for (JsonValue ofieldPair = afields.child; ofieldPair != null; ofieldPair = ofieldPair.next) {
+				String key = ofieldPair.getString("key");
+				JsonValue param = ofieldPair.get("param");
+				bundle.fields.put(key, param);
+			}
+		}
+	}
+	
 	/**
 	 * <p>初始化 Symbol 层
-	 * <p>tiledMap 中默认有 symbol 这个图块层, 而 symbol 层是不能被 render 的.
+	 * <p>tiledMap 中默认有 "Symbol" 这个图块层, 而 Symbol 层是不能被 render 的.
 	 * 这里设置为不可见
 	 * </p>
 	 */
-	void initSymbolMap(Region region) {
-		TiledMap t = region.tmx;
+	void initSymbolMap(RegionBundle bundle) {
+		TiledMap t = bundle.region.tmx;
 		MapLayer l = t.getLayers().get("Symbol");
 		l.setVisible(false);
 		
@@ -149,7 +161,7 @@ public class RegionBuilder {
 			throw new RuntimeException("出生点位没有确定");
 		}
 		
-		Room[] rooms = region.rooms = new Room[rects.size()];
+		Room[] rooms = bundle.region.rooms = new Room[rects.size()];
 		boolean spawnCheck = false;
 		float spawnxf = spawnx + 0.5f, spawnyf = spawny + 0.5f;
 		
@@ -173,16 +185,16 @@ public class RegionBuilder {
 			
 			if (rect.contains(spawnxf, spawnyf)) {
 				spawnCheck = true;
-				region.spawnRoom = i;
-				region.spawnx = spawnx - r.offsetx;
-				region.spawny = spawny - r.offsety;
+				bundle.region.spawnRoom = i;
+				bundle.region.spawnx = spawnx - r.offsetx;
+				bundle.region.spawny = spawny - r.offsety;
 			}
 			
 			// 读取地形数据
 			readTerrains(r, t);
 		}
 		
-		if (region.spawnRoom == -1) {
+		if (bundle.region.spawnRoom == -1) {
 			throw new RuntimeException("出生点位没有确定");
 		}
 	}
@@ -286,7 +298,7 @@ public class RegionBuilder {
 	
 	/**
 	 * 为 Region 的 TMX 地图创建一个图层, 只显示地形的图层.
-	 * 然后该图层置于顶层, 原来名为 terrain 的图层不显示.
+	 * 然后该图层置于顶层, 原来名为 "Terrain" 的图层不显示.
 	 */
 	private void createTerrainOnlyLayer(Region r) {
 		TiledMap tmx = r.tmx;
@@ -380,6 +392,80 @@ public class RegionBuilder {
 		srcLayer.setVisible(false);
 		tmx.getLayers().add(layer);
 		
+	}
+	
+	/**
+	 * <p>按照 TMX 文件内容所述, 对 "Field" 层进行解析.
+	 * <p>Field 层在 TMX 文件中被定义成一个对象层, 它描述了所有在这个关卡中的场的位置及大小.
+	 * </p>
+	 * @param region
+	 */
+	private void initFieldMap(RegionBundle bundle) {
+		TiledMap tmx = bundle.region.tmx;
+		MapLayer l = tmx.getLayers().get("Fields");
+		if (l == null) {
+			return;
+		}
+		l.setVisible(false);
+		
+		MapObjects objs = l.getObjects();
+		final int size = objs.getCount();
+		for (int i = 0; i < size; i++) {
+			MapObject obj = objs.get(i);
+			String name = obj.getName();
+			
+			JsonValue param = bundle.fields.get(name);
+			if (param == null) {
+				continue;
+			}
+			
+			if (obj instanceof RectangleMapObject) {
+				RectangleMapObject robj = (RectangleMapObject) obj;
+				Rectangle rect = robj.getRectangle();
+				
+				float x = rect.x / Config.INSTANCE.blockWidth;
+				float y = rect.y / Config.INSTANCE.blockHeight;
+				float w = rect.width / Config.INSTANCE.blockWidth;
+				float h = rect.height / Config.INSTANCE.blockHeight;
+				
+				// 确定该场属于哪个房间
+				Room[] rooms = bundle.region.rooms;
+				for (int j = 0; j < rooms.length; j++) {
+					Room room = rooms[j];
+					if (room.overlaps(x, y, w, h)) {
+						Field f = createFieldForRoom(room, x, y, w, h, param);
+						room.fields.add(f);
+					}
+				}
+			}
+		}
+	}
+	
+	private Field createFieldForRoom(Room room, float x, float y, float w, float h, JsonValue param) {
+		Field f = new Field();
+		
+		f.param = JsonUtils.clone(param);
+		f.room = room.index;
+		
+		f.rect.x = x - room.offsetx;
+		f.rect.y = y - room.offsety;
+		f.rect.width = w;
+		f.rect.height = h;
+		
+		// 利用 param 中的 top: no_border 参数改写 rect 数值
+		JsonValue obox = param.get("box");
+		if (obox != null) {
+			JsonValue oboxTop = obox.get("top");
+			if (oboxTop != null) {
+				String top = oboxTop.asString();
+				if ("no_border".equals(top)) {
+					int roomHeight = room.height;
+					f.rect.height = roomHeight * 2 - f.rect.y;
+				}
+			}
+		}
+		
+		return f;
 	}
 	
 }
