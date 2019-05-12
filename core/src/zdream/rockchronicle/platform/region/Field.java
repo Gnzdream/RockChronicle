@@ -23,6 +23,8 @@ public class Field {
 	 */
 	public int room = -1;
 	
+	public String name;
+	
 	/**
 	 * 在该房间中, 场的范围.
 	 * 如果尚不清楚该场属于哪个房间, 这里为在所属区域 {@link Region} 中, 该场的范围.

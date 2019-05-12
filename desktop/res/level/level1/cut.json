@@ -11,6 +11,10 @@
 				"box" :
 				{
 					"top" : "no_border"
+				},
+				"camp" :
+				{
+					"camp" : 2
 				}
 			}
 		}

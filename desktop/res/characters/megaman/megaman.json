@@ -8,7 +8,7 @@
 		"camp":"base",
 		"state":"base",
 		"health":"reference",
-		"buff":"gradual_recovery"
+		"buff":"gradual-recovery"
 	},
 	"box":
 	{

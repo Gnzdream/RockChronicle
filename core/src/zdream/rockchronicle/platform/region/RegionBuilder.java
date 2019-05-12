@@ -30,6 +30,7 @@ import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.JsonValue.ValueType;
 import com.badlogic.gdx.utils.JsonWriter.OutputType;
 import com.badlogic.gdx.utils.ObjectMap;
 
@@ -556,6 +557,8 @@ public class RegionBuilder {
 		f.rect.width = w;
 		f.rect.height = h;
 		
+		f.name = f.param.getString("name");
+		
 		// 利用 param 中的 top: no_border 参数改写 rect 数值
 		JsonValue obox = param.get("box");
 		if (obox != null) {
@@ -568,6 +571,19 @@ public class RegionBuilder {
 				}
 			}
 		}
+		
+		// 写入 f.param
+		obox = f.param.get("box");
+		if (obox == null) {
+			obox = new JsonValue(ValueType.object);
+			f.param.addChild(obox);
+		}
+		JsonValue orect = new JsonValue(ValueType.object);
+		obox.addChild("rect", orect);
+		orect.addChild("x", new JsonValue(f.rect.x));
+		orect.addChild("y", new JsonValue(f.rect.y));
+		orect.addChild("width", new JsonValue(f.rect.width));
+		orect.addChild("height", new JsonValue(f.rect.height));
 		
 		return f;
 	}

@@ -210,4 +210,9 @@ public class Box {
 		return grounds.size != 0;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("Box#%d %s", parentId, this.anchor);
+	}
+	
 }

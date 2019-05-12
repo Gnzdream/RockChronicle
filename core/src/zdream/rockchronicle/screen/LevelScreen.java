@@ -16,11 +16,10 @@ import zdream.rockchronicle.core.GameRuntime;
 import zdream.rockchronicle.core.character.parameter.CharacterParameter;
 import zdream.rockchronicle.platform.region.Region;
 import zdream.rockchronicle.platform.region.Room;
-import zdream.rockchronicle.platform.world.IPhysicsStep;
 import zdream.rockchronicle.platform.world.LevelWorld;
 import zdream.rockchronicle.sprite.character.megaman.MegamanInLevel;
 
-public class LevelScreen implements Screen, IPhysicsStep {
+public class LevelScreen implements Screen {
 	
 	final RockChronicle app;
 	
@@ -50,7 +49,7 @@ public class LevelScreen implements Screen, IPhysicsStep {
 		app.runtime.levelWorld = new LevelWorld();
 		
 		// tiled 地图
-		region = app.runtime.regionBuilder.buildForTerrainOnly("mm1cut");
+//		region = app.runtime.regionBuilder.buildForTerrainOnly("mm1cut");
 //		region = app.runtime.regionBuilder.build("mm1cut");
 		
 		worldCamera = new OrthographicCamera();
@@ -69,16 +68,12 @@ public class LevelScreen implements Screen, IPhysicsStep {
 		/*
 		 * 物理
 		 */
-		LevelWorld world = app.runtime.levelWorld;
-		world.doCreate();
-		world.setStepCallBack(this);
-		world.doResume();
-		
 		// 设置 megaman 的初始位置, 到 room 所对应的 spawn 点
 		// 人物设置必须晚于世界创建
-		runtime.curRegion = region;
-		runtime.room = region.spawnRoom;
-		world.setCurrentRoom(runtime.curRegion.rooms[runtime.room]);
+		runtime.setRegion("mm1cut");
+		region = runtime.curRegion;
+		
+		runtime.createWorld();
 		
 		megaman = (MegamanInLevel) app.runtime.characterBuilder.create("megaman",
 				CharacterParameter.newInstance().setBoxAnchor(region.spawnx + 0.5f, region.spawny)
@@ -192,16 +187,6 @@ public class LevelScreen implements Screen, IPhysicsStep {
 	int lastFrameCount;
 
 	@Override
-	public void step(LevelWorld world, int index, boolean hasNext) {
-		app.runtime.onWorldSteped(index, hasNext);
-	}
-	
-	@Override
-	public void onStepFinished(LevelWorld world, boolean isPause) {
-		app.runtime.onStepFinished(isPause);
-	}
-
-	@Override
 	public void resize(int width, int height) {
 		// TODO Auto-generated method stub
 		
@@ -209,20 +194,17 @@ public class LevelScreen implements Screen, IPhysicsStep {
 
 	@Override
 	public void pause() {
-		// TODO Auto-generated method stub
-		
+		app.runtime.pauseWorld();
 	}
 
 	@Override
 	public void resume() {
-		// TODO Auto-generated method stub
-		
+		app.runtime.resumeWorld();
 	}
 
 	@Override
 	public void hide() {
-		// TODO Auto-generated method stub
-		
+		app.runtime.pauseWorld();
 	}
 	
 	public void willDispose() {

@@ -1,29 +1,40 @@
 {
 	"name":"mm2bird_spawnfield",
-	"class":"zdream.rockchronicle.sprite.character.megaman.MegamanInLevel",
+	"class":"zdream.rockchronicle.sprite.field.base.MM2BirdSpawnField",
 	"type":"field",
 	"modules":
 	{
-		"jump":"base",
+		"motion":"single-box",
+		"sprite":"shape",
 		"camp":"base",
-		"state":"base",
-		"health":"reference",
-		"buff":"gradual_recovery"
+		"collision":"field",
+		"state":"field",
+		"field":"spawn"
 	},
 	"box":
 	{
 		"inTerrain":false
 	},
-	"state":
+	"sprite":
+	{
+		"stroke":"#2222FFFF"
+	},
+	"collision":
+	{
+		"targetTypes":
+		[
+			"leader"
+		],
+		"targetCamps":
+		[
+			1
+		]
+	},
+	"field":
 	{
 		"param":
 		{
-			"stiffness":0.45,
-			"immune":1.5
+			"spawn":1
 		}
-	},
-	"health":
-	{
-		"ref":"megaman"
 	}
 }

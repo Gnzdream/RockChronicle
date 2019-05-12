@@ -146,7 +146,7 @@ public class LevelWorld implements ITerrainStatic {
 	 * @param box
 	 *   指定的碰撞盒子
 	 * @param test
-	 *   对碰撞的盒子进行判断. 返回 false 则继续判断后面的盒子, 否则停止
+	 *   对碰撞的盒子进行判断. 返回 true 则继续判断后面的盒子, 否则停止
 	 */
 	public void overlaps(Box box, Predicate<Box> test) {
 		Rectangle pos = box.getPosition();
@@ -166,7 +166,7 @@ public class LevelWorld implements ITerrainStatic {
 				if (!b) {
 					continue;
 				}
-				if (test.test(other)) {
+				if (!test.test(other)) {
 					return;
 				}
 			}
