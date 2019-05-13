@@ -148,6 +148,23 @@ public class GameRuntime {
 		return null;
 	}
 	
+	/**
+	 * 用 id 来从等待添加列表中寻找角色.
+	 * @param id
+	 * @return
+	 *   可能为 null
+	 */
+	public CharacterEntry findEntryWaitingForAdd(int id) {
+		for (int i = 0; i < entriesWaitingForAdd.size; i++) {
+			CharacterEntry entry = entriesWaitingForAdd.get(i);
+			if (entry.id == id) {
+				return entry;
+			}
+		}
+		
+		return null;
+	}
+	
 	public void addEntry(CharacterEntry entry) {
 		entriesWaitingForAdd.add(entry);
 	}

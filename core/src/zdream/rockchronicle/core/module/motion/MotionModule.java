@@ -1,4 +1,4 @@
-package zdream.rockchronicle.core.module;
+package zdream.rockchronicle.core.module.motion;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
@@ -6,7 +6,10 @@ import com.badlogic.gdx.utils.JsonValue.ValueType;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.parameter.JsonCollector;
-import zdream.rockchronicle.platform.world.LevelWorld;
+import zdream.rockchronicle.core.module.AbstractModule;
+import zdream.rockchronicle.core.module.box.BoxModule;
+import zdream.rockchronicle.core.module.box.IBoxHolder;
+import zdream.rockchronicle.platform.body.Box;
 
 /**
  * 动作与碰撞检测模块. 暂时只处理洛克人的
@@ -34,11 +37,10 @@ public abstract class MotionModule extends AbstractModule {
 	 */
 	public boolean orientation = true;
 	
-	protected LevelWorld world;
-	
-
 	public MotionModule(CharacterEntry ch) {
 		super(ch);
+		
+		motionc = new JsonCollector(this::getMotionJson, "motion");
 	}
 
 	@Override
@@ -51,7 +53,7 @@ public abstract class MotionModule extends AbstractModule {
 		super.init(file, value);
 
 		initMotion(value.get("motion"));
-		addCollector(motionc = new JsonCollector(this::getMotionJson, "motion"));
+		addCollector(motionc);
 	}
 
 	private void initMotion(JsonValue object) {
@@ -62,34 +64,9 @@ public abstract class MotionModule extends AbstractModule {
 		orientation = object.getBoolean("orientation", true);
 	}
 
-	public final void doCreateBody(LevelWorld world) {
-		this.world = world;
-		this.createBody();
-	}
-	
-	public final void doDestroyBody() {
-		this.destroyBody();
-	}
-	
-	/**
-	 * 每一帧来刷新一下状态
-	 * @param world
-	 *   关卡世界实体
-	 * @param index
-	 *   本帧的第几次调用. 第一次为 0
-	 * @param hasNext
-	 *   本帧是否还会再调用
-	 */
-	public void resetPosition(LevelWorld world, int index, boolean hasNext) {
-		// do nothing
-	}
-
-	protected abstract void createBody();
-	protected abstract void destroyBody();
-	
 	@Override
 	public int priority() {
-		return 0x100;
+		return 256;
 	}
 
 	/* **********
@@ -103,5 +80,17 @@ public abstract class MotionModule extends AbstractModule {
 		JsonValue v = new JsonValue(ValueType.object);
 		v.addChild("orientation", new JsonValue(orientation));
 		return v;
+	}
+	
+	/**
+	 * 如果本角色只有一个碰撞盒子, 则调用该方法来获取其碰撞盒子
+	 * @return
+	 */
+	protected Box getSingleBox() {
+		BoxModule mm = parent.getBoxModule();
+		if (mm instanceof IBoxHolder) {
+			return ((IBoxHolder) mm).getBox();
+		}
+		return null;
 	}
 }

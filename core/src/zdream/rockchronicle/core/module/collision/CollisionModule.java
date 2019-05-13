@@ -8,8 +8,8 @@ import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.core.character.parameter.JsonCollector;
 import zdream.rockchronicle.core.module.AbstractModule;
-import zdream.rockchronicle.core.module.MotionModule;
-import zdream.rockchronicle.core.module.motion.IBoxHolder;
+import zdream.rockchronicle.core.module.box.BoxModule;
+import zdream.rockchronicle.core.module.box.IBoxHolder;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
@@ -114,7 +114,7 @@ public abstract class CollisionModule extends AbstractModule {
 	 * @return
 	 */
 	protected Box getSingleBox() {
-		MotionModule mm = parent.getMotion();
+		BoxModule mm = parent.getBoxModule();
 		if (mm instanceof IBoxHolder) {
 			return ((IBoxHolder) mm).getBox();
 		}

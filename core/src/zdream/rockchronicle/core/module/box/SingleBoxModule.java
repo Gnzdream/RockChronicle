@@ -1,29 +1,29 @@
-package zdream.rockchronicle.core.module.motion;
+package zdream.rockchronicle.core.module.box;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
-import zdream.rockchronicle.core.character.parameter.JsonCollector;
-import zdream.rockchronicle.core.module.MotionModule;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
 /**
- * 单一碰撞方块的行动模块
+ * <p>单一碰撞方块的盒子模块
+ * <p>原类名为 SingleBoxMotionModule, 现在行动模块与盒子模块拆成两个模块
+ * </p>
  * 
  * @author Zdream
  * @since v0.0.1
- * @date 2019-05-06 (create)
+ * @date
+ *   2019-05-06 (created)
+ *   2019-05-13 (last modified)
  */
-public class SingleBoxMotionModule extends MotionModule implements IBoxHolder {
+public class SingleBoxModule extends BoxModule implements IBoxHolder {
 	
 	public final Box box;
-	protected JsonCollector boxc;
 
-	public SingleBoxMotionModule(CharacterEntry ch) {
+	public SingleBoxModule(CharacterEntry ch) {
 		super(ch);
 		box = new Box(ch.id);
 	}
@@ -33,7 +33,6 @@ public class SingleBoxMotionModule extends MotionModule implements IBoxHolder {
 		super.init(file, value);
 		
 		initBox(value.get("box"));
-		addCollector(boxc = new JsonCollector(this::getBoxJson, "box"));
 	}
 
 	public void initBox(JsonValue object) {
@@ -41,10 +40,10 @@ public class SingleBoxMotionModule extends MotionModule implements IBoxHolder {
 		
 		JsonValue orect = object.get("rect");
 		// TODO 暂时不考虑 def
-		box.box.width = orect.getFloat("width");
-		box.box.height = orect.getFloat("height");
-		box.box.x = orect.getFloat("x");
-		box.box.y = orect.getFloat("y");
+		box.box.width = orect.getFloat("width", 0);
+		box.box.height = orect.getFloat("height", 0);
+		box.box.x = orect.getFloat("x", 0);
+		box.box.y = orect.getFloat("y", 0);
 		
 		// 初始锚点位置
 		JsonValue oanchor = object.get("anchor");
@@ -65,25 +64,11 @@ public class SingleBoxMotionModule extends MotionModule implements IBoxHolder {
 	}
 	
 	@Override
-	public void determine(LevelWorld world, int index, boolean hasNext) {
-		super.determine(world, index, hasNext);
-		
-		if (box.inTerrain) {
-			// 碰边检测
-			world.bottomStop(box);
-			world.topStop(box);
-			world.leftStop(box);
-			world.rightStop(box);
-			super.motionc.clear();
-			
-			// 位置重合修正
-			boolean glitch = world.correctOverlapBox(box);
-			if (!glitch) { // 已经卡在墙中了
-				Gdx.app.error("SingleBoxMotionModule", String.format("%s 被卡在墙里了, 而且无法修正", parent));
-			}
-		}
+	public void resetPosition(LevelWorld world, int index, boolean hasNext) {
+		world.execVerticalMotion(box);
+		world.execHorizontalMotion(box);
 	}
-
+	
 	/* **********
 	 * 资源事件 *
 	 ********** */
@@ -116,16 +101,6 @@ public class SingleBoxMotionModule extends MotionModule implements IBoxHolder {
 		ovelocity.addChild("x", new JsonValue(box.velocity.x));
 		ovelocity.addChild("y", new JsonValue(box.velocity.y));
 		
-		return v;
-	}
-	
-	@Override
-	public JsonValue getMotionJson() {
-		JsonValue v = super.getMotionJson();
-		v.addChild("bottomStop", new JsonValue(box.onTheGround()));
-		v.addChild("topStop", new JsonValue(box.topStop));
-		v.addChild("leftStop", new JsonValue(box.leftStop));
-		v.addChild("rightStop", new JsonValue(box.rightStop));
 		return v;
 	}
 	

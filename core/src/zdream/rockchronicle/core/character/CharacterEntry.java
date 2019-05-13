@@ -13,7 +13,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.core.module.AbstractModule;
-import zdream.rockchronicle.core.module.MotionModule;
+import zdream.rockchronicle.core.module.box.BoxModule;
 import zdream.rockchronicle.core.module.sprite.SpriteModule;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
@@ -108,7 +108,7 @@ public abstract class CharacterEntry {
 	 * @return
 	 */
 	public void createBody(LevelWorld world) {
-		getMotion().doCreateBody(world);
+		getBoxModule().doCreateBody(world);
 	}
 	
 	/**
@@ -117,7 +117,7 @@ public abstract class CharacterEntry {
 	 * @return
 	 */
 	public void destroyBody() {
-		getMotion().doDestroyBody();
+		getBoxModule().doDestroyBody();
 	}
 	
 	/**
@@ -201,13 +201,13 @@ public abstract class CharacterEntry {
 	}
 	
 	/**
-	 * <p>获得行动模块.
-	 * <p>规定任何一个角色都必须含有行动模块
+	 * <p>获得盒子模块.
+	 * <p>规定任何一个角色都必须含有盒子模块
 	 * </p>
 	 * @return
 	 */
-	public MotionModule getMotion() {
-		return ((MotionModule) getModule(MotionModule.NAME));
+	public BoxModule getBoxModule() {
+		return ((BoxModule) getModule(BoxModule.NAME));
 	}
 
 	/* **********
@@ -249,7 +249,7 @@ public abstract class CharacterEntry {
 	}
 	
 	/**
-	 * 行动. 只调用行动模块
+	 * 行动. 只调用盒子模块
 	 * @param world
 	 *   世界实例
 	 * @param index
@@ -258,7 +258,7 @@ public abstract class CharacterEntry {
 	 *   本帧是否还会再调用
 	 */
 	public void step(LevelWorld world, int index, boolean hasNext) {
-		getMotion().resetPosition(world, index, hasNext);
+		getBoxModule().resetPosition(world, index, hasNext);
 	}
 
 	public void onStepFinished(LevelWorld world, boolean isPause) {

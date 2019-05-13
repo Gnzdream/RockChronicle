@@ -16,14 +16,14 @@ public class MegamanSpriteModule extends SpriteModule {
 	 * 获取锚点 x 坐标.
 	 */
 	public float getX() {
-		return parent.motion.box.anchor.x;
+		return getSingleBox().anchor.x;
 	}
 	
 	/**
 	 * 获取锚点 y 坐标.
 	 */
 	public float getY() {
-		return parent.motion.box.anchor.y;
+		return getSingleBox().anchor.y;
 	}
 	
 	String motion = "stop";

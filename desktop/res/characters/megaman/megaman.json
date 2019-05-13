@@ -4,9 +4,10 @@
 	"type":"leader",
 	"modules":
 	{
-		"jump":"base",
+		"box":"single",
 		"camp":"base",
 		"state":"base",
+		"jump":"base",
 		"health":"reference",
 		"buff":"gradual-recovery"
 	},

@@ -4,7 +4,7 @@
 	"type":"field",
 	"modules":
 	{
-		"motion":"single-box",
+		"box":"single",
 		"sprite":"shape",
 		"camp":"base",
 		"collision":"field",

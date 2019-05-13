@@ -1,4 +1,4 @@
-package zdream.rockchronicle.core.module.motion;
+package zdream.rockchronicle.core.module.box;
 
 import zdream.rockchronicle.platform.body.Box;
 

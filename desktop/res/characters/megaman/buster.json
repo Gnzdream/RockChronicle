@@ -4,6 +4,7 @@
 	"type":"bullet",
 	"modules":
 	{
+		"box":"single",
 		"camp":"base",
 		"collision":"bullet",
 		"sprite":"shape"

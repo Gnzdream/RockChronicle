@@ -7,7 +7,7 @@ import com.badlogic.gdx.utils.JsonValue.ValueType;
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.core.character.parameter.JsonCollector;
-import zdream.rockchronicle.core.module.motion.BoxSetter;
+import zdream.rockchronicle.core.module.box.BoxSetter;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
 /**

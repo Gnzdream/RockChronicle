@@ -1,7 +1,7 @@
 
-#	行动模块的设置参数说明
+#	盒子模块的设置参数说明
 
-说明在 MotionModule 领域中，所有开放的 setJson 调用。
+说明在 BoxModule 领域中，所有开放的 setJson 调用。
 
 ### first = box
 

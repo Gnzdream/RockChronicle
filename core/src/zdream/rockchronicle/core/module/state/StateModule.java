@@ -26,6 +26,8 @@ public abstract class StateModule extends AbstractModule {
 
 	public StateModule(CharacterEntry ch) {
 		super(ch);
+		
+		statec = new JsonCollector(this::createStateJson, "state");
 	}
 
 	@Override
@@ -42,7 +44,7 @@ public abstract class StateModule extends AbstractModule {
 	public void init(FileHandle file, JsonValue value) {
 		super.init(file, value);
 		
-		addCollector(statec = new JsonCollector(this::createStateJson, "state"));
+		addCollector(statec);
 	}
 	
 	public JsonValue createStateJson() {

@@ -4,7 +4,7 @@
 	"type":"foe",
 	"modules":
 	{
-		"motion":"single-box",
+		"box":"single",
 		"camp":"base",
 		"collision":"bullet",
 		"sprite":"shape",

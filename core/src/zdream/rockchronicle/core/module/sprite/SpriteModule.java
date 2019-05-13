@@ -13,8 +13,9 @@ import com.badlogic.gdx.utils.JsonValue;
 import zdream.rockchronicle.core.Config;
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.module.AbstractModule;
-import zdream.rockchronicle.core.module.MotionModule;
-import zdream.rockchronicle.core.module.motion.IBoxHolder;
+import zdream.rockchronicle.core.module.box.BoxModule;
+import zdream.rockchronicle.core.module.box.IBoxHolder;
+import zdream.rockchronicle.core.module.motion.MotionModule;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.textures.TextureSequence;
 import zdream.rockchronicle.textures.TextureSheet;
@@ -175,7 +176,7 @@ public abstract class SpriteModule extends AbstractModule {
 	 * @return
 	 */
 	protected Box getSingleBox() {
-		MotionModule mm = parent.getMotion();
+		BoxModule mm = parent.getBoxModule();
 		if (mm instanceof IBoxHolder) {
 			return ((IBoxHolder) mm).getBox();
 		}

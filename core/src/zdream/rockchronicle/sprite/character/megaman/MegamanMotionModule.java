@@ -2,17 +2,21 @@ package zdream.rockchronicle.sprite.character.megaman;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
 
 import zdream.rockchronicle.RockChronicle;
+import zdream.rockchronicle.core.GameRuntime;
+import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.core.character.parameter.CharacterParameter;
-import zdream.rockchronicle.core.module.motion.SingleBoxMotionModule;
+import zdream.rockchronicle.core.module.motion.TerrainMotionModule;
+import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
 import zdream.rockchronicle.sprite.bullet.base.MMBuster;
 
-public class MegamanMotionModule extends SingleBoxMotionModule {
+public class MegamanMotionModule extends TerrainMotionModule {
 	
 	MegamanInLevel parent;
 	
@@ -24,10 +28,6 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 	 * 攻击暂存. attackBegin 为暂存, inAttack 为状态
 	 */
 	boolean attackBegin, inAttack;
-	/**
-	 * 子弹的剩余个数
-	 */
-	int bulletCount = 3;
 	
 	/*
 	 * 移动静态参数: 格子 / 秒
@@ -52,6 +52,11 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 	 * 击退时的速度, 单位: 格子 / 步
 	 */
 	public float parryVel;
+	
+	/*
+	 * 武器参数 (暂存)
+	 */
+	public IntArray weaponEntryIds = new IntArray(8);
 	
 	public MegamanMotionModule(MegamanInLevel parent) {
 		super(parent);
@@ -86,31 +91,24 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 		JsonValue v = new JsonValue(ValueType.object);
 		v.addChild("motion", new JsonValue(motion));
 		
+		// 修改速度
+		updateVelocity(world, index, hasNext);
+		
 		parent.setJson("state", v);
 	}
 	
-	@Override
-	public void resetPosition(LevelWorld world, int index, boolean hasNext) {
+	public void updateVelocity(LevelWorld world, int index, boolean hasNext) {
+		Box box = getSingleBox();
 		Vector2 vel = box.velocity; // 速度
 		float vx = vel.x, vy = vel.y;
-		
-		// 1. 判断重合以及补救方法
-		
-		// 2. 判断角色状态
 		
 		// 3. 执行上下移动 TODO
 		boolean bottomStop = box.onTheGround();
 		
 		// 设置的最终速度 Y
 		box.setVelocityY(vy);
-		world.execVerticalMotion(box);
 		
 		// 4. 执行左右移动
-//		if (box.leftStop) {
-//			System.out.println("l");
-//		} else if (box.rightStop) {
-//			System.out.println("r");
-//		}
 		boolean stiffness = parent.getBoolean(new String[] {"state", "stiffness"}, false);
 		if (stiffness) {
 			// 在击退 / 硬直状态下
@@ -153,11 +151,8 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 		// 设置的最终速度 X
 		box.setVelocityX(vx);
 		
-		// 最后确定并更新位置
-		world.execHorizontalMotion(box);
-		
 		// 其它 : 是否攻击
-		if (bulletCount > 0 && attackBegin && !stiffness) {
+		if (weaponEntryIds.size < 3 && attackBegin && !stiffness) {
 			float x = (orientation) ? box.anchor.x + 1 : box.anchor.x - 1;
 			MMBuster buster = (MMBuster) RockChronicle.INSTANCE.runtime.characterBuilder.create("megaman_buster",
 					CharacterParameter.newInstance()
@@ -165,13 +160,32 @@ public class MegamanMotionModule extends SingleBoxMotionModule {
 						.setMotionOrientation(orientation)
 						.setCamp(parent.getInt(new String[] {"camp", "camp"}, 0))
 						.get());
-			buster.setDisappearCallback((b) -> {this.bulletCount++;});
+			weaponEntryIds.add(buster.id);
 			RockChronicle.INSTANCE.runtime.addEntry(buster);
-			-- bulletCount;
 		}
-		
+	}
+	
+	@Override
+	public void stepPassed() {
 		// 重置参数
 		this.attackBegin = false;
+		
+		// 子弹数重置
+		if (weaponEntryIds.size > 0) {
+			GameRuntime runtime = RockChronicle.INSTANCE.runtime;
+			for (int i = 0; i < weaponEntryIds.size; i++) { // weaponEntryIds.size 是变动的
+				int id = weaponEntryIds.get(i);
+				// 检查子弹是否存在. 后面还需要补充它是否弹开等描述子弹是否还有效的属性
+				
+				CharacterEntry entry = runtime.findEntry(id);
+				if (entry == null) entry = runtime.findEntryWaitingForAdd(id);
+				
+				if (entry == null) {
+					weaponEntryIds.removeIndex(i);
+					i--;
+				}
+			}
+		}
 	}
 	
 	@Override

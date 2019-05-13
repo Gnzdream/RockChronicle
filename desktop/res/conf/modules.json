@@ -2,8 +2,15 @@
 	"motion":
 	[
 		{
-			"name":"single-box",
-			"class":"zdream.rockchronicle.core.module.motion.SingleBoxMotionModule"
+			"name":"terrain",
+			"class":"zdream.rockchronicle.core.module.motion.TerrainMotionModule"
+		}
+	],
+	"box":
+	[
+		{
+			"name":"single",
+			"class":"zdream.rockchronicle.core.module.box.SingleBoxModule"
 		}
 	],
 	"jump":
