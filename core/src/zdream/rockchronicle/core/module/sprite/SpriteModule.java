@@ -1,13 +1,11 @@
 package zdream.rockchronicle.core.module.sprite;
 
-import java.io.File;
-import java.util.ArrayList;
-
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.core.Config;
@@ -26,7 +24,7 @@ public abstract class SpriteModule extends AbstractModule {
 
 	public SpriteModule(CharacterEntry ch) {
 		super(ch);
-		texturePaths = new ArrayList<>();
+		texturePaths = new Array<>();
 		
 	}
 	
@@ -46,8 +44,8 @@ public abstract class SpriteModule extends AbstractModule {
 	Sprite sprite;
 	TextureSheet textures;
 	
-	File baseFile;
-	ArrayList<String> texturePaths;
+	FileHandle baseFile;
+	Array<String> texturePaths;
 	
 	/*
 	 * 下面是计时相关的参数
@@ -56,7 +54,7 @@ public abstract class SpriteModule extends AbstractModule {
 	protected int steps;
 	
 	private void initTexturePaths(FileHandle file, JsonValue array) {
-		baseFile = file.file().getParentFile();
+		baseFile = file.parent();
 		
 		int len = array.size;
 		for (int i = 0; i < len; i++) {
@@ -70,7 +68,7 @@ public abstract class SpriteModule extends AbstractModule {
 	
 	public void loadTexture() {
 		// TODO 这里假设 texturePaths 只有一个元素
-		FileHandle texFile = new FileHandle(baseFile.getAbsolutePath() + File.separator + texturePaths.get(0));
+		FileHandle texFile = baseFile.child(texturePaths.get(0));
 		textures = TextureSheet.createSheet(texFile);
 		
 		// 没有设定位置, 所以默认是 0, 0

@@ -35,6 +35,17 @@ Character Initialization JSON Data Format Description
 	<br/>string, 必需
 	<br/>全类名
 	
+*	type
+	<br/>string
+	<br/>角色类型. 包括但不限于:
+	*	重要角色 "leader": 含玩家控制角色、重要官邸 BOSS 以及有分量的 NPC
+	*	小怪 "foe": 含敌方小怪以及我方、敌方、中立方等召唤的喽啰
+	*	子弹 "bullet": 含小怪以及重要角色释放的具有攻击或触发效果的物体角色
+	*	陷阱 "trap": 除了静态地形以外的机关等
+	*	道具 "mass": 含掉落物、购买商品以及其它可拾取物品，怪物或角色死后的收尾画面及图像
+	*	场 "field": 虚拟区域，当目标角色接触后则激活的虚拟角色
+	*	贴图 "texture": 也包括剑气等传统意义的近战武器释放的物体，以及其它没有实际意义的物体
+	
 *	modules
 	<br/>object{key : string}
 	<br/>模块声明

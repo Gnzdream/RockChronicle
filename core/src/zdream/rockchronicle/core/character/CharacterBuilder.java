@@ -199,6 +199,7 @@ public class CharacterBuilder {
 			
 			entry.init(Gdx.files.local(def.path), data);
 			Objects.requireNonNull(entry.getBoxModule(), "角色数据的行动模块为 null");
+			Objects.requireNonNull(entry.type, "角色数据的类型为 null");
 			
 			return entry;
 		} catch (Exception e) {

@@ -1,5 +1,7 @@
 package zdream.rockchronicle.core;
 
+import java.util.Arrays;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -44,6 +46,7 @@ public class GameRuntime {
 	public final CastList cast = new CastList();
 	public final RegionBuilder regionBuilder = new RegionBuilder();
 	public final CharacterBuilder characterBuilder = new CharacterBuilder();
+	public final CharacterPaintComparator pcomp = new CharacterPaintComparator(this);
 
 	public void init() {
 		characterBuilder.init();
@@ -224,9 +227,12 @@ public class GameRuntime {
 	}
 
 	public void drawEntries(SpriteBatch batch, OrthographicCamera camera) {
-		for (int i = 0; i < entries.size; i++) {
+		CharacterEntry[] es = entries.toArray(CharacterEntry.class);
+		Arrays.sort(es, this.pcomp);
+		
+		for (int i = 0; i < es.length; i++) {
 			try {
-				entries.get(i).draw(batch, camera);
+				es[i].draw(batch, camera);
 			} catch (RuntimeException e) {
 				e.printStackTrace();
 			}

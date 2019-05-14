@@ -95,6 +95,10 @@ public class LevelScreen implements Screen {
 			runtime.addEntry(app.runtime.characterBuilder.create("testfoe",
 					CharacterParameter.newInstance().setBoxAnchor(12, 8)
 					.get()));
+			
+			runtime.addEntry(app.runtime.characterBuilder.create("mm2bird",
+					CharacterParameter.newInstance().setBoxAnchor(8.5f, 4)
+					.get()));
 		}
 		
 //		Room curRoom = region.rooms[runtime.room];
