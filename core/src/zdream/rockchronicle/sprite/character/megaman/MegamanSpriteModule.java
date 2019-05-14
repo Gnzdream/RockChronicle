@@ -26,7 +26,7 @@ public class MegamanSpriteModule extends SpriteModule {
 		return getSingleBox().anchor.y;
 	}
 	
-	String motion = "stop";
+	String motion = "normal";
 	
 	@Override
 	public void determine(LevelWorld world, int index, boolean hasNext) {
@@ -53,7 +53,7 @@ public class MegamanSpriteModule extends SpriteModule {
 		if (!curMotion.equals(motion)) {
 			switch (curMotion) {
 			case "stop":
-				state = "stop";
+				state = "normal";
 				break;
 			case "left": case "right":
 				state = "walk";

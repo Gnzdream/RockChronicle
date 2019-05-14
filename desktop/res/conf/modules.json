@@ -41,6 +41,10 @@
 	"sprite":
 	[
 		{
+			"name":"base",
+			"class":"zdream.rockchronicle.core.module.sprite.BaseSpriteModule"
+		},
+		{
 			"name":"shape",
 			"class":"zdream.rockchronicle.core.module.sprite.ShapeSpriteModule"
 		}

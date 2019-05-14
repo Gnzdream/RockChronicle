@@ -3,7 +3,7 @@
 	"select":
 	[
 		{
-			"state":"stop",
+			"state":"normal",
 			"sequence":
 			[
 				"normal"

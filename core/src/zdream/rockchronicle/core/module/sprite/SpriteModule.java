@@ -15,7 +15,6 @@ import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.module.AbstractModule;
 import zdream.rockchronicle.core.module.box.BoxModule;
 import zdream.rockchronicle.core.module.box.IBoxHolder;
-import zdream.rockchronicle.core.module.motion.MotionModule;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.textures.TextureSequence;
 import zdream.rockchronicle.textures.TextureSheet;
@@ -33,8 +32,6 @@ public abstract class SpriteModule extends AbstractModule {
 	
 	@Override
 	public void init(FileHandle file, JsonValue value) {
-		motion = ((MotionModule) parent.getModule(MotionModule.NAME));
-		
 		if (value.has("textures")) {
 			// 场一般没有 textures
 			initTexturePaths(file, value.get("textures"));
@@ -48,7 +45,6 @@ public abstract class SpriteModule extends AbstractModule {
 	
 	Sprite sprite;
 	TextureSheet textures;
-	MotionModule motion;
 	
 	File baseFile;
 	ArrayList<String> texturePaths;
@@ -56,7 +52,7 @@ public abstract class SpriteModule extends AbstractModule {
 	/*
 	 * 下面是计时相关的参数
 	 */
-	protected String state = "stop";
+	protected String state = "normal";
 	protected int steps;
 	
 	private void initTexturePaths(FileHandle file, JsonValue array) {
@@ -116,7 +112,8 @@ public abstract class SpriteModule extends AbstractModule {
 		float fw = (float) entry.width / Config.INSTANCE.blockWidth,
 				fh = (float) entry.height / Config.INSTANCE.blockHeight;
 		
-		if (motion.orientation) {
+		boolean orientation = parent.getBoolean(new String[] {"motion", "orientation"}, true);
+		if (orientation) {
 			sprite.setFlip(false, false);
 			x = getX() + entry.offsetx / (float) Config.INSTANCE.blockWidth;
 		} else {
