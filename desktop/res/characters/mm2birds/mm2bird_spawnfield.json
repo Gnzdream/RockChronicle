@@ -30,11 +30,28 @@
 			1
 		]
 	},
-	"field":
+	"fieldParam":
 	{
-		"param":
+		"spawnDuration":5,
+		"firstDuration":1,
+		"spawnFoes":
 		{
-			"spawn":1
+			"name":"mm2bird",
+			"param":
+			{
+				"box":
+				{
+					"anchor":
+					{
+						"x":26,
+						"y":12.5
+					},
+					"velocity":
+					{
+						"x":-8
+					}
+				}
+			}
 		}
 	}
 }

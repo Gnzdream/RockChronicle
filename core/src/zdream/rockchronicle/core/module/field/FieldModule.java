@@ -34,7 +34,7 @@ public abstract class FieldModule extends AbstractModule {
 	public void init(FileHandle file, JsonValue value) {
 		super.init(file, value);
 		
-		JsonValue ofield = value.get("field");
+		JsonValue ofield = value.get("fieldParam");
 		if (ofield != null) {
 			JsonValue v = ofield.get("needTrigger");
 			if (v != null) needTrigger = v.asBoolean();

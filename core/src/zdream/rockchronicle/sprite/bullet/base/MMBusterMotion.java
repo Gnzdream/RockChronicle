@@ -4,11 +4,11 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.JsonValue;
 
-import zdream.rockchronicle.core.module.motion.TerrainMotionModule;
+import zdream.rockchronicle.core.module.motion.MotionModule;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
-public class MMBusterMotion extends TerrainMotionModule {
+public class MMBusterMotion extends MotionModule {
 	
 	public final MMBuster parent;
 	

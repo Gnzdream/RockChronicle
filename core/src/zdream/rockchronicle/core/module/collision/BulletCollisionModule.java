@@ -91,12 +91,12 @@ public class BulletCollisionModule extends CollisionModule {
 			// 结果比对部分
 			String result = event.value.getString("result", "ignored");
 			if ("ignored".equals(result)) {
-				return false;
+				return true;
 			}
 		} catch (RuntimeException e) {
 			e.printStackTrace();
 			System.err.println(String.format("CollisionModule: 角色#%d, 对方#%d", parent.id, targetId));
-			return false;
+			return true;
 		}
 		
 		if ("once".equals(this.executeType)) {

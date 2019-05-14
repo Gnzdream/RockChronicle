@@ -8,6 +8,8 @@ import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
+import static zdream.rockchronicle.platform.world.LevelWorld.TIME_STEP;
+
 /**
  * <p>单一碰撞方块的盒子模块
  * <p>原类名为 SingleBoxMotionModule, 现在行动模块与盒子模块拆成两个模块
@@ -50,6 +52,13 @@ public class SingleBoxModule extends BoxModule implements IBoxHolder {
 		if (oanchor != null) {
 			box.anchor.x = oanchor.getFloat("x", 0f);
 			box.anchor.y = oanchor.getFloat("y", 0f);
+		}
+		
+		// 初始速度
+		JsonValue ovel = object.get("velocity");
+		if (ovel != null) {
+			box.velocity.x = ovel.getFloat("x", 0f) * TIME_STEP;
+			box.velocity.y = ovel.getFloat("y", 0f) * TIME_STEP;
 		}
 	}
 

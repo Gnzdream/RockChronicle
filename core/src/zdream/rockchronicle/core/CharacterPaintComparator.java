@@ -18,8 +18,8 @@ import zdream.rockchronicle.core.character.CharacterEntry;
  * @author Zdream
  * @since v0.0.1
  * @date
- *   2019-05-06 (created)
- *   2019-05-13 (last modified)
+ *   2019-05-14 (created)
+ *   2019-05-14 (last modified)
  */
 public class CharacterPaintComparator implements Comparator<CharacterEntry> {
 	
