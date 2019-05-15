@@ -158,6 +158,7 @@ public class MegamanMotionModule extends TerrainMotionModule {
 					CharacterParameter.newInstance()
 						.setBoxAnchor(x, box.anchor.y + 0.75f)
 						.setMotionOrientation(orientation)
+						.setMotionFlipX(!orientation)
 						.setCamp(parent.getInt(new String[] {"camp", "camp"}, 0))
 						.get());
 			weaponEntryIds.add(buster.id);

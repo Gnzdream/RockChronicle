@@ -4,6 +4,10 @@
 		{
 			"name":"terrain",
 			"class":"zdream.rockchronicle.core.module.motion.TerrainMotionModule"
+		},
+		{
+			"name":"linear",
+			"class":"zdream.rockchronicle.core.module.motion.LinearMotionModule"
 		}
 	],
 	"box":
@@ -83,6 +87,17 @@
 		{
 			"name":"spawn",
 			"class":"zdream.rockchronicle.core.module.field.SpawnFieldModule"
+		}
+	],
+	"destroy":
+	[
+		{
+			"name":"base",
+			"class":"zdream.rockchronicle.core.module.destroy.DestroyModule"
+		},
+		{
+			"name":"outside",
+			"class":"zdream.rockchronicle.core.module.destroy.OutsideDestroyModule"
 		}
 	]
 }

@@ -48,6 +48,17 @@ public class CharacterParameter implements IValueCreator<JsonValue> {
 		return this;
 	}
 	
+	/**
+	 * LinearMotionModule: motion.flipX
+	 */
+	public CharacterParameter setMotionFlipX(boolean flipX) {
+		JsonValue current = value;
+		current = createIfNotExist(current, "motion");
+		
+		current.addChild("flipX", new JsonValue(flipX));
+		return this;
+	}
+	
 	public static CharacterParameter newInstance() {
 		CharacterParameter p = new CharacterParameter();
 		p.value = new JsonValue(ValueType.object);

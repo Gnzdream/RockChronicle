@@ -7,7 +7,9 @@
 		"box":"single",
 		"camp":"base",
 		"collision":"bullet",
-		"sprite":"shape"
+		"sprite":"shape",
+		"motion":"linear",
+		"destroy":"outside"
 	},
 	"box":
 	{
@@ -19,6 +21,7 @@
 			"x":-0.166667,
 			"y":-0.125
 		}
+		
 	},
 	"collision":
 	{
@@ -28,5 +31,17 @@
 	"camp":
 	{
 		"camp":1
+	},
+	"destroyParam":
+	{
+		"life":1,
+		"outsideDuration":0.1
+	},
+	"motion":
+	{
+		"velocity":
+		{
+			"x":24
+		}
 	}
 }

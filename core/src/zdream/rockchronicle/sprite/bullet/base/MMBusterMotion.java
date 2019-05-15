@@ -8,6 +8,7 @@ import zdream.rockchronicle.core.module.motion.MotionModule;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
+@Deprecated
 public class MMBusterMotion extends MotionModule {
 	
 	public final MMBuster parent;

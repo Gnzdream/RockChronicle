@@ -7,7 +7,9 @@
 		"box":"single",
 		"camp":"base",
 		"sprite":"base",
-		"health":"base"
+		"health":"base",
+		"motion":"linear",
+		"destroy":"outside"
 	},
 	"box":
 	{
@@ -36,4 +38,16 @@
 	[
 		"sprites/mm2birds_sheet.json"
 	],
+	"destroyParam":
+	{
+		"outsideTrialPeriod":1,
+		"outsideDuration":0.1
+	},
+	"motion":
+	{
+		"velocity":
+		{
+			"x":-8
+		}
+	}
 }

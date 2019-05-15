@@ -124,6 +124,10 @@ public abstract class CharacterEntry {
 	 * 自行销毁, 等待 GameRuntime 回收
 	 */
 	public void willDestroy() {
+		if (!exists) {
+			return;
+		}
+		
 		RockChronicle.INSTANCE.runtime.removeEntry(this);
 		moduleMap.forEach((n, m) -> {
 			try {

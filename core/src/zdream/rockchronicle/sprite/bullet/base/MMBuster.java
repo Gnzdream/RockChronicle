@@ -12,18 +12,14 @@ import zdream.rockchronicle.sprite.bullet.IBulletDisappearCallback;
  */
 public class MMBuster extends CharacterEntry {
 	
-	MMBusterMotion motion;
-	
 	private IBulletDisappearCallback<MMBuster> callback;
 
 	public MMBuster(int id, String name) {
 		super(id, name);
-		motion = new MMBusterMotion(this);
 	}
 	
 	@Override
 	protected void init(FileHandle file, JsonValue value) {
-		this.addModule(motion);
 		super.init(file, value);
 	}
 

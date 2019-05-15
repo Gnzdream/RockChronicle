@@ -70,7 +70,8 @@ public abstract class BoxModule extends AbstractModule {
 	protected abstract JsonValue getBoxJson();
 	
 	public void modified() {
-		boxc.clear();
+		if (boxc != null)
+			boxc.clear();
 	}
 
 }
