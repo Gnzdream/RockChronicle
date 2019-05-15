@@ -152,7 +152,8 @@ public class BaseStateModule extends StateModule {
 			if ("accepted".equals(event.value.getString("result"))) {
 				// TODO 判定伤害来自外部的逻辑, 现在缺失
 			
-				if (this.stiffnessDuration > 0) {
+				int damage = event.value.getInt("damage");
+				if (this.stiffnessDuration > 0 && damage > 0) {
 					this.stiffnessRemain = stiffnessDuration;
 				}
 				if (this.immuneDuration > 0) {

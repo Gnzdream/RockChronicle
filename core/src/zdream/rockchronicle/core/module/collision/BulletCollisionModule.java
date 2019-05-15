@@ -8,6 +8,7 @@ import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.platform.body.Box;
+import zdream.rockchronicle.platform.world.LevelWorld;
 
 public class BulletCollisionModule extends CollisionModule {
 
@@ -22,7 +23,12 @@ public class BulletCollisionModule extends CollisionModule {
 		
 		JsonValue ocollisionc = value.get("collision");
 		level = ocollisionc.getInt("level", 9);
-		damage = (int) (ocollisionc.getFloat("damage", 0) * 256);
+		float fdamage = ocollisionc.getFloat("damage", -1);
+		if (fdamage < 0) {
+			damage = -1;
+		} else {
+			damage = (int) (fdamage * 256 + 0.1f);
+		}
 	}
 	
 	/* **********
@@ -33,7 +39,7 @@ public class BulletCollisionModule extends CollisionModule {
 	 */
 	public int level;
 	/**
-	 * 碰撞真实伤害. (显示伤害 * 256) 非负数. 没有伤害的碰撞体该值为 0
+	 * 碰撞真实伤害. (显示伤害 * 256) 非负数. 没有伤害的碰撞体该值为 -1
 	 */
 	public int damage;
 	
@@ -49,6 +55,11 @@ public class BulletCollisionModule extends CollisionModule {
 	/* **********
 	 * 碰撞逻辑 *
 	 ********** */
+	
+	@Override
+	protected boolean needCheckOverlaps(Box box, LevelWorld world) {
+		return super.needCheckOverlaps(box, world) && damage >= 0;
+	}
 	
 	/**
 	 * 对碰撞的、重合的其它角色的碰撞盒子进行判断.

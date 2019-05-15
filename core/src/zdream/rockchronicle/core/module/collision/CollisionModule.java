@@ -122,12 +122,22 @@ public abstract class CollisionModule extends AbstractModule {
 	}
 	
 	protected void searchOverlapsBox(Box box, LevelWorld world) {
-		if (box == null) {
+		if (!needCheckOverlaps(box, world)) {
 			return;
 		}
 		if (isFunctioned) {
 			world.overlaps(box, this::doForOverlapsBox);
 		}
+	}
+	
+	/**
+	 * 是否进行碰撞、重合判断
+	 * @param box
+	 * @param world
+	 * @return
+	 */
+	protected boolean needCheckOverlaps(Box box, LevelWorld world) {
+		return box != null;
 	}
 	
 	/**

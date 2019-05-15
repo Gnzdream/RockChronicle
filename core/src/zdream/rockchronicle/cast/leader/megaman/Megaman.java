@@ -1,4 +1,4 @@
-package zdream.rockchronicle.cast.lead.megaman;
+package zdream.rockchronicle.cast.leader.megaman;
 
 /**
  * 不用说这是谁了吧

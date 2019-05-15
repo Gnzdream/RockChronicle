@@ -8,7 +8,7 @@ import com.badlogic.gdx.utils.JsonValue.ValueType;
 
 import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.cast.CastList;
-import zdream.rockchronicle.cast.lead.megaman.Megaman;
+import zdream.rockchronicle.cast.leader.megaman.Megaman;
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
 

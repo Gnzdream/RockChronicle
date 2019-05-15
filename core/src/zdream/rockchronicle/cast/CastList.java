@@ -1,6 +1,6 @@
 package zdream.rockchronicle.cast;
 
-import zdream.rockchronicle.cast.lead.megaman.Megaman;
+import zdream.rockchronicle.cast.leader.megaman.Megaman;
 
 /**
  * <p>演员表

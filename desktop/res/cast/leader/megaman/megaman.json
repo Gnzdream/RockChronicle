@@ -1,0 +1,16 @@
+{
+	"name":"magaman",
+	"class":"zdream.rockchronicle.cast.leader.megaman.Megaman",
+	"info":
+	{
+		"hpmax":28,
+		"character":"megaman"
+	},
+	"weapon":
+	[
+		{
+			"name":"megaman_buster",
+			"own":true
+		}
+	]
+}

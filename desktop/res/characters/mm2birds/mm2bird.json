@@ -7,6 +7,7 @@
 		"box":"single",
 		"camp":"base",
 		"sprite":"base",
+		"collision":"bullet",
 		"health":"base",
 		"motion":"linear",
 		"destroy":"outside"
@@ -29,6 +30,11 @@
 	"sprite":
 	{
 		"stroke":"#FFFF2222"
+	},
+	"collision":
+	{
+		"level":1,
+		"damage":3
 	},
 	"health":
 	{
