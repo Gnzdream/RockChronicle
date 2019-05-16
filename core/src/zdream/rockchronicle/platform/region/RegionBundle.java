@@ -36,5 +36,37 @@ class RegionBundle {
 
 	Region region = new Region();
 	ObjectMap<String, JsonValue> fields = new ObjectMap<>();
+	
+	/*
+	 * 辅助部分
+	 */
+	public void setSymbolStartId(final int id) {
+		symbolCorner1Id = id;
+		symbolCorner2Id = id + 1;
+		symbolCorner3Id = id + 10;
+		symbolCorner4Id = id + 11;
+		
+		symbolSpawnId = id + 2;
+		symbolToTopId = id + 3;
+		symbolDropId = id + 4;
+		
+		symbolToLeftId = id + 12;
+		symbolToBottomId = id + 13;
+		symbolToRightId = id + 14;
+	}
+	
+	/**
+	 * Symbol 图块的 ID
+	 */
+	public int symbolCorner1Id = -1,
+			symbolCorner2Id = -1,
+			symbolCorner3Id = -1,
+			symbolCorner4Id = -1,
+			symbolSpawnId = -1,
+			symbolToTopId = -1,
+			symbolToBottomId = -1,
+			symbolToLeftId = -1,
+			symbolToRightId = -1,
+			symbolDropId = -1;
 
 }

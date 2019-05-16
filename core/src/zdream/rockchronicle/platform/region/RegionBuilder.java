@@ -186,15 +186,46 @@ public class RegionBuilder {
 		String path = bundle.tmxPath;
 		bundle.region.tmx = localLoader.load(FilePathUtil.relativeFileHandle(bundle.def.path, path).path());
 		
+		scanSymbolTiledSet(bundle);
+		
 		initSymbolMap(bundle);
 		initFieldMap(bundle);
+		// 图与图之间进行衔接的门
+		initGate(bundle);
 		
 		return bundle.region;
 	}
-	
+
 	/* **********
 	 *  初始化  *
 	 ********** */
+
+	/**
+	 * 扫描图块 symbol
+	 * @param bundle
+	 */
+	private void scanSymbolTiledSet(RegionBundle bundle) {
+		TiledMap t = bundle.region.tmx;
+		
+		Iterator<TiledMapTileSet> it = t.getTileSets().iterator();
+		int startId = 1;
+		boolean seek = false;
+		for (; it.hasNext();) {
+			TiledMapTileSet set = it.next();
+			if ("symbol".equals(set.getName())) {
+				seek = true;
+				break;
+			} else {
+				startId += set.size();
+			}
+		}
+		
+		if (!seek) {
+			throw new IllegalArgumentException(String.format("无法解析 %s 文件的地形数据: 没有 symbol 层", bundle.tmxPath));
+		}
+		
+		bundle.setSymbolStartId(startId);
+	}
 	
 	private void parseRegionDefJson(RegionBundle bundle, JsonValue json) {
 		bundle.tmxPath = json.getString("tmxPath");
@@ -243,21 +274,16 @@ public class RegionBuilder {
 					continue;
 				}
 				
-				switch (cell.getTile().getProperties().get("type").toString()) {
-				case "room-corner3": {
+				int id = cell.getTile().getId();
+				if (id == bundle.symbolCorner3Id) {
 					// 找到 room 左下角
 					Rectangle rect = new Rectangle(x, y, 0, 0);
-					checkRoom(x, y, rect, layer);
+					checkRoom(x, y, rect, layer, bundle);
 					// TODO 缺少检查 rect
 					rects.add(rect);
-				} break;
-				case "player-spawn":
+				} else if (id == bundle.symbolSpawnId) {
 					spawnx = x;
 					spawny = y;
-					break;
-
-				default:
-					break;
 				}
 			}
 		}
@@ -304,7 +330,7 @@ public class RegionBuilder {
 		}
 	}
 	
-	private void checkRoom(int x, int y, Rectangle rect, TiledMapTileLayer layer) {
+	private void checkRoom(int x, int y, Rectangle rect, TiledMapTileLayer layer, RegionBundle bundle) {
 		final int xstep = this.defRoomWidth, ystep = this.defRoomHeight;
 		final int width = layer.getWidth(), height = layer.getHeight();
 		
@@ -321,7 +347,7 @@ public class RegionBuilder {
 			if (cell == null) {
 				continue;
 			}
-			if ("room-corner4".equals(cell.getTile().getProperties().get("type"))) {
+			if (cell.getTile().getId() == bundle.symbolCorner4Id) {
 				break; // 已确定 xx
 			}
 		}
@@ -335,14 +361,14 @@ public class RegionBuilder {
 			if (cell == null) {
 				continue;
 			}
-			if ("room-corner1".equals(cell.getTile().getProperties().get("type"))) {
+			if (cell.getTile().getId() == bundle.symbolCorner1Id) {
 				break; // 已确定 yy
 			}
 		}
 		
 		// 检查右上角
 		Cell cell = layer.getCell(xx, yy);
-		if (cell == null || !"room-corner2".equals(cell.getTile().getProperties().get("type"))) {
+		if (cell == null || !(cell.getTile().getId() == bundle.symbolCorner2Id)) {
 			throw new RuntimeException("左下角点在 [" + x + "," + y + "] 的 Room 没有对应的右上角点");
 		}
 		
@@ -544,6 +570,67 @@ public class RegionBuilder {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * 甄别并创建大门的数据
+	 * @param bundle
+	 */
+	private void initGate(RegionBundle bundle) {
+		Room[] rooms = bundle.region.rooms;
+		
+		for (int i = 0; i < rooms.length; i++) {
+			Room room = rooms[i];
+			int xstart = room.offsetx; // 看左边界
+			int xend = xstart + room.width - 1;
+			int ystart = room.offsety;
+			int yend = ystart + room.height - 1;
+			
+			// top
+			// TODO 由于要看梯子, 所以这里省略
+			
+			for (int j = i + 1; j < rooms.length; j++) {
+				Room room2 = rooms[j];
+				
+				int xstart2 = room2.offsetx;
+				int xend2 = xstart2 + room2.width - 1;
+				int ystart2 = room2.offsety;
+				int yend2 = ystart2 + room2.height - 1;
+				
+				if (xstart - 1 == xend2) {
+					if (ystart2 < yend && yend2 > ystart) { // room 的左边界接壤 room2
+						createGateLeft(room, room2, bundle);
+					}
+				} else if (xend + 1 == xstart2) {
+					if (ystart2 < yend && yend2 > ystart) { // room 的右边界接壤 room2
+						createGateLeft(room2, room, bundle);
+					}
+				} // else TODO 上下接壤
+			}
+		}
+		
+	}
+	
+	/**
+	 * room1 的左边接壤 room2
+	 * @param room1
+	 * @param room2
+	 * @param bundle
+	 */
+	private void createGateLeft(Room room1, Room room2, RegionBundle bundle) {
+		System.out.println(String.format("房间 %d 左边接壤 %d", room1.index, room2.index));
+		
+		int offsety1 = room1.offsety;
+		int offsety2 = room2.offsety;
+		
+		int ystart = Math.min(offsety1, offsety2);
+		int yend = Math.min(offsety1 + room1.height - 1, offsety2 + room2.height - 1);
+		System.out.println(String.format("y : [%d - %d]", ystart, yend));
+		
+		for (int y = ystart; y < yend; y++) {
+			
+		}
+		
 	}
 	
 	private Field createFieldForRoom(Room room, float x, float y, float w, float h, JsonValue param) {

@@ -21,8 +21,14 @@ public class Room {
 	
 	/**
 	 * [行][列]
+	 * 地形数据
 	 */
 	public int[][] terrains;
+	
+	/**
+	 * 地图四个方向和其它的房间相通的. 这里考虑当前房间边缘的哪些块可以通到其它房间, 房间号是多少
+	 */
+	public Gate[] transmitLeft, transmitRight, transmitTop, transmitBottom;
 	
 	/**
 	 * 所有场的合集

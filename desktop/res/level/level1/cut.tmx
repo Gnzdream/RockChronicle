@@ -51,22 +51,22 @@
    </properties>
   </tile>
  </tileset>
- <layer name="back" width="52" height="16">
+ <layer name="back" width="52" height="16" locked="1">
   <data encoding="base64" compression="gzip">
    H4sIAAAAAAAACu3PsQkAQAgEQZuw/1aNTMxvMdiD5zFapotZQ51tpR85PXrI6dFDTo+e20vfhCf90x5qev56qBbVGWtlr7gADQAA
   </data>
  </layer>
- <objectgroup name="Fields">
+ <objectgroup name="Fields" locked="1">
   <object id="1" name="field01" x="144" y="24" width="408" height="216"/>
  </objectgroup>
  <layer name="Terrain" width="52" height="16">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAACmNgGAXEAkYkPJzAqH9GwShABUwD7QAagVF/DS0w6q+hBQaLv0B14GBxC6kA5nZuIOahEZ+egJb+gPFHAXkAAOS4UQkADQAA
+   H4sIAAAAAAAACu2W3QqAMAhGt27r/Z83uhCG7Nt0/iyiA14s0DxlYSk/UmoTJwhO79qobhtZkE/0PbL4mg+iN3ezM2KXz+z7keZzrD6HMd8br/fzFi/vecv2Wp1XLVFeWf0jrF7a/rP+b1Ivy/OX7AdV0csKXvPT23eo96f+FXTW9I92PZ6P9rdIDzpLfUYuvMaufTSTG+2pKvgADQAA
   </data>
  </layer>
  <layer name="Symbol" width="52" height="16" locked="1">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAACmNgGH7gJI3NP0Vj80fBKBgFo2AUjIJRMAqoDU4PtANGGLhMY/Ov0Nj84QwAUFYdRwANAAA=
+   H4sIAAAAAAAACmNgGH7gJI3NP0UnO0bBKBgFo2AUjIJRMAqoBU4PtANGGLhMY/Ov0MmO4QgA82sl/gANAAA=
   </data>
  </layer>
 </map>
