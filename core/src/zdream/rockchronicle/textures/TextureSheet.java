@@ -1,7 +1,5 @@
 package zdream.rockchronicle.textures;
 
-import java.io.File;
-
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -18,6 +16,7 @@ public class TextureSheet {
 	public ObjectMap<String, TextureSequence> sequences;
 	
 	public Texture texture;
+	public String defaultState = "normal";
 	
 	/*
 	 * 这里是 Json 文件里面的数据
@@ -45,7 +44,7 @@ public class TextureSheet {
 		this();
 		
 		imagePath = json.getString("image");
-		FileHandle f = new FileHandle(jsonFile.file().getParentFile() + File.separator + imagePath);
+		FileHandle f = jsonFile.parent().child(imagePath);
 		this.texture = new Texture(f);
 		
 		for (JsonValue entry = json.child; entry != null; entry = entry.next) {
@@ -57,11 +56,14 @@ public class TextureSheet {
 			case "select":
 				createSequences(entry);
 				break;
+				
+			case "default":
+				this.defaultState = entry.asString();
+				break;
 
 			default:
 				break;
 			}
-			
 		}
 	}
 	
@@ -98,6 +100,7 @@ public class TextureSheet {
 			if (array.size == 0) {
 				continue;
 			}
+			seq.loopIdx = texJson.getInt("loopIndex", -1);
 			seq.seqs = new String[array.size];
 			
 			int i = 0;

@@ -1,5 +1,6 @@
 {
 	"image":"megaman7sheet.gif",
+	"default":"normal",
 	"select":
 	[
 		{
@@ -24,7 +25,8 @@
 				"walk_8",
 				"walk_9"
 			],
-			"step":0.0666667
+			"step":0.0666667,
+			"loopIndex":0
 		},
 		{
 			"state":"stiffness",

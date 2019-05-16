@@ -14,7 +14,6 @@ import zdream.rockchronicle.core.module.AbstractModule;
 import zdream.rockchronicle.core.module.box.BoxModule;
 import zdream.rockchronicle.core.module.box.IBoxHolder;
 import zdream.rockchronicle.platform.body.Box;
-import zdream.rockchronicle.textures.TextureSequence;
 import zdream.rockchronicle.textures.TextureSheet;
 import zdream.rockchronicle.textures.TextureSheetEntry;
 
@@ -50,7 +49,6 @@ public abstract class SpriteModule extends AbstractModule {
 	/*
 	 * 下面是计时相关的参数
 	 */
-	protected String state = "normal";
 	protected int steps;
 	
 	private void initTexturePaths(FileHandle file, JsonValue array) {
@@ -79,19 +77,7 @@ public abstract class SpriteModule extends AbstractModule {
 	 * 返回现在正在使用的纹理.
 	 * @return
 	 */
-	public TextureSheetEntry getCurrentTexture() {
-		TextureSequence seq;
-		if (state == null || (seq = textures.sequences.get(state)) == null) {
-			return null;
-		}
-		
-		if (seq.step <= 0) {
-			return textures.entrys.get(seq.seqs[0]);
-		} else {
-			int index = steps / seq.step;
-			return textures.entrys.get(seq.seqs[index % seq.seqs.length]);
-		}
-	}
+	public abstract TextureSheetEntry getCurrentTexture();
 	
 	public Sprite getSprite() {
 		return sprite;

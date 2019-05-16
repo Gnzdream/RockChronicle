@@ -10,6 +10,11 @@ package zdream.rockchronicle.textures;
  */
 public class TextureSequence {
 	public String[] seqs;
+	/**
+	 * 指向 seqs 的索引. 如果序列没有循环段, 该值为 -1
+	 */
+	public int loopIdx = -1;
+	
 	public String state;
 	public int step;
 }

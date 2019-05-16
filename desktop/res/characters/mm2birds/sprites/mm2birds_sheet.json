@@ -1,5 +1,6 @@
 {
 	"image":"mm2birds.gif",
+	"default":"normal",
 	"select":
 	[
 		{
@@ -11,7 +12,8 @@
 				"normal_3",
 				"normal_2"
 			],
-			"step":0.1
+			"step":0.1,
+			"loopIndex":0
 		}
 	],
 	"textures":

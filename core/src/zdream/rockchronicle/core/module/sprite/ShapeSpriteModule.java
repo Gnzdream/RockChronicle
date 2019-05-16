@@ -11,6 +11,7 @@ import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.platform.body.Box;
+import zdream.rockchronicle.textures.TextureSheetEntry;
 
 /**
  * <p>测试使用的绘画模块
@@ -65,6 +66,12 @@ public class ShapeSpriteModule extends SpriteModule {
 		}
 		
 		renderer.end();
+	}
+
+	@Override
+	public TextureSheetEntry getCurrentTexture() {
+		// 该绘画模块不需要拿到纹理
+		return null;
 	}
 
 }
