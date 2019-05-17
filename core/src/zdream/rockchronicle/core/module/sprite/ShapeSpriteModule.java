@@ -47,6 +47,9 @@ public class ShapeSpriteModule extends SpriteModule {
 
 	public void draw(SpriteBatch batch, OrthographicCamera camera) {
 		renderer.setProjectionMatrix(camera.combined);
+		float dx = -camera.position.x + camera.viewportWidth / 2.0f;
+		float dy = -camera.position.y + camera.viewportHeight / 2.0f;
+		renderer.getProjectionMatrix().translate(dx, dy, 0);
 		
 		renderer.begin(ShapeType.Line);
 		renderer.setColor(color);

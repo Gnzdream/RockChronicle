@@ -1,10 +1,14 @@
 package zdream.rockchronicle.platform.world;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.IntSet;
 
 import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.GameRuntime;
+import zdream.rockchronicle.core.character.CharacterEntry;
+import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.region.Gate;
 import zdream.rockchronicle.platform.region.Room;
 
@@ -29,11 +33,10 @@ public class RoomShiftHandler {
 		param.destRoom = g.destRoom;
 		
 		GameRuntime runtime = RockChronicle.INSTANCE.runtime;
-		runtime.entries.forEach(ch -> {
-			if (ch.id == runtime.player1) {
-				param.entries.add(ch);
-			}
-		});
+		param.entries.add(runtime.getPlayer1());
+		param.entriesPos = new Vector2[param.entries.size];
+		param.phase2EntryWidth = new float[param.entries.size];
+		
 		runtime.levelWorld.doPause();
 		countParam(gates, runtime);
 		
@@ -100,8 +103,32 @@ public class RoomShiftHandler {
 				int offsetx = srcRoom.offsetx;
 				if (gates[0].direction == Gate.DIRECTION_RIGHT) {
 					param.phase2Pos.set(destRoom.offsetx - offsetx, dy);
+					param.phase2CameraWidth = destRoom.offsetx - offsetx;
+					
+					for (int i = 0; i < param.entries.size; i++) {
+						CharacterEntry entry = param.entries.get(i);
+						Box box = entry.getBoxModule().getBox();
+						Rectangle rect = box.getPosition();
+						float xleft = rect.x;
+						Vector2 anchor = box.anchor;
+						
+						param.phase2EntryWidth[i] = destRoom.offsetx - srcRoom.offsetx + gates[0].tox - xleft;
+						param.entriesPos[i] = new Vector2(anchor.x + param.phase2EntryWidth[i], anchor.y);
+					}
 				} else {
 					param.phase2Pos.set(destRoom.offsetx + destRoom.width - camera.viewportWidth - offsetx, dy);
+					param.phase2CameraWidth = offsetx - destRoom.offsetx;
+					
+					for (int i = 0; i < param.entries.size; i++) {
+						CharacterEntry entry = param.entries.get(i);
+						Box box = entry.getBoxModule().getBox();
+						Rectangle rect = box.getPosition();
+						float xright = rect.x + rect.width; // 相对于 srcRoom
+						Vector2 anchor = box.anchor;
+						
+						param.phase2EntryWidth[i] = (srcRoom.offsetx + xright) - (destRoom.offsetx + gates[0].tox + 1);
+						param.entriesPos[i] = new Vector2(anchor.x - param.phase2EntryWidth[i], anchor.y);
+					}
 				}
 			}
 		} break;
@@ -114,14 +141,14 @@ public class RoomShiftHandler {
 	public void tickShift(float deltaTime) {
 		switch (param.phase) {
 		case 1:
-			shiftPhase1();
+			shiftPhase1(deltaTime);
 			break;
 		case 2:
-			shiftPhase2();
+			shiftPhase2(deltaTime);
 			break;
 		case 3:
 			// 后续
-			System.out.println("finished");
+			shiftPhase3();
 			break;
 
 		default:
@@ -133,8 +160,8 @@ public class RoomShiftHandler {
 	 * 镜头移动
 	 * 移屏速度现在是定死的, 每秒 40 格 (每步 0.333333 格).
 	 */
-	private void shiftPhase1() {
-		if (doShiftRoom(param.phase1Pos)) {
+	private void shiftPhase1(float deltaTime) {
+		if (doShiftRoom(param.phase1Pos, deltaTime)) {
 			param.phase = 2;
 		}
 	}
@@ -142,41 +169,71 @@ public class RoomShiftHandler {
 	/**
 	 * 阶段二: 镜头移动 + 角色移动
 	 */
-	private void shiftPhase2() {
-		if (doShiftRoom(param.phase2Pos)) {
+	private void shiftPhase2(float deltaTime) {
+		if (doShiftRoom(param.phase2Pos, deltaTime)) {
 			param.phase = 3; // 移屏全部结束, 需要设置新的房间
 		}
 	}
 	
-	private boolean doShiftRoom(Vector2 toPos) {
+	private boolean doShiftRoom(Vector2 toPos, float deltaTime) {
 		boolean bx = param.currentPos.x != toPos.x;
 		float delta = bx ? toPos.x - param.currentPos.x : toPos.y - param.currentPos.y;
-		float step = 2.0f/3; // 上面的每秒 40 格
+		float step = 25 * deltaTime; // 上面的每秒 25 格
 		boolean finished = false;
-		System.out.println(delta);
 		
 		if (delta > 0) {
 			if (delta < step) {
 				param.currentPos.set(toPos);
 				finished = true;
-			} else if (bx) {
-				param.currentPos.x += step;
+				delta = 0;
 			} else {
-				param.currentPos.y += step;
+				if (bx) {
+					param.currentPos.x += step;
+				} else {
+					param.currentPos.y += step;
+				}
+				delta += step;
 			}
 		} else if (delta < 0) {
 			if (delta > -step) {
 				param.currentPos.set(toPos);
 				finished = true;
-			} else if (bx) {
-				param.currentPos.x -= step;
 			} else {
-				param.currentPos.y -= step;
+				if (bx) {
+					param.currentPos.x -= step;
+				} else {
+					param.currentPos.y -= step;
+				}
+				delta -= step;
 			}
 		} else {
 			// 该阶段直接结束
 			finished = true;
 		}
+		
+		// 更新角色位置
+		if (param.phase == 2) {
+			float remain = Math.abs(delta) / param.phase2CameraWidth;
+			for (int i = 0; i < param.entries.size; i++) {
+				CharacterEntry entry = param.entries.get(i);
+				Box box = entry.getBoxModule().getBox();
+				
+				if (bx) {
+					if (delta >= 0) {
+						box.setAnchorX(param.entriesPos[i].x - remain * param.phase2EntryWidth[i]);
+					} else {
+						box.setAnchorX(param.entriesPos[i].x + remain * param.phase2EntryWidth[i]);
+					}
+				} else {
+					if (delta >= 0) {
+						box.setAnchorY(param.entriesPos[i].y - remain * param.phase2EntryWidth[i]);
+					} else {
+						box.setAnchorY(param.entriesPos[i].y + remain * param.phase2EntryWidth[i]);
+					}
+				}
+			}
+		}
+		
 		
 		// 更新镜头位置
 		RockChronicle app = RockChronicle.INSTANCE;
@@ -185,6 +242,45 @@ public class RoomShiftHandler {
 		camera.position.y = app.height / 2.0f + param.currentPos.y;
 		
 		return finished;
+	}
+
+	private void shiftPhase3() {
+		RockChronicle app = RockChronicle.INSTANCE;
+		GameRuntime runtime = app.runtime;
+		
+		// 清空 entry
+		IntSet set = new IntSet(param.entries.size);
+		param.entries.forEach(ch -> set.add(ch.id));
+		runtime.entries.forEach(ch -> {
+			if (!set.contains(ch.id)) {
+				ch.willDestroy();
+			}
+		});
+		runtime.handleAddAndRemove();
+		
+		runtime.setRoom(param.destRoom);
+		Room srcRoom = runtime.curRegion.rooms[param.srcRoom];
+		Room destRoom = runtime.curRegion.rooms[param.destRoom];
+		
+		int deltax = destRoom.offsetx - srcRoom.offsetx;
+		int deltay = destRoom.offsety - srcRoom.offsety;
+		
+		// 设置角色位置
+		for (int i = 0; i < param.entries.size; i++) {
+			CharacterEntry entry = param.entries.get(i);
+			Box box = entry.getBoxModule().getBox();
+			box.addAnchorX(-deltax);
+			box.addAnchorY(-deltay);
+		}
+		
+		// 更新镜头位置
+		OrthographicCamera camera = app.runtime.worldCamera;
+		camera.position.x = app.width / 2.0f;
+		camera.position.y = app.height / 2.0f;
+		
+		// 结束
+		runtime.levelWorld.doResume();
+		this.param = null;
 	}
 	
 	/**

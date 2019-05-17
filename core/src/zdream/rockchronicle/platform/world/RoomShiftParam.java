@@ -28,6 +28,11 @@ public class RoomShiftParam {
 	public Array<CharacterEntry> entries = new Array<>();
 	
 	/**
+	 * 暂存, 角色传送的目标位置
+	 */
+	public Vector2[] entriesPos;
+	
+	/**
 	 * 当前位置, 参照点为左下角顶点, 不是中心点
 	 */
 	public Vector2 currentPos = new Vector2();
@@ -41,6 +46,16 @@ public class RoomShiftParam {
 	 * 阶段二结束后镜头的位置, 参照点为左下角顶点, 不是中心点
 	 */
 	public Vector2 phase2Pos = new Vector2();
+	
+	/**
+	 * 阶段二镜头平移总距离. 正数
+	 */
+	public float phase2CameraWidth;
+	
+	/**
+	 * 阶段二角色平移总距离
+	 */
+	public float[] phase2EntryWidth;
 	
 	/* **********
 	 * 时间状态 *

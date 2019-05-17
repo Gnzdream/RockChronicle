@@ -130,11 +130,17 @@ public class LevelScreen implements Screen {
 		viewBounds.setX(viewBounds.x + curRoom.offsetx);
 		viewBounds.setY(viewBounds.y + curRoom.offsety);
 		
-		float dx = -curRoom.offsetx - worldCamera.position.x + worldCamera.viewportWidth / 2.0f;
-		float dy = -curRoom.offsety - worldCamera.position.y + worldCamera.viewportHeight / 2.0f;
+		float dx = -worldCamera.position.x + worldCamera.viewportWidth / 2.0f;
+		float dy = -worldCamera.position.y + worldCamera.viewportHeight / 2.0f;
+		
+		batch.setProjectionMatrix(worldCamera.combined);
+		batch.getProjectionMatrix().translate(dx, dy, 0);
+		
+		dx -= curRoom.offsetx;
+		dy -= curRoom.offsety;
 		
 		mapRender.getBatch().getProjectionMatrix()
-		.translate (dx, dy, 0);
+			.translate (dx, dy, 0);
 	}
 	
 	@Override
@@ -160,7 +166,6 @@ public class LevelScreen implements Screen {
 		fixMapRender();
 		mapRender.render();
 		
-		batch.setProjectionMatrix(worldCamera.combined);
 //		batch.setTransformMatrix(worldCamera.projection);
 		app.runtime.drawEntries(batch, worldCamera);
 		

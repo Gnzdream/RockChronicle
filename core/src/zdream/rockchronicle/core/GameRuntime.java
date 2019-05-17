@@ -74,14 +74,22 @@ public class GameRuntime {
 	 */
 	public void setRegion(String name) {
 		curRegion = regionBuilder.buildForTerrainOnly(name);
-		this.room = curRegion.spawnRoom;
+		setRoom(curRegion.spawnRoom);
+	}
+	
+	/**
+	 * 移屏时, 请保证清除其它角色之后再调用该方法.
+	 * @param room
+	 */
+	public void setRoom(int room) {
+		this.room = room;
 		levelWorld.setCurrentRoom(curRegion.rooms[this.room]);
 		
 		// 将场放入世界
-		Room room = curRegion.rooms[this.room];
-		final int length = room.fields.size;
+		Room r = curRegion.rooms[this.room];
+		final int length = r.fields.size;
 		for (int i = 0; i < length; i++) {
-			Field f = room.fields.get(i);
+			Field f = r.fields.get(i);
 			
 			CharacterEntry entry = characterBuilder.create(f.name, f.param);
 			addEntry(entry);
