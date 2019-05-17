@@ -17,5 +17,10 @@ public class PainterManager {
 	/**
 	 * 
 	 */
+	
+	class PainterEntry {
+		IPainter ptr;
+		int zIndex;
+	}
 
 }

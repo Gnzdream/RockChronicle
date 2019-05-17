@@ -19,6 +19,7 @@ import zdream.rockchronicle.platform.region.RegionBuilder;
 import zdream.rockchronicle.platform.region.Room;
 import zdream.rockchronicle.platform.world.IPhysicsStep;
 import zdream.rockchronicle.platform.world.LevelWorld;
+import zdream.rockchronicle.platform.world.RoomShiftHandler;
 
 public class GameRuntime {
 	
@@ -36,6 +37,13 @@ public class GameRuntime {
 	 * 如果在关卡中, 关卡世界的参数
 	 */
 	public LevelWorld levelWorld;
+	public RoomShiftHandler shift;
+	
+	/**
+	 * 查看该世界的镜头, 一般长宽为 25 x 14
+	 * 这个锁定的是人物位置.
+	 */
+	public OrthographicCamera worldCamera;
 	
 	/**
 	 * @return
@@ -81,6 +89,9 @@ public class GameRuntime {
 	}
 	
 	public void createWorld() {
+		levelWorld = new LevelWorld();
+		shift = new RoomShiftHandler();
+		
 		levelWorld.doCreate();
 		levelWorld.setStepCallBack(step);
 		levelWorld.doResume();
@@ -92,6 +103,13 @@ public class GameRuntime {
 	
 	public void pauseWorld() {
 		levelWorld.doPause();
+	}
+	
+	public void tick(float deltaTime) {
+		if (shift.durationShift()) {
+			shift.tickShift(deltaTime);
+		}	
+		levelWorld.doPhysicsStep(deltaTime);
 	}
 	
 	IPhysicsStep step = new IPhysicsStep() {
@@ -203,11 +221,7 @@ public class GameRuntime {
 		}
 		
 		// 进行删增工作
-		entries.removeAll(entriesWaitingForRemove, true);
-		entriesWaitingForRemove.clear();
-		entries.addAll(entriesWaitingForAdd);
-		entriesWaitingForAdd.forEach(entry -> entry.createBody(levelWorld));
-		entriesWaitingForAdd.clear();
+		handleAddAndRemove();
 		
 		// 移动部分
 		for (int i = 0; i < entries.size; i++) {
@@ -217,6 +231,14 @@ public class GameRuntime {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	public void handleAddAndRemove() {
+		entries.removeAll(entriesWaitingForRemove, true);
+		entriesWaitingForRemove.clear();
+		entries.addAll(entriesWaitingForAdd);
+		entriesWaitingForAdd.forEach(entry -> entry.createBody(levelWorld));
+		entriesWaitingForAdd.clear();
 	}
 
 	/**
@@ -269,7 +291,8 @@ public class GameRuntime {
 		}
 		Gate[] gs = levelWorld.checkRoomShift(c1.getBoxModule().getBox());
 		if (gs != null) {
-			System.out.println(Arrays.toString(gs));
+			shift.doShift(gs);
+			return true;
 		}
 		return false;
 	}

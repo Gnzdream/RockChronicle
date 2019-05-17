@@ -16,7 +16,6 @@ import zdream.rockchronicle.core.GameRuntime;
 import zdream.rockchronicle.core.character.parameter.CharacterParameter;
 import zdream.rockchronicle.platform.region.Region;
 import zdream.rockchronicle.platform.region.Room;
-import zdream.rockchronicle.platform.world.LevelWorld;
 import zdream.rockchronicle.sprite.character.megaman.MegamanInLevel;
 
 public class LevelScreen implements Screen {
@@ -46,13 +45,12 @@ public class LevelScreen implements Screen {
 	
 	public LevelScreen() {
 		app = RockChronicle.INSTANCE;
-		app.runtime.levelWorld = new LevelWorld();
 		
 		// tiled 地图
 //		region = app.runtime.regionBuilder.buildForTerrainOnly("mm1cut");
 //		region = app.runtime.regionBuilder.build("mm1cut");
 		
-		worldCamera = new OrthographicCamera();
+		app.runtime.worldCamera = worldCamera = new OrthographicCamera();
 		worldCamera.setToOrtho(false, app.width, app.height); // y 轴方向朝上
 //		worldCamera.combined.scale(Config.INSTANCE.blockWidth, Config.INSTANCE.blockHeight, 1);
 //		worldCamera.combined.scale(2, 2, 1);
@@ -70,10 +68,10 @@ public class LevelScreen implements Screen {
 		 */
 		// 设置 megaman 的初始位置, 到 room 所对应的 spawn 点
 		// 人物设置必须晚于世界创建
+		runtime.createWorld();
 		runtime.setRegion("mm1cut");
 		region = runtime.curRegion;
 		
-		runtime.createWorld();
 		
 		megaman = (MegamanInLevel) app.runtime.characterBuilder.create("megaman",
 				CharacterParameter.newInstance().setBoxAnchor(region.spawnx + 0.5f, region.spawny)
@@ -105,7 +103,8 @@ public class LevelScreen implements Screen {
 		mapRender = new OrthogonalTiledMapRenderer(region.tmx, 1f / Config.INSTANCE.blockWidth);
 		fixMapRender();
 		
-		batch.setProjectionMatrix(worldCamera.combined);
+		batch.setProjectionMatrix(worldCamera.combined); // 投影矩阵
+//		batch.setTransformMatrix(worldCamera.projection); // 变换矩阵
 		
 		// 测试帧率部分
 		frameTimestamp = System.currentTimeMillis();
@@ -130,10 +129,12 @@ public class LevelScreen implements Screen {
 		
 		viewBounds.setX(viewBounds.x + curRoom.offsetx);
 		viewBounds.setY(viewBounds.y + curRoom.offsety);
+		
+		float dx = -curRoom.offsetx - worldCamera.position.x + worldCamera.viewportWidth / 2.0f;
+		float dy = -curRoom.offsety - worldCamera.position.y + worldCamera.viewportHeight / 2.0f;
+		
 		mapRender.getBatch().getProjectionMatrix()
-		.translate (
-			-curRoom.offsetx,
-			-curRoom.offsety, 0);
+		.translate (dx, dy, 0);
 	}
 	
 	@Override
@@ -152,8 +153,7 @@ public class LevelScreen implements Screen {
 //		worldCamera.update();
 		
 		// 物理
-		LevelWorld world = app.runtime.levelWorld;
-		world.doPhysicsStep(realDelta);
+		app.runtime.tick(realDelta);
 		
 		// 渲染部分
 		// symbol 层是不能被 render 的
@@ -161,6 +161,7 @@ public class LevelScreen implements Screen {
 		mapRender.render();
 		
 		batch.setProjectionMatrix(worldCamera.combined);
+//		batch.setTransformMatrix(worldCamera.projection);
 		app.runtime.drawEntries(batch, worldCamera);
 		
 		// 帧率
@@ -195,12 +196,12 @@ public class LevelScreen implements Screen {
 
 	@Override
 	public void pause() {
-		app.runtime.pauseWorld();
+		app.runtime.pauseWorld(); // TODO 应该是游戏整体暂停, 而非只有世界暂停
 	}
 
 	@Override
 	public void resume() {
-		app.runtime.resumeWorld();
+		app.runtime.resumeWorld(); // TODO 应该是游戏整体复苏, 而非只有世界复苏
 	}
 
 	@Override

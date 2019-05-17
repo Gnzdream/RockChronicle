@@ -121,7 +121,8 @@ public abstract class CharacterEntry {
 	}
 	
 	/**
-	 * 自行销毁, 等待 GameRuntime 回收
+	 * 无论是自行销毁还是系统销毁, 调用该方法都是最有效的.
+	 * 调用后等待 GameRuntime 回收.
 	 */
 	public void willDestroy() {
 		if (!exists) {
