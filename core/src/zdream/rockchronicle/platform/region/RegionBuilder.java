@@ -6,6 +6,7 @@ import static zdream.rockchronicle.platform.region.Terrains.terrainCode;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import com.badlogic.gdx.Gdx;
@@ -28,6 +29,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
@@ -293,7 +295,6 @@ public class RegionBuilder {
 		}
 		
 		Room[] rooms = bundle.region.rooms = new Room[rects.size()];
-		boolean spawnCheck = false;
 		float spawnxf = spawnx + 0.5f, spawnyf = spawny + 0.5f;
 		
 		for (int i = 0; i < rooms.length; i++) {
@@ -310,12 +311,7 @@ public class RegionBuilder {
 			rooms[i] = r;
 			
 			// 判断出生点在哪个 Room 当中
-			if (spawnCheck) {
-				continue;
-			}
-			
 			if (rect.contains(spawnxf, spawnyf)) {
-				spawnCheck = true;
 				bundle.region.spawnRoom = i;
 				bundle.region.spawnx = spawnx - r.offsetx;
 				bundle.region.spawny = spawny - r.offsety;
@@ -386,7 +382,7 @@ public class RegionBuilder {
 		final int len = ls.getCount();
 		
 		final int width = r.width, height = r.height;
-		r.terrains = new int[width][height];
+		r.terrains = new byte[width][height];
 		
 		for (int i = 0; i < len; i++) {
 			MapLayer l = ls.get(i);
@@ -623,14 +619,64 @@ public class RegionBuilder {
 		int offsety1 = room1.offsety;
 		int offsety2 = room2.offsety;
 		
-		int ystart = Math.min(offsety1, offsety2);
+		int ystart = Math.max(offsety1, offsety2);
 		int yend = Math.min(offsety1 + room1.height - 1, offsety2 + room2.height - 1);
-		System.out.println(String.format("y : [%d - %d]", ystart, yend));
 		
-		for (int y = ystart; y < yend; y++) {
+		int x1a = 0;
+		int x1b = 1;
+		int x2a = room1.width - 1;
+		int x2b = x2a - 1;
+		
+		Array<Gate> gate1 = new Array<>(), gate2 = new Array<>();
+		for (int y = ystart; y <= yend; y++) { // y 是绝对高度
+			// 计算房间内部的高度
+			int y1 = y - offsety1;
+			int y2 = y - offsety2;
 			
+			if (Terrains.isEmpty(room1.terrains[x1a][y1]) && Terrains.isEmpty(room2.terrains[x2a][y2])) {
+				if (Terrains.isEmpty(room2.terrains[x2b][y2])) {
+					Gate g = new Gate();
+					g.srcRoom = room1.index;
+					g.destRoom = room2.index;
+					g.direction = Gate.DIRECTION_LEFT;
+					g.x = x1a;
+					g.y = y1;
+					g.tox = x2b;
+					g.toy = y2;
+					gate1.add(g);
+				}
+				if (Terrains.isEmpty(room1.terrains[x1b][y1])) {
+					Gate g = new Gate();
+					g.srcRoom = room2.index;
+					g.destRoom = room1.index;
+					g.direction = Gate.DIRECTION_RIGHT;
+					g.x = x2a;
+					g.y = y2;
+					g.tox = x1b;
+					g.toy = y1;
+					gate2.add(g);
+				}
+			}
 		}
 		
+		if (gate1.size > 0) {
+			if (room1.transmitLeft == null) {
+				room1.transmitLeft = gate1.toArray(Gate.class);
+			} else {
+				int oriLen = room1.transmitLeft.length;
+				room1.transmitLeft = Arrays.copyOf(room1.transmitLeft, oriLen + gate1.size);
+				System.arraycopy(gate1.toArray(Gate.class), 0, room1.transmitLeft, oriLen, gate1.size);
+			}
+		}
+		if (gate2.size > 0) {
+			if (room2.transmitRight == null) {
+				room2.transmitRight = gate2.toArray(Gate.class);
+			} else {
+				int oriLen = room2.transmitRight.length;
+				room2.transmitRight = Arrays.copyOf(room2.transmitRight, oriLen + gate2.size);
+				System.arraycopy(gate2.toArray(Gate.class), 0, room2.transmitRight, oriLen, gate2.size);
+			}
+		}
 	}
 	
 	private Field createFieldForRoom(Room room, float x, float y, float w, float h, JsonValue param) {

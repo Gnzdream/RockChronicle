@@ -7,8 +7,6 @@ import com.badlogic.gdx.utils.JsonValue.ValueType;
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.parameter.JsonCollector;
 import zdream.rockchronicle.core.module.AbstractModule;
-import zdream.rockchronicle.core.module.box.BoxModule;
-import zdream.rockchronicle.core.module.box.IBoxHolder;
 import zdream.rockchronicle.platform.body.Box;
 
 /**
@@ -87,10 +85,6 @@ public abstract class MotionModule extends AbstractModule {
 	 * @return
 	 */
 	protected Box getSingleBox() {
-		BoxModule mm = parent.getBoxModule();
-		if (mm instanceof IBoxHolder) {
-			return ((IBoxHolder) mm).getBox();
-		}
-		return null;
+		return parent.getBoxModule().getBox();
 	}
 }

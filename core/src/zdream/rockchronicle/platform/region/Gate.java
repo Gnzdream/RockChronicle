@@ -30,17 +30,35 @@ public class Gate {
 	public int destRoom;
 	
 	/**
-	 * 位置
+	 * srcRoom 中的位置
 	 */
 	public int x, y;
+	
+	/**
+	 * destRoom 中到达的位置
+	 */
+	public int tox, toy;
 	
 	/**
 	 * 方向
 	 */
 	public byte direction;
 	
-	/**
+	/*
 	 * TODO 规则，比如向上必须是爬梯子等
 	 */
 
+	
+	@Override
+	public String toString() {
+		String s;
+		switch (direction) {
+		case DIRECTION_LEFT: s = "LEFT"; break;
+		case DIRECTION_RIGHT: s = "RIGHT"; break;
+		case DIRECTION_TOP: s = "TOP"; break;
+		case DIRECTION_BOTTOM: s = "BOTTOM"; break;
+		default: s = ""; break;
+		}
+		return String.format("Gate:%d(%d,%d)->%d(%d,%d),%s", srcRoom, x, y, destRoom, tox, toy, s);
+	}
 }

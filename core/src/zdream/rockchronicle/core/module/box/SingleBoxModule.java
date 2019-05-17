@@ -19,7 +19,7 @@ import zdream.rockchronicle.platform.world.LevelWorld;
  *   2019-05-06 (created)
  *   2019-05-13 (last modified)
  */
-public class SingleBoxModule extends BoxModule implements IBoxHolder {
+public class SingleBoxModule extends BoxModule {
 	
 	public final Box box;
 

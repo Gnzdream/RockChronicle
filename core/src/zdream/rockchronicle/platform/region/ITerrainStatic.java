@@ -2,7 +2,7 @@ package zdream.rockchronicle.platform.region;
 
 public interface ITerrainStatic {
 	
-	public static final int
+	public static final byte
 		TERRAIN_EMPTY = 0,
 		TERRAIN_SOLID = 1,
 		TERRAIN_STAB_BALL = 17;

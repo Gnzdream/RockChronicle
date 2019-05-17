@@ -20,10 +20,10 @@ public class Room {
 	public int width, height;
 	
 	/**
-	 * [行][列]
+	 * [x][y]
 	 * 地形数据
 	 */
-	public int[][] terrains;
+	public byte[][] terrains;
 	
 	/**
 	 * 地图四个方向和其它的房间相通的. 这里考虑当前房间边缘的哪些块可以通到其它房间, 房间号是多少

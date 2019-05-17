@@ -11,7 +11,7 @@ public class Terrains implements ITerrainStatic {
 	/**
 	 * 地形的文字转成码
 	 */
-	public static int terrainCode(String s) {
+	public static byte terrainCode(String s) {
 		switch (s) {
 		case TERRAIN_STRING_SOLID:
 			return TERRAIN_SOLID;
@@ -19,6 +19,10 @@ public class Terrains implements ITerrainStatic {
 		default:
 			return TERRAIN_EMPTY;
 		}
+	}
+	
+	public static boolean isEmpty(byte terrain) {
+		return terrain == TERRAIN_EMPTY;
 	}
 
 }

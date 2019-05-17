@@ -7,10 +7,13 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 
+import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.cast.CastList;
 import zdream.rockchronicle.core.character.CharacterBuilder;
 import zdream.rockchronicle.core.character.CharacterEntry;
+import zdream.rockchronicle.core.input.IInputBindable;
 import zdream.rockchronicle.platform.region.Field;
+import zdream.rockchronicle.platform.region.Gate;
 import zdream.rockchronicle.platform.region.Region;
 import zdream.rockchronicle.platform.region.RegionBuilder;
 import zdream.rockchronicle.platform.region.Room;
@@ -94,7 +97,9 @@ public class GameRuntime {
 	IPhysicsStep step = new IPhysicsStep() {
 		@Override
 		public void step(LevelWorld world, int index, boolean hasNext) {
-			onWorldSteped(index, hasNext);
+			if (!checkRoomShift()) {
+				onWorldSteped(index, hasNext);
+			}
 		}
 		
 		public void onStepFinished(LevelWorld world, boolean isPause) {
@@ -112,13 +117,16 @@ public class GameRuntime {
 	public int player1;
 	
 	public CharacterEntry getPlayer1() {
-		return entries.get(player1);
+		return findEntry(player1);
 	}
 	
 	public void putPlayer(int seq, CharacterEntry entry) {
 		switch (seq) {
 		case 1:
 			this.player1 = entry.id;
+			if (entry instanceof IInputBindable) {
+				((IInputBindable) entry).bindController(RockChronicle.INSTANCE.input.p1);
+			}
 			addEntry(entry);
 			break;
 
@@ -247,5 +255,23 @@ public class GameRuntime {
 	}
 	
 	int lastEntriseSize = 0, lastWorldCount = 0;
-
+	
+	/* **********
+	 * 重要事件 *
+	 ********** */
+	/*
+	 * 比如控制角色走到房间的边缘, 需要启动切换房间的逻辑
+	 */
+	public boolean checkRoomShift() {
+		CharacterEntry c1 = getPlayer1();
+		if (c1 == null) {
+			return false;
+		}
+		Gate[] gs = levelWorld.checkRoomShift(c1.getBoxModule().getBox());
+		if (gs != null) {
+			System.out.println(Arrays.toString(gs));
+		}
+		return false;
+	}
+	
 }

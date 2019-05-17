@@ -11,8 +11,6 @@ import com.badlogic.gdx.utils.JsonValue;
 import zdream.rockchronicle.core.Config;
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.module.AbstractModule;
-import zdream.rockchronicle.core.module.box.BoxModule;
-import zdream.rockchronicle.core.module.box.IBoxHolder;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.textures.TextureSheet;
 import zdream.rockchronicle.textures.TextureSheetEntry;
@@ -157,11 +155,7 @@ public abstract class SpriteModule extends AbstractModule {
 	 * @return
 	 */
 	protected Box getSingleBox() {
-		BoxModule mm = parent.getBoxModule();
-		if (mm instanceof IBoxHolder) {
-			return ((IBoxHolder) mm).getBox();
-		}
-		return null;
+		return parent.getBoxModule().getBox();
 	}
 	
 	@Override

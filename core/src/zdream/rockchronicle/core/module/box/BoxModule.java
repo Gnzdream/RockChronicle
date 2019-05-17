@@ -6,6 +6,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.parameter.JsonCollector;
 import zdream.rockchronicle.core.module.AbstractModule;
+import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
 /**
@@ -73,5 +74,11 @@ public abstract class BoxModule extends AbstractModule {
 		if (boxc != null)
 			boxc.clear();
 	}
+	
+	/**
+	 * 如果本角色只有一个碰撞盒子, 则调用该方法来获取其碰撞盒子
+	 * @return
+	 */
+	public abstract Box getBox();
 
 }

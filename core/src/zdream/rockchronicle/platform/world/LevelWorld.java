@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.Array;
 
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.body.TerrainParam;
+import zdream.rockchronicle.platform.region.Gate;
 import zdream.rockchronicle.platform.region.ITerrainStatic;
 import zdream.rockchronicle.platform.region.Room;
 
@@ -678,6 +679,108 @@ public class LevelWorld implements ITerrainStatic {
 			return TERRAIN_EMPTY;
 		}
 		return currentRoom.terrains[x][y];
+	}
+
+	/* **********
+	 * 房间切换 *
+	 ********** */
+	
+	/**
+	 * 房间切换是否允许. 如果像打 BOSS 这类限制房间切换的情况发生, 请设置为 false
+	 */
+	public boolean roomShiftEnable = true;
+	
+	/**
+	 * 检查指定角色的盒子是否到达房间边缘, 要进行房间的切换.
+	 * TODO 现在只判断左右切换.
+	 * @param box
+	 *   指定角色的盒子, 一般是玩家控制角色的
+	 * @return
+	 */
+	public Gate[] checkRoomShift(Box box) {
+		if (!roomShiftEnable) {
+			return null;
+		}
+		Rectangle rect = box.getPosition();
+		float fxleft = rect.x;
+		int xleft = (int) Math.floor(fxleft);
+		
+		float fytop = rect.y + rect.height;
+		int ytop = (int) Math.floor(fytop);
+		if (ytop == fytop) {
+			ytop -= 1;
+		}
+		int ybottom = (int) Math.floor(rect.y);
+		Array<Gate> gs = new Array<>();
+		
+		// 向左
+		LEFT: {
+			if (xleft != 0) {
+				break LEFT;
+			}
+			if (Math.abs(xleft - fxleft) > 0.01f) { // 允许误差 0.01 格
+				break LEFT;
+			}
+			Gate[] gates = this.currentRoom.transmitLeft;
+			if (gates == null) {
+				break LEFT;
+			}
+			
+			for (int y = ybottom; y <= ytop; y++) {
+				boolean flag = false; // 有没有查到相关的大门
+				for (int i = 0; i < gates.length; i++) {
+					Gate g = gates[i];
+					if (g.y == y) {
+						flag = true;
+						gs.add(g);
+						break;
+					}
+				}
+				if (!flag) {
+					gs.clear();
+					break LEFT;
+				}
+			}
+			// 下面是确定向左切换
+			return gs.toArray(Gate.class);
+		}
+		
+		float fxright = rect.x + rect.width;
+		int xright = (int) Math.ceil(fxright);
+
+		// 向右
+		RIGHT: {
+			if (xright != currentRoom.width) {
+				break RIGHT;
+			}
+			if (Math.abs(xright - fxright) > 0.01f) { // 允许误差 0.01 格
+				break RIGHT;
+			}
+			Gate[] gates = this.currentRoom.transmitRight;
+			if (gates == null) {
+				break RIGHT;
+			}
+			
+			for (int y = ybottom; y <= ytop; y++) {
+				boolean flag = false; // 有没有查到相关的大门
+				for (int i = 0; i < gates.length; i++) {
+					Gate g = gates[i];
+					if (g.y == y) {
+						flag = true;
+						gs.add(g);
+						break;
+					}
+				}
+				if (!flag) {
+					gs.clear();
+					break RIGHT;
+				}
+			}
+			// 下面是确定向左切换
+			return gs.toArray(Gate.class);
+		}
+		
+		return null;
 	}
 
 }

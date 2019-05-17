@@ -4,9 +4,10 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
+import zdream.rockchronicle.core.input.IInputBindable;
 import zdream.rockchronicle.core.input.PlayerInput;
 
-public class MegamanInLevel extends CharacterEntry {
+public class MegamanInLevel extends CharacterEntry implements IInputBindable {
 	
 	public MegamanInLevel(int id, String name) {
 		super(id, name);

@@ -1,16 +1,14 @@
 package zdream.rockchronicle.core.module.destroy;
 
+import static zdream.rockchronicle.platform.world.LevelWorld.STEPS_PER_SECOND;
+
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
-import zdream.rockchronicle.core.module.box.BoxModule;
-import zdream.rockchronicle.core.module.box.IBoxHolder;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
-
-import static zdream.rockchronicle.platform.world.LevelWorld.STEPS_PER_SECOND;
 
 /**
  * <p>判断角色是否在房间外, 如果是则销毁的销毁模块
@@ -64,11 +62,7 @@ public class OutsideDestroyModule extends DestroyModule {
 	 * @return
 	 */
 	protected Box getSingleBox() {
-		BoxModule mm = parent.getBoxModule();
-		if (mm instanceof IBoxHolder) {
-			return ((IBoxHolder) mm).getBox();
-		}
-		return null;
+		return parent.getBoxModule().getBox();
 	}
 	
 	@Override
