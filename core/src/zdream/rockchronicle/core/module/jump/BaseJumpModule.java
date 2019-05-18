@@ -87,15 +87,20 @@ public class BaseJumpModule extends JumpModule {
 				// 执行跳跃
 				vy = impulse;
 			}
-		} else if (!bottomStop) {
-			vy += decay;
+		} else {
+			float delta = decay;
+			if (vy > 0 && (jumpEnd || topStop || stiffness)) {
+				delta = 4 * decay;
+				if (vy >= -delta) {
+					delta = -vy;
+				}
+			}
+			vy += delta;
 			if (vy < maxDropVelocity) {
 				vy = maxDropVelocity;
 			}
 		}
-		if (vy > 0 && (jumpEnd || topStop || stiffness)) {
-			vy = 0;
-		}
+		
 		
 		parent.setJson("box", BoxSetter.newInstance().setVelocityY(vy).get());
 	}

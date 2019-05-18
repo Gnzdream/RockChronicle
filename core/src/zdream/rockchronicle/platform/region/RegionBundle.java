@@ -34,7 +34,7 @@ class RegionBundle {
 	 */
 	public String tmxPath;
 
-	Region region = new Region();
+	Region region;
 	ObjectMap<String, JsonValue> fields = new ObjectMap<>();
 	
 	/*

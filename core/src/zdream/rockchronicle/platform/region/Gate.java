@@ -10,9 +10,14 @@ package zdream.rockchronicle.platform.region;
  * @since v0.0.1
  * @date
  *   2019-05-15 (created)
- *   2019-05-06 (last modified)
+ *   2019-05-18 (last modified)
  */
 public class Gate {
+	
+	public Gate(Room srcRoom, Room destRoom) {
+		this.srcRoom = srcRoom;
+		this.destRoom = destRoom;
+	}
 	
 	public static final byte DIRECTION_LEFT = 0;
 	public static final byte DIRECTION_RIGHT = 1;
@@ -22,27 +27,42 @@ public class Gate {
 	/**
 	 * 从哪个房间
 	 */
-	public int srcRoom;
+	public final Room srcRoom;
 	
 	/**
 	 * 到哪个房间
 	 */
-	public int destRoom;
+	public final Room destRoom;
 	
 	/**
-	 * srcRoom 中的位置
+	 * <p>与切换房间的方向垂直的坐标分量上, 两个房间的坐标差值.
+	 * <p>如果从 srcRoom 的 (x1, 24) 坐标往右进入 destRoom 的 (x2, 1) 位置,
+	 * 差值为 x2 - x1.
+	 * <p>如果不是左右切换房间, 而是上下切换房间, 那么该值就是纵坐标的差值.
+	 * </p>
 	 */
-	public int x, y;
+	public int offset;
 	
 	/**
-	 * destRoom 中到达的位置
+	 * <p>如果两个房间来源于不同的区域, 则这两个区域的原点之间的差值.
+	 * destRegion - srcRegion = (offsetXOfRegion, offsetYOfRegion)
+	 * <p>如果两个房间来源于同一个区域, 两个值为 0
+	 * </p>
 	 */
-	public int tox, toy;
+	public int offsetXOfRegion, offsetYOfRegion;
 	
 	/**
 	 * 方向
 	 */
 	public byte direction;
+	
+	/**
+	 * <p>在源房间 (srcRoom) 中, 哪些房间是可以作为移屏的位置的
+	 * <p>该列表记录了一系列的坐标, 仍然是与切换房间的方向垂直的坐标分量上的,
+	 * 即上下切房间是记录横坐标, 左右切房间是记录纵坐标
+	 * </p>
+	 */
+	public int[] exits;
 	
 	/*
 	 * TODO 规则，比如向上必须是爬梯子等
@@ -59,6 +79,6 @@ public class Gate {
 		case DIRECTION_BOTTOM: s = "BOTTOM"; break;
 		default: s = ""; break;
 		}
-		return String.format("Gate:%d(%d,%d)->%d(%d,%d),%s", srcRoom, x, y, destRoom, tox, toy, s);
+		return String.format("Gate:%s->(%s)->%s", srcRoom, s, destRoom);
 	}
 }

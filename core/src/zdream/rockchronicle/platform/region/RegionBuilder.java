@@ -3,10 +3,10 @@ package zdream.rockchronicle.platform.region;
 import static java.util.Objects.requireNonNull;
 import static zdream.rockchronicle.platform.region.Terrains.terrainCode;
 
+import java.lang.ref.WeakReference;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 
 import com.badlogic.gdx.Gdx;
@@ -30,6 +30,7 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
@@ -40,12 +41,17 @@ import zdream.rockchronicle.core.Config;
 import zdream.rockchronicle.utils.FilePathUtil;
 import zdream.rockchronicle.utils.JsonUtils;
 
+import static zdream.rockchronicle.platform.region.Gate.*;
+
 public class RegionBuilder {
 	
 	/* **********
 	 *  初始化  *
 	 ********** */
 	
+	/**
+	 * 区域名 - 区域初始化参数数据
+	 */
 	private final ObjectMap<String, RegionDef> levels = new ObjectMap<>();
 	
 	public void init() {
@@ -110,13 +116,23 @@ public class RegionBuilder {
 				
 				try {
 					JsonValue v = jreader.parse(fjson);
-					
-					RegionDef def = new RegionDef();
-					def.name = v.getString("name");
-					def.path = fjson.path();
-					def.data = v.toJson(OutputType.minimal);
-					
-					levels.put(def.name, def);
+					if (v.type() == ValueType.array) { // 多个 region
+						for (JsonValue item = v.child; item != null; item = item.next) {
+							RegionDef def = new RegionDef();
+							def.name = item.getString("name");
+							def.path = fjson.path();
+							def.data = item.toJson(OutputType.minimal);
+							
+							levels.put(def.name, def);
+						}
+					} else { // 单个 region
+						RegionDef def = new RegionDef();
+						def.name = v.getString("name");
+						def.path = fjson.path();
+						def.data = v.toJson(OutputType.minimal);
+						
+						levels.put(def.name, def);
+					}
 				} catch (RuntimeException e) {
 					e.printStackTrace();
 				}
@@ -128,6 +144,14 @@ public class RegionBuilder {
 		return levels.containsKey(name);
 	}
 
+	/* **********
+	 * 缓存部分 *
+	 ********** */
+	
+	/**
+	 * 缓存区域的数据: 区域名 - 区域数据 (弱引用)
+	 */
+	public ObjectMap<String, WeakReference<Region>> regionBuf = new ObjectMap<>();
 
 	/* **********
 	 * 构造部分 *
@@ -152,18 +176,32 @@ public class RegionBuilder {
 			Paths.get("res", "level", "terrain", "terrain.png").toString();
 	
 	public Region build(String name) {
+		// 看看缓存中是否有
+		WeakReference<Region> ref = regionBuf.get(name);
+		if (ref != null) {
+			Region r = ref.get();
+			if (r != null) {
+				return r;
+			}
+		}
+		
+		// 缓存没有, 所以只能创建
 		RegionDef def = levels.get(name);
 		if (def == null) {
 			throw new NullPointerException(String.format("不存在 %s 的关卡数据", name));
 		}
 		
 		RegionBundle bundle = new RegionBundle(def);
+		Region r = build(bundle);
+		regionBuf.put(name, new WeakReference<Region>(r));
 		
-		return build(bundle);
+		return r;
 	}
 	
 	/**
-	 * 创建仅能看到地形符号的关卡地图, 其它图层均被隐藏
+	 * <p>创建仅能看到地形符号的关卡地图, 其它图层均被隐藏.
+	 * <p>从这个方法得到的区域数据将不会添加到缓存中.
+	 * </p>
 	 * @param basePath
 	 * @return
 	 */
@@ -181,7 +219,7 @@ public class RegionBuilder {
 	}
 
 	private Region build(RegionBundle bundle) {
-		JsonValue json = jreader.parse(Gdx.files.local(bundle.def.path));
+		JsonValue json = jreader.parse(bundle.def.data);
 		parseRegionDefJson(bundle, json);
 		
 		// tmx
@@ -194,6 +232,8 @@ public class RegionBuilder {
 		initFieldMap(bundle);
 		// 图与图之间进行衔接的门
 		initGate(bundle);
+		// 扫描点位
+		initPoint(bundle);
 		
 		return bundle.region;
 	}
@@ -230,6 +270,9 @@ public class RegionBuilder {
 	}
 	
 	private void parseRegionDefJson(RegionBundle bundle, JsonValue json) {
+		String name = json.getString("name");
+		bundle.region = new Region(name);
+		
 		bundle.tmxPath = json.getString("tmxPath");
 		
 		// fields
@@ -290,19 +333,14 @@ public class RegionBuilder {
 			}
 		}
 		
-		if (spawnx == -1) {
-			throw new RuntimeException("出生点位没有确定");
-		}
-		
 		Room[] rooms = bundle.region.rooms = new Room[rects.size()];
 		float spawnxf = spawnx + 0.5f, spawnyf = spawny + 0.5f;
 		
 		for (int i = 0; i < rooms.length; i++) {
 			// 将 Room 信息打包
-			Room r = new Room();
+			Room r = new Room(bundle.region, i);
 			Rectangle rect = rects.get(i);
 			
-			r.index = i;
 			r.offsetx = (int) rect.x;
 			r.offsety = (int) rect.y;
 			r.width = (int) rect.width;
@@ -319,10 +357,6 @@ public class RegionBuilder {
 			
 			// 读取地形数据
 			readTerrains(r, t);
-		}
-		
-		if (bundle.region.spawnRoom == -1) {
-			throw new RuntimeException("出生点位没有确定");
 		}
 	}
 	
@@ -349,7 +383,7 @@ public class RegionBuilder {
 		}
 		
 		// 左上角
-		for (; ; yy += xstep) {
+		for (; ; yy += ystep) {
 			if (yy >= height) {
 				throw new RuntimeException("左下角点在 [" + x + "," + y + "] 的 Room 没有对应的上边界");
 			}
@@ -595,87 +629,178 @@ public class RegionBuilder {
 				
 				if (xstart - 1 == xend2) {
 					if (ystart2 < yend && yend2 > ystart) { // room 的左边界接壤 room2
-						createGateLeft(room, room2, bundle);
+						createGateHorizontal(room2, room, 0, 0);
 					}
 				} else if (xend + 1 == xstart2) {
 					if (ystart2 < yend && yend2 > ystart) { // room 的右边界接壤 room2
-						createGateLeft(room2, room, bundle);
+						createGateHorizontal(room, room2, 0, 0);
 					}
 				} // else TODO 上下接壤
 			}
 		}
+	}
+	
+	public void createGate(Room from, Room to, RegionPoint fromPoint, RegionPoint toPoint) {
+		// 如果这个大门已经被添加过, 就可以直接退出了
+		Array<Gate> gates = from.gates;
+		for (int i = 0; i < gates.size; i++) {
+			Gate gate = gates.get(i);
+			
+			if (gate.destRoom.region.name.equals(to.region.name) && gate.destRoom.index == to.index) {
+				return;
+			}
+		}
 		
+		// 创建
+		ConnectionProperties conn = fromPoint.conn;
+		int dx, dy;
+		switch (conn.direction) {
+		case DIRECTION_LEFT: {
+			dx = fromPoint.x - 1 - toPoint.x; // fromPoint.x - 1 = toPoint.x + dx
+			dy = fromPoint.y - toPoint.y; // fromPoint.y = toPoint.y + dy
+			createGateHorizontal(to, from, dx, dy);
+		} break;
+		case DIRECTION_RIGHT: {
+			dx = fromPoint.x + 1 - toPoint.x; // fromPoint.x + 1 = toPoint.x + dx
+			dy = fromPoint.y - toPoint.y; // fromPoint.y = toPoint.y + dy
+			createGateHorizontal(from, to, dx, dy);
+		} break;
+		case DIRECTION_TOP: {
+			dx = fromPoint.x - toPoint.x; // fromPoint.x = toPoint.x + dx
+			dy = fromPoint.y + 1 - toPoint.y; // fromPoint.y + 1 = toPoint.y + dy
+			createGateVertical(to, from, dx, dy);
+		} break;
+		case DIRECTION_BOTTOM: {
+			dx = fromPoint.x - toPoint.x; // fromPoint.x = toPoint.x + dx
+			dy = fromPoint.y - 1 - toPoint.y; // fromPoint.y - 1 = toPoint.y + dy
+			createGateVertical(from, to, dx, dy);
+		} break;
+
+		default: // else TODO 上下接壤
+			break;
+		}
 	}
 	
 	/**
-	 * room1 的左边接壤 room2
-	 * @param room1
-	 * @param room2
-	 * @param bundle
+	 * rooml 的右边接壤 roomr, 处理左右接壤的房间, 创建大门的问题
+	 * @param rooml
+	 *   左边的房间
+	 * @param roomr
+	 *   右边的房间
+	 * @param dx
+	 * @param dy
+	 *   如果将右边的房间从所处的区域挪到左边房间所处的区域 (相当于坐标轴改动),
+	 *   那么横纵坐标的变化量. 如果两个房间属于同一个区域, 该值均为 0.
 	 */
-	private void createGateLeft(Room room1, Room room2, RegionBundle bundle) {
-		System.out.println(String.format("房间 %d 左边接壤 %d", room1.index, room2.index));
-		
-		int offsety1 = room1.offsety;
-		int offsety2 = room2.offsety;
+	private void createGateHorizontal(Room rooml, Room roomr, int dx, int dy) {
+		int offsety1 = rooml.offsety;
+		int offsety2 = roomr.offsety + dy;
 		
 		int ystart = Math.max(offsety1, offsety2);
-		int yend = Math.min(offsety1 + room1.height - 1, offsety2 + room2.height - 1);
+		int yend = Math.min(offsety1 + rooml.height - 1, offsety2 + roomr.height - 1);
 		
-		int x1a = 0;
-		int x1b = 1;
-		int x2a = room1.width - 1;
-		int x2b = x2a - 1;
+		int x1a = rooml.width - 1;
+		int x1b = x1a - 1;
+		int x2a = 0;
+		int x2b = 1;
 		
-		Array<Gate> gate1 = new Array<>(), gate2 = new Array<>();
+		Gate gate1 = new Gate(rooml, roomr), gate2 = new Gate(roomr, rooml);
+		gate1.direction = DIRECTION_RIGHT;
+		gate2.direction = DIRECTION_LEFT;
+		gate1.offset = offsety2 - offsety1;
+		gate2.offset = offsety1 - offsety2;
+		gate1.offsetXOfRegion = -dx;
+		gate1.offsetYOfRegion = -dy;
+		gate2.offsetXOfRegion = dx;
+		gate2.offsetYOfRegion = dy;
+		
+		IntArray ia1 = new IntArray(yend - ystart + 1);
+		IntArray ia2 = new IntArray(yend - ystart + 1);
+		
 		for (int y = ystart; y <= yend; y++) { // y 是绝对高度
 			// 计算房间内部的高度
 			int y1 = y - offsety1;
-			int y2 = y - offsety2;
+			int y2 = y - offsety2; // y - offsety2 是相对于 rooml 所在区域的
 			
-			if (Terrains.isEmpty(room1.terrains[x1a][y1]) && Terrains.isEmpty(room2.terrains[x2a][y2])) {
-				if (Terrains.isEmpty(room2.terrains[x2b][y2])) {
-					Gate g = new Gate();
-					g.srcRoom = room1.index;
-					g.destRoom = room2.index;
-					g.direction = Gate.DIRECTION_LEFT;
-					g.x = x1a;
-					g.y = y1;
-					g.tox = x2b;
-					g.toy = y2;
-					gate1.add(g);
+			if (Terrains.isEmpty(rooml.terrains[x1a][y1]) && Terrains.isEmpty(roomr.terrains[x2a][y2])) {
+				if (Terrains.isEmpty(roomr.terrains[x2b][y2])) {
+					ia1.add(y1);
 				}
-				if (Terrains.isEmpty(room1.terrains[x1b][y1])) {
-					Gate g = new Gate();
-					g.srcRoom = room2.index;
-					g.destRoom = room1.index;
-					g.direction = Gate.DIRECTION_RIGHT;
-					g.x = x2a;
-					g.y = y2;
-					g.tox = x1b;
-					g.toy = y1;
-					gate2.add(g);
+				if (Terrains.isEmpty(rooml.terrains[x1b][y1])) {
+					ia2.add(y2);
 				}
 			}
 		}
 		
-		if (gate1.size > 0) {
-			if (room1.transmitLeft == null) {
-				room1.transmitLeft = gate1.toArray(Gate.class);
-			} else {
-				int oriLen = room1.transmitLeft.length;
-				room1.transmitLeft = Arrays.copyOf(room1.transmitLeft, oriLen + gate1.size);
-				System.arraycopy(gate1.toArray(Gate.class), 0, room1.transmitLeft, oriLen, gate1.size);
+		if (ia1.size > 0) {
+			gate1.exits = ia1.toArray();
+			rooml.gates.add(gate1);
+		}
+		if (ia2.size > 0) {
+			gate2.exits = ia2.toArray();
+			roomr.gates.add(gate2);
+		}
+	}
+	
+	/**
+	 * roomt 的下边接壤 roomb, 处理上下接壤的房间, 创建大门的问题
+	 * @param roomt
+	 *   上边的房间
+	 * @param roomb
+	 *   下边的房间
+	 * @param dx
+	 * @param dy
+	 *   如果将右边的房间从所处的区域挪到左边房间所处的区域 (相当于坐标轴改动),
+	 *   那么横纵坐标的变化量. 如果两个房间属于同一个区域, 该值均为 0.
+	 */
+	private void createGateVertical(Room roomt, Room roomb, int dx, int dy) {
+		int offsety1 = roomt.offsetx;
+		int offsety2 = roomb.offsetx + dx;
+		
+		int xstart = Math.max(offsety1, offsety2);
+		int xend = Math.min(offsety1 + roomt.width - 1, offsety2 + roomb.width - 1);
+		
+		int y1a = 0;
+		@SuppressWarnings("unused")
+		int y1b = 1;
+		int y2a = roomb.height - 1;
+		int y2b = y2a - 1;
+		
+		Gate gate1 = new Gate(roomt, roomb), gate2 = new Gate(roomt, roomb);
+		gate1.direction = DIRECTION_BOTTOM;
+		gate2.direction = DIRECTION_TOP;
+		gate1.offset = offsety2 - offsety1;
+		gate2.offset = offsety1 - offsety2;
+		gate1.offsetXOfRegion = -dx;
+		gate1.offsetYOfRegion = -dy;
+		gate2.offsetXOfRegion = dx;
+		gate2.offsetYOfRegion = dy;
+		
+		IntArray ia1 = new IntArray(xend - xstart + 1);
+		IntArray ia2 = new IntArray(xend - xstart + 1);
+		
+		for (int x = xstart; x <= xend; x++) { // y 是绝对高度
+			// 计算房间内部的高度
+			int x1 = x - offsety1;
+			int x2 = x - offsety2;
+			
+			if (Terrains.isEmpty(roomt.terrains[x1][y1a]) && Terrains.isEmpty(roomb.terrains[x2][y2a])) {
+				if (Terrains.isEmpty(roomb.terrains[x2][y2b])) {
+					ia1.add(x1);
+				}
+				/*if (Terrains.isEmpty(rooml.terrains[x1][y1b])) { // TODO 要看梯子
+					ia2.add(x2);
+				}*/
 			}
 		}
-		if (gate2.size > 0) {
-			if (room2.transmitRight == null) {
-				room2.transmitRight = gate2.toArray(Gate.class);
-			} else {
-				int oriLen = room2.transmitRight.length;
-				room2.transmitRight = Arrays.copyOf(room2.transmitRight, oriLen + gate2.size);
-				System.arraycopy(gate2.toArray(Gate.class), 0, room2.transmitRight, oriLen, gate2.size);
-			}
+		
+		if (ia1.size > 0) {
+			gate1.exits = ia1.toArray();
+			roomt.gates.add(gate1);
+		}
+		if (ia2.size > 0) {
+			gate2.exits = ia2.toArray();
+			roomb.gates.add(gate2);
 		}
 	}
 	
@@ -719,6 +844,97 @@ public class RegionBuilder {
 		orect.addChild("height", new JsonValue(f.rect.height));
 		
 		return f;
+	}
+	
+	/**
+	 * 扫描 tmx 的点位的参数, 将数据整合成 {@link RegionPoint} 添加到 {@link Region#points} 中
+	 * @param bundle
+	 */
+	private void initPoint(RegionBundle bundle) {
+		TiledMap tmx = bundle.region.tmx;
+		MapLayer l = tmx.getLayers().get("Points");
+		if (l == null) {
+			return;
+		}
+		
+		MapObjects objs = l.getObjects();
+		final int size = objs.getCount();
+		for (int i = 0; i < size; i++) {
+			MapObject obj = objs.get(i);
+			
+			if (!(obj instanceof RectangleMapObject)) {
+				continue;
+			}
+			RectangleMapObject rp = (RectangleMapObject) obj;
+			Rectangle rect = rp.getRectangle();
+			
+			int x = (int) rect.x / Config.INSTANCE.blockWidth;
+			int y = (int) rect.y / Config.INSTANCE.blockHeight;
+			RegionPoint p = new RegionPoint();
+			p.x = x;
+			p.y = y;
+			p.name = rp.getName();
+			
+			MapProperties prop = rp.getProperties();
+			p.type = prop.get("type", "normal", String.class);
+			bundle.region.points.add(p);
+			
+			switch (p.type) {
+			case "connection":
+				createConnectionProperties(bundle, p, rp);
+				break;
+
+			default:
+				break;
+			}
+		}
+		
+	}
+	
+	private void createConnectionProperties(RegionBundle bundle, RegionPoint p, RectangleMapObject rp) {
+		// 找这个点属于哪个房间
+		Region region = bundle.region;
+		Room[] rooms = region.rooms;
+		Room room = null;
+		
+		for (int i = 0; i < rooms.length; i++) {
+			Room room0 = rooms[i];
+			if (room0.contain(p.x, p.y)) {
+				room = room0;
+				break;
+			}
+		}
+		if (room == null) {
+			return; // 这个点不属于任何房间
+		}
+
+		MapProperties prop0 = rp.getProperties();
+		
+		ConnectionProperties prop = new ConnectionProperties();
+		prop.room = room;
+		prop.x = p.x - room.offsetx;
+		prop.y = p.y - room.offsety;
+		prop.destPoint = prop0.get("destPoint", String.class);
+		prop.destRegionName = prop0.get("destRegion", String.class);
+		
+		String dirStr = prop0.get("direction", String.class);
+		switch (dirStr) {
+		case "top":
+			prop.direction = DIRECTION_TOP;
+			break;
+		case "bottom":
+			prop.direction = DIRECTION_BOTTOM;
+			break;
+		case "left":
+			prop.direction = DIRECTION_LEFT;
+			break;
+		case "right":
+			prop.direction = DIRECTION_RIGHT;
+			break;
+		default:
+			return; // 方向参数错误
+		}
+		p.conn = prop;
 	}
 	
 }

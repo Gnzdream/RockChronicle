@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Pool;
 
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.body.TerrainParam;
@@ -24,6 +25,13 @@ public class LevelWorld implements ITerrainStatic {
 	}
 	
 	public Room currentRoom;
+	
+	private Pool<BoxParam> boxps = new Pool<BoxParam>() {
+		@Override
+		protected BoxParam newObject() {
+			return new BoxParam();
+		}
+	};
 	
 	public void doCreate() {
 		// 世界重力向下
@@ -195,8 +203,14 @@ public class LevelWorld implements ITerrainStatic {
 		box.grounds.clear();
 		Rectangle rect = box.getPosition();
 		// 底边左端所在的格子 (x)
-		int xleft = Math.max((int) Math.floor(rect.x), 0);
-		int xright = Math.min((int) Math.floor(rect.x + rect.width), currentRoom.width - 1);
+		float fxleft = rect.x;
+		float fxright = rect.x + rect.width;
+		int xleft = Math.max((int) Math.floor(fxleft), 0);
+		int xright = Math.min((int) Math.floor(fxright), currentRoom.width - 1);
+		if (fxright == xright) {
+			xright--;
+		}
+		
 		float fybottom = rect.y;
 		int ybottom = (int) Math.floor(fybottom);
 		
@@ -232,8 +246,14 @@ public class LevelWorld implements ITerrainStatic {
 		
 		Rectangle rect = box.getPosition();
 		// 底边左端所在的格子 (x)
-		int xleft = Math.max((int) Math.floor(rect.x), 0);
-		int xright = Math.min((int) Math.floor(rect.x + rect.width), currentRoom.width - 1);
+		float fxleft = rect.x;
+		float fxright = rect.x + rect.width;
+		int xleft = Math.max((int) Math.floor(fxleft), 0);
+		int xright = Math.min((int) Math.floor(fxright), currentRoom.width - 1);
+		if (fxright == xright) {
+			xright--;
+		}
+		
 		float fytop = rect.y + rect.height;
 		int ytop = (int) Math.ceil(fytop);
 		
@@ -438,8 +458,13 @@ public class LevelWorld implements ITerrainStatic {
 			}
 			
 			// 出现了跨格子 (只判断跨一个格子的情况)
-			int xleft = Math.max((int) Math.floor(rect.x), 0);
-			int xright = Math.min((int) Math.floor(rect.x + rect.width), currentRoom.width - 1);
+			float fxleft = rect.x;
+			float fxright = rect.x + rect.width;
+			int xleft = Math.max((int) Math.floor(fxleft), 0);
+			int xright = Math.min((int) Math.floor(fxright), currentRoom.width - 1);
+			if (fxright == xright) {
+				xright--;
+			}
 			
 			for (int x = xleft; x <= xright; x++) {
 				int terrain = getTerrain(x, ydbottom);
@@ -463,8 +488,13 @@ public class LevelWorld implements ITerrainStatic {
 			}
 			
 			// 出现了跨格子 (只判断跨一个格子的情况)
-			int xleft = Math.max((int) Math.floor(rect.x), 0);
-			int xright = Math.min((int) Math.floor(rect.x + rect.width), currentRoom.width - 1);
+			float fxleft = rect.x;
+			float fxright = rect.x + rect.width;
+			int xleft = Math.max((int) Math.floor(fxleft), 0);
+			int xright = Math.min((int) Math.floor(fxright), currentRoom.width - 1);
+			if (fxright == xright) {
+				xright--;
+			}
 			
 			for (int x = xleft; x <= xright; x++) {
 				int terrain = getTerrain(x, ystop); // 注意因为前面是 Math.ceil 所以用 ystop 而不是 fydtop
@@ -691,93 +721,105 @@ public class LevelWorld implements ITerrainStatic {
 	public boolean roomShiftEnable = true;
 	
 	/**
-	 * 检查指定角色的盒子是否到达房间边缘, 要进行房间的切换.
+	 * <p>检查指定角色的盒子是否到达房间边缘, 要进行房间的切换.
 	 * TODO 现在只判断左右切换.
+	 * <p>切换的第一个判断是碰断角色是否碰到了房间的边缘
+	 * </p>
 	 * @param box
 	 *   指定角色的盒子, 一般是玩家控制角色的
 	 * @return
 	 */
-	public Gate[] checkRoomShift(Box box) {
+	public Gate checkRoomShift(Box box) {
 		if (!roomShiftEnable) {
 			return null;
 		}
-		Rectangle rect = box.getPosition();
-		float fxleft = rect.x;
-		int xleft = (int) Math.floor(fxleft);
 		
-		float fytop = rect.y + rect.height;
-		int ytop = (int) Math.floor(fytop);
-		if (ytop == fytop) {
-			ytop -= 1;
-		}
-		int ybottom = (int) Math.floor(rect.y);
-		Array<Gate> gs = new Array<>();
+		BoxParam p = boxps.obtain();
+		p.handleBox(box);
 		
 		// 向左
 		LEFT: {
-			if (xleft != 0) {
+			if (p.xleft != 0) {
 				break LEFT;
 			}
-			if (Math.abs(xleft - fxleft) > 0.01f) { // 允许误差 0.01 格
+			if (!p.xleftTightly) {
 				break LEFT;
 			}
-			Gate[] gates = this.currentRoom.transmitLeft;
-			if (gates == null) {
-				break LEFT;
-			}
-			
-			for (int y = ybottom; y <= ytop; y++) {
-				boolean flag = false; // 有没有查到相关的大门
-				for (int i = 0; i < gates.length; i++) {
-					Gate g = gates[i];
-					if (g.y == y) {
-						flag = true;
-						gs.add(g);
-						break;
-					}
-				}
-				if (!flag) {
-					gs.clear();
-					break LEFT;
-				}
+			Gate g = null;
+			for (int y = p.ybottom; y <= p.ytop; y++) {
+				Gate g2 = findGate(currentRoom, Gate.DIRECTION_LEFT, y);
+				if (g2 == null) { break LEFT; }
+				if (g == null) { g = g2; }
+				if (g != g2) { break LEFT; }
 			}
 			// 下面是确定向左切换
-			return gs.toArray(Gate.class);
+			boxps.free(p);
+			return g;
 		}
-		
-		float fxright = rect.x + rect.width;
-		int xright = (int) Math.ceil(fxright);
 
 		// 向右
 		RIGHT: {
-			if (xright != currentRoom.width) {
+			if (p.xright != currentRoom.width - 1) { // 门的坐标是房间宽度 - 1
 				break RIGHT;
 			}
-			if (Math.abs(xright - fxright) > 0.01f) { // 允许误差 0.01 格
+			if (!p.xrightTightly) {
 				break RIGHT;
 			}
-			Gate[] gates = this.currentRoom.transmitRight;
-			if (gates == null) {
-				break RIGHT;
-			}
-			
-			for (int y = ybottom; y <= ytop; y++) {
-				boolean flag = false; // 有没有查到相关的大门
-				for (int i = 0; i < gates.length; i++) {
-					Gate g = gates[i];
-					if (g.y == y) {
-						flag = true;
-						gs.add(g);
-						break;
-					}
-				}
-				if (!flag) {
-					gs.clear();
-					break RIGHT;
-				}
+			Gate g = null;
+			for (int y = p.ybottom; y <= p.ytop; y++) {
+				Gate g2 = findGate(currentRoom, Gate.DIRECTION_RIGHT, y);
+				if (g2 == null) { break RIGHT; }
+				if (g == null) { g = g2; }
+				if (g != g2) { break RIGHT; }
 			}
 			// 下面是确定向左切换
-			return gs.toArray(Gate.class);
+			boxps.free(p);
+			return g;
+		}
+		
+		// 向下
+		BOTTOM: {
+			if (p.ybottom >= 0) {
+				break BOTTOM;
+			}
+			Gate g = null;
+			for (int x = p.xleft; x <= p.xright; x++) {
+				Gate g2 = findGate(currentRoom, Gate.DIRECTION_BOTTOM, x);
+				if (g2 == null) { break BOTTOM; }
+				if (g == null) { g = g2; }
+				if (g != g2) { break BOTTOM; }
+			}
+			// 下面是确定向左切换
+			boxps.free(p);
+			return g;
+		}
+		
+		boxps.free(p);
+		
+		return null;
+	}
+	
+	/**
+	 * 根据规则在指定房间中查找大门
+	 * @param room
+	 * @param direction
+	 * @param xory
+	 * @return
+	 */
+	public Gate findGate(Room room, byte direction, int xory) {
+		Array<Gate> gates = room.gates;
+		for (int i = 0; i < gates.size; i++) {
+			Gate g = gates.get(i);
+			
+			if (g.direction != direction) {
+				continue;
+			}
+			int[] exits = g.exits;
+			for (int j = 0; j < exits.length; j++) {
+				if (xory == exits[j]) {
+					return g;
+				}
+			}
 		}
 		
 		return null;

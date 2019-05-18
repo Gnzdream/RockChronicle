@@ -1,3 +1,4 @@
+[
 {
 	"name" : "mm1cut",
 	"tmxPath" : "cut.tmx",
@@ -19,4 +20,9 @@
 			}
 		}
 	]
+},
+{
+	"name" : "mm1cut-2",
+	"tmxPath" : "cut-2.tmx"
 }
+]

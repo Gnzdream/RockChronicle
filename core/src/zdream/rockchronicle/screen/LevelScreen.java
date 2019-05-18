@@ -7,8 +7,6 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.Fixture;
 
 import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.Config;
@@ -109,11 +107,6 @@ public class LevelScreen implements Screen {
 		// 测试帧率部分
 		frameTimestamp = System.currentTimeMillis();
 	}
-	
-	// 测试的
-	Body testBody;
-	Fixture testFixture;
-	
 	
 	int count = 0;
 	

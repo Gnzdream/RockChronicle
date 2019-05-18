@@ -12,6 +12,8 @@ import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.region.Gate;
 import zdream.rockchronicle.platform.region.Room;
 
+import static zdream.rockchronicle.platform.region.Gate.*;
+
 /**
  * <p>房间切换处理方
  * </p>
@@ -26,11 +28,9 @@ public class RoomShiftHandler {
 	
 	public RoomShiftParam param;
 	
-	public void doShift(Gate[] gates) {
-		Gate g = gates[0];
+	public void doShift(Gate g) {
 		param = new RoomShiftParam();
-		param.srcRoom = g.srcRoom;
-		param.destRoom = g.destRoom;
+		param.gate = g;
 		
 		GameRuntime runtime = RockChronicle.INSTANCE.runtime;
 		param.entries.add(runtime.getPlayer1());
@@ -38,7 +38,7 @@ public class RoomShiftHandler {
 		param.phase2EntryWidth = new float[param.entries.size];
 		
 		runtime.levelWorld.doPause();
-		countParam(gates, runtime);
+		countParam(g, runtime);
 		
 		param.phase = 1;
 	}
@@ -50,10 +50,9 @@ public class RoomShiftHandler {
 	 * </p>
 	 * @param gates
 	 */
-	private void countParam(Gate[] gates, GameRuntime runtime) {
+	private void countParam(Gate g, GameRuntime runtime) {
 		RockChronicle app = RockChronicle.INSTANCE;
-		Room srcRoom = runtime.curRegion.rooms[param.srcRoom],
-				destRoom = runtime.curRegion.rooms[param.destRoom];
+		Room srcRoom = g.srcRoom, destRoom = g.destRoom;
 		
 		// TODO 如果 destRoom 来自其它的区域, 还需要修改数据
 		
@@ -61,9 +60,9 @@ public class RoomShiftHandler {
 		Vector2 pos = new Vector2(camera.position.x - app.width / 2.0f,
 				camera.position.y - app.height / 2.0f); // 相对于当前房间
 		param.currentPos.set(pos);
-		switch (gates[0].direction) {
-		case Gate.DIRECTION_LEFT: 
-		case Gate.DIRECTION_RIGHT: {
+		switch (g.direction) {
+		case DIRECTION_LEFT: 
+		case DIRECTION_RIGHT: {
 			
 			float dy;
 			PHASE1 : { // 阶段一: 定 y 轴
@@ -76,8 +75,8 @@ public class RoomShiftHandler {
 					break PHASE1;
 				}
 				
-				int y2start = destRoom.offsety - offsety,
-						y2end = y2start + destRoom.height - (int) camera.viewportHeight - offsety;
+				int y2start = destRoom.offsety + g.offsetYOfRegion - offsety,
+						y2end = y2start + destRoom.height - (int) camera.viewportHeight;
 				if (y2start == y2end) {
 					param.phase1Pos.set(pos.x, dy = y2start);
 					break PHASE1;
@@ -101,9 +100,9 @@ public class RoomShiftHandler {
 			
 			{ // 阶段二: 定 x 轴
 				int offsetx = srcRoom.offsetx;
-				if (gates[0].direction == Gate.DIRECTION_RIGHT) {
-					param.phase2Pos.set(destRoom.offsetx - offsetx, dy);
-					param.phase2CameraWidth = destRoom.offsetx - offsetx;
+				if (g.direction == DIRECTION_RIGHT) {
+					param.phase2Pos.set(destRoom.offsetx - g.offsetXOfRegion - offsetx, dy);
+					param.phase2CameraWidth = param.phase2Pos.x - param.phase1Pos.x;
 					
 					for (int i = 0; i < param.entries.size; i++) {
 						CharacterEntry entry = param.entries.get(i);
@@ -112,12 +111,14 @@ public class RoomShiftHandler {
 						float xleft = rect.x;
 						Vector2 anchor = box.anchor;
 						
-						param.phase2EntryWidth[i] = destRoom.offsetx - srcRoom.offsetx + gates[0].tox - xleft;
+						// 向右移屏后, 角色左边需要等于 1
+						param.phase2EntryWidth[i] = destRoom.offsetx - g.offsetXOfRegion - srcRoom.offsetx + 1 - xleft;
 						param.entriesPos[i] = new Vector2(anchor.x + param.phase2EntryWidth[i], anchor.y);
 					}
 				} else {
-					param.phase2Pos.set(destRoom.offsetx + destRoom.width - camera.viewportWidth - offsetx, dy);
-					param.phase2CameraWidth = offsetx - destRoom.offsetx;
+					param.phase2Pos.set(destRoom.offsetx - g.offsetXOfRegion + destRoom.width
+							- camera.viewportWidth - offsetx, dy);
+					param.phase2CameraWidth = param.phase1Pos.x - param.phase2Pos.x;
 					
 					for (int i = 0; i < param.entries.size; i++) {
 						CharacterEntry entry = param.entries.get(i);
@@ -125,13 +126,90 @@ public class RoomShiftHandler {
 						Rectangle rect = box.getPosition();
 						float xright = rect.x + rect.width; // 相对于 srcRoom
 						Vector2 anchor = box.anchor;
-						
-						param.phase2EntryWidth[i] = (srcRoom.offsetx + xright) - (destRoom.offsetx + gates[0].tox + 1);
+
+						// 向左移屏后, 角色右边需要等于目标房间的宽 - 1
+						param.phase2EntryWidth[i] = (srcRoom.offsetx + xright)
+								- (destRoom.offsetx - g.offsetXOfRegion + destRoom.width - 1);
 						param.entriesPos[i] = new Vector2(anchor.x - param.phase2EntryWidth[i], anchor.y);
 					}
 				}
 			}
 		} break;
+		
+		case DIRECTION_BOTTOM:
+		case DIRECTION_TOP: {
+			float dx;
+			PHASE1 : { // 阶段一: 定 x 轴
+				// 下面计算镜头的框的底边纵坐标的范围
+				int offsetx = srcRoom.offsetx;
+				int x1start = 0,
+						x1end = x1start + srcRoom.width - (int) camera.viewportWidth;
+				if (x1start == x1end) {
+					param.phase1Pos.set(dx = x1start, pos.y);
+					break PHASE1;
+				}
+				
+				int x2start = destRoom.offsetx + g.offsetXOfRegion - offsetx,
+						x2end = x2start + destRoom.height - (int) camera.viewportWidth;
+				if (x2start == x2end) {
+					param.phase1Pos.set(dx = x2start, pos.y);
+					break PHASE1;
+				}
+				
+				if (pos.x >= x1start && pos.x <= x1end && pos.x >= x2start && pos.x <= x2end) {
+					param.phase1Pos.set(dx = pos.x, pos.y);
+					break PHASE1;
+				}
+				if (pos.x < x1start || pos.x < x2start) {
+					param.phase1Pos.set(dx = Math.max(x1start, x2start), pos.y);
+					break PHASE1;
+				}
+				if (pos.x > x1end || pos.x > x2end) {
+					param.phase1Pos.set(dx = Math.min(x1end, x2end), pos.y);
+					break PHASE1;
+				}
+				// 如果运行到这里, 那就是出错了
+				throw new IllegalStateException("移屏计算出错: 阶段一");
+			}
+			
+			{ // 阶段二: 定 y 轴
+				int offsety = srcRoom.offsety;
+				if (g.direction == DIRECTION_BOTTOM) { // 向下
+					param.phase2Pos.set(dx, destRoom.offsety - g.offsetYOfRegion
+							+ destRoom.height - camera.viewportHeight - offsety);
+					param.phase2CameraWidth = param.phase1Pos.y - param.phase2Pos.y;
+					
+					for (int i = 0; i < param.entries.size; i++) {
+						CharacterEntry entry = param.entries.get(i);
+						Box box = entry.getBoxModule().getBox();
+						Rectangle rect = box.getPosition();
+						float ybottom = rect.y;
+						Vector2 anchor = box.anchor;
+						
+						// 向下移屏后, 角色下边需要等于目标房间高 - 1 (与左右不同)
+						param.phase2EntryWidth[i] = (srcRoom.offsety + ybottom)
+								- (destRoom.offsety - g.offsetYOfRegion + destRoom.height - 1);
+						param.entriesPos[i] = new Vector2(anchor.x, anchor.y - param.phase2EntryWidth[i]);
+					}
+				} else {
+					param.phase2Pos.set(dx, destRoom.offsety - g.offsetYOfRegion - offsety);
+					param.phase2CameraWidth = param.phase2Pos.y - param.phase1Pos.y;
+					
+					for (int i = 0; i < param.entries.size; i++) {
+						CharacterEntry entry = param.entries.get(i);
+						Box box = entry.getBoxModule().getBox();
+						Rectangle rect = box.getPosition();
+						float ybottom = rect.y; // 相对于 srcRoom
+						Vector2 anchor = box.anchor;
+
+						// 向上移屏后, 角色下边需要等于 1
+						param.phase2EntryWidth[i] = srcRoom.height + 1 - ybottom;
+						param.entriesPos[i] = new Vector2(anchor.x, anchor.y + param.phase2EntryWidth[i]);
+					}
+				}
+			}
+		} break;
+		
 			// TODO 向上下移屏的暂时不完成
 		default:
 			break;
@@ -258,9 +336,9 @@ public class RoomShiftHandler {
 		});
 		runtime.handleAddAndRemove();
 		
-		runtime.setRoom(param.destRoom);
-		Room srcRoom = runtime.curRegion.rooms[param.srcRoom];
-		Room destRoom = runtime.curRegion.rooms[param.destRoom];
+		Room srcRoom = param.gate.srcRoom;
+		Room destRoom = param.gate.destRoom;
+		runtime.setRoom(destRoom.index);
 		
 		int deltax = destRoom.offsetx - srcRoom.offsetx;
 		int deltay = destRoom.offsety - srcRoom.offsety;

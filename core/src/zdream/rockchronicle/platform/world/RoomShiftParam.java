@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
+import zdream.rockchronicle.platform.region.Gate;
 
 /**
  * <p>房间切换数据
@@ -18,9 +19,9 @@ import zdream.rockchronicle.core.character.CharacterEntry;
 public class RoomShiftParam {
 	
 	/**
-	 * 起点房间, 终点房间
+	 * 起点房间, 终点房间连在一起的大门
 	 */
-	public int srcRoom, destRoom;
+	public Gate gate;
 	
 	/**
 	 * 暂存, 哪些角色将不需要删除. 一般是控制角色

@@ -12,10 +12,12 @@ import zdream.rockchronicle.cast.CastList;
 import zdream.rockchronicle.core.character.CharacterBuilder;
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.input.IInputBindable;
+import zdream.rockchronicle.platform.region.ConnectionProperties;
 import zdream.rockchronicle.platform.region.Field;
 import zdream.rockchronicle.platform.region.Gate;
 import zdream.rockchronicle.platform.region.Region;
 import zdream.rockchronicle.platform.region.RegionBuilder;
+import zdream.rockchronicle.platform.region.RegionPoint;
 import zdream.rockchronicle.platform.region.Room;
 import zdream.rockchronicle.platform.world.IPhysicsStep;
 import zdream.rockchronicle.platform.world.LevelWorld;
@@ -69,11 +71,18 @@ public class GameRuntime {
 	 ********** */
 	
 	/**
-	 * 设置当前的区域
+	 * <p>设置当前的区域, 并将有复活点的房间设置成当前房间.
+	 * <p>如果该区域没有复活点, 请不要调用该方法.
+	 * </p>
 	 * @param name
 	 */
 	public void setRegion(String name) {
-		curRegion = regionBuilder.buildForTerrainOnly(name);
+		Region region = regionBuilder.build(name);
+		if (region.spawnRoom == -1) {
+			throw new IllegalStateException(String.format("%s 的出生点位没有确定", region));
+		}
+		
+		curRegion = region;
 		setRoom(curRegion.spawnRoom);
 	}
 	
@@ -83,7 +92,28 @@ public class GameRuntime {
 	 */
 	public void setRoom(int room) {
 		this.room = room;
-		levelWorld.setCurrentRoom(curRegion.rooms[this.room]);
+		Room currentRoom = curRegion.rooms[this.room];
+		levelWorld.setCurrentRoom(currentRoom);
+		
+		// 如果该房间有连接到其它区域, 需要初始化相邻的区域
+		// 扫描点
+		Array<RegionPoint> ps = curRegion.points;
+		for (int i = 0; i < ps.size; i++) {
+			RegionPoint p = ps.get(i);
+			if (p.conn != null) {
+				ConnectionProperties conn = p.conn;
+				Region destRegion = regionBuilder.build(conn.destRegionName);
+				RegionPoint point = destRegion.findPoint(conn.destPoint);
+				if (point == null) {
+					continue; // 找不到这个点
+				}
+				Room destRoom = destRegion.of(point.x, point.y);
+				if (destRoom == null) {
+					continue; // 这个点不属于任何房间
+				}
+				regionBuilder.createGate(currentRoom, destRoom, p, point);
+			}
+		}
 		
 		// 将场放入世界
 		Room r = curRegion.rooms[this.room];
@@ -297,7 +327,7 @@ public class GameRuntime {
 		if (c1 == null) {
 			return false;
 		}
-		Gate[] gs = levelWorld.checkRoomShift(c1.getBoxModule().getBox());
+		Gate gs = levelWorld.checkRoomShift(c1.getBoxModule().getBox());
 		if (gs != null) {
 			shift.doShift(gs);
 			return true;

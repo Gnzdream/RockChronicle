@@ -1,6 +1,7 @@
 package zdream.rockchronicle.platform.region;
 
 import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.utils.Array;
 
 /**
  * <p>区域. 一个区域由多个房间组成, 而多个区域可以作为一个关卡.
@@ -18,7 +19,14 @@ public class Region {
 	/**
 	 * 包内生成
 	 */
-	Region() {}
+	Region(String name) {
+		this.name = name;
+	}
+	
+	/**
+	 * 名称
+	 */
+	public final String name;
 	
 	/**
 	 * 指代的 tmx
@@ -34,4 +42,36 @@ public class Region {
 	 * 出生点位 (传送到该区域时的位置) 在哪个 room 中, 相对位置是多少
 	 */
 	public int spawnRoom = -1, spawnx, spawny;
+	
+	/**
+	 * 连接点位
+	 */
+	public Array<RegionPoint> points = new Array<>();
+	
+	public RegionPoint findPoint(String name) {
+		for (int i = 0; i < points.size; i++) {
+			RegionPoint p = points.get(i);
+			if (p.name.equals(name)) {
+				return p;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * 查看这个点在哪个房间中
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	public Room of(int x, int y) {
+		for (int i = 0; i < rooms.length; i++) {
+			Room r = rooms[i];
+			if (r.contain(x, y)) {
+				return r;
+			}
+		}
+		return null;
+	}
+	
 }

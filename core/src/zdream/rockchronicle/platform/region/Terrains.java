@@ -21,6 +21,10 @@ public class Terrains implements ITerrainStatic {
 		}
 	}
 	
+	/**
+	 * 地形是否为空, 指可以让角色穿过的地形, 但不包括刺;
+	 * 允许的有: 空、楼梯
+	 */
 	public static boolean isEmpty(byte terrain) {
 		return terrain == TERRAIN_EMPTY;
 	}
