@@ -11,6 +11,31 @@
    <property name="terrain" value="solid"/>
   </properties>
  </tile>
+ <tile id="2">
+  <properties>
+   <property name="terrain" value="solid"/>
+  </properties>
+ </tile>
+ <tile id="3">
+  <properties>
+   <property name="terrain" value="solid"/>
+  </properties>
+ </tile>
+ <tile id="4">
+  <properties>
+   <property name="terrain" value="solid"/>
+  </properties>
+ </tile>
+ <tile id="5">
+  <properties>
+   <property name="terrain" value="solid"/>
+  </properties>
+ </tile>
+ <tile id="6">
+  <properties>
+   <property name="terrain" value="solid"/>
+  </properties>
+ </tile>
  <tile id="10">
   <properties>
    <property name="terrain" value="solid"/>
@@ -19,6 +44,26 @@
  <tile id="11">
   <properties>
    <property name="terrain" value="solid"/>
+  </properties>
+ </tile>
+ <tile id="12">
+  <properties>
+   <property name="terrain" value="solid"/>
+  </properties>
+ </tile>
+ <tile id="13">
+  <properties>
+   <property name="terrain" value="solid"/>
+  </properties>
+ </tile>
+ <tile id="32">
+  <properties>
+   <property name="terrain" value="ladder"/>
+  </properties>
+ </tile>
+ <tile id="62">
+  <properties>
+   <property name="terrain" value="stabUp"/>
   </properties>
  </tile>
 </tileset>
