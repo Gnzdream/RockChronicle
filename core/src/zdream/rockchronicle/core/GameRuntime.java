@@ -22,6 +22,7 @@ import zdream.rockchronicle.platform.region.Room;
 import zdream.rockchronicle.platform.world.IPhysicsStep;
 import zdream.rockchronicle.platform.world.LevelWorld;
 import zdream.rockchronicle.platform.world.RoomShiftHandler;
+import zdream.rockchronicle.platform.world.SceneDesigner;
 
 public class GameRuntime {
 	
@@ -41,11 +42,7 @@ public class GameRuntime {
 	public LevelWorld levelWorld;
 	public RoomShiftHandler shift;
 	
-	/**
-	 * 查看该世界的镜头, 一般长宽为 25 x 14
-	 * 这个锁定的是人物位置.
-	 */
-	public OrthographicCamera worldCamera;
+	public SceneDesigner scene = new SceneDesigner(this);
 	
 	/**
 	 * @return
@@ -64,6 +61,7 @@ public class GameRuntime {
 	public void init() {
 		characterBuilder.init();
 		regionBuilder.init();
+		scene.init();
 	}
 	
 	/* **********
@@ -76,30 +74,32 @@ public class GameRuntime {
 	 * </p>
 	 * @param name
 	 */
-	public void setRegion(String name) {
+	public void setSpawnRegion(String name) {
 		Region region = regionBuilder.build(name);
 		if (region.spawnRoom == -1) {
 			throw new IllegalStateException(String.format("%s 的出生点位没有确定", region));
 		}
 		
-		curRegion = region;
-		setRoom(curRegion.spawnRoom);
+		setRoom(region.rooms[region.spawnRoom]);
 	}
 	
 	/**
 	 * 移屏时, 请保证清除其它角色之后再调用该方法.
 	 * @param room
 	 */
-	public void setRoom(int room) {
-		this.room = room;
-		Room currentRoom = curRegion.rooms[this.room];
-		levelWorld.setCurrentRoom(currentRoom);
+	public void setRoom(Room room) {
+		this.room = room.index;
+		curRegion = room.region;
+		levelWorld.setCurrentRoom(room);
 		
 		// 如果该房间有连接到其它区域, 需要初始化相邻的区域
 		// 扫描点
 		Array<RegionPoint> ps = curRegion.points;
 		for (int i = 0; i < ps.size; i++) {
 			RegionPoint p = ps.get(i);
+			if (!room.contain(p.x, p.y)) {
+				continue;
+			}
 			if (p.conn != null) {
 				ConnectionProperties conn = p.conn;
 				Region destRegion = regionBuilder.build(conn.destRegionName);
@@ -111,7 +111,7 @@ public class GameRuntime {
 				if (destRoom == null) {
 					continue; // 这个点不属于任何房间
 				}
-				regionBuilder.createGate(currentRoom, destRoom, p, point);
+				regionBuilder.createGate(room, destRoom, p, point);
 			}
 		}
 		
@@ -124,6 +124,9 @@ public class GameRuntime {
 			CharacterEntry entry = characterBuilder.create(f.name, f.param);
 			addEntry(entry);
 		}
+		
+		// 其它
+		scene.onRoomUpdated();
 	}
 	
 	public void createWorld() {

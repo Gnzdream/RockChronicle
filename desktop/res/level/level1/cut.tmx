@@ -34,9 +34,9 @@
  <objectgroup name="Fields" locked="1">
   <object id="1" name="field01" x="144" y="24" width="408" height="216"/>
  </objectgroup>
- <layer name="Terrain" width="52" height="16" locked="1">
+ <layer name="Terrain" width="52" height="16">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAACu2W3QqAMAhGt27r/Z83uhCG7Nt0/iyiA14s0DxlYSk/UmoTJwhO79qobhtZkE/0PbL4mg+iN3ezM2KXz+z7keZzrD6HMd8br/fzFi/vecv2Wp1XLVFeWf0jrF7a/rP+b1Ivy/OX7AdV0csKXvPT23eo96f+FXTW9I92PZ6P9rdIDzpLfUYuvMaufTSTG+2pKvgADQAA
+   H4sIAAAAAAAACu2W3QqAMAiFV7f1/s8buxBEdNP82Yg+8MJC85SL09qPlgPFJQSFuzbqi6MK0JP9jCq+pkeC27tZLrFKz+z8aOspXj2nsz6aqO+zi67ofavW9XZfrWTpqppfwqvLOv8O/2uM5/1r/EG/n3kmovaH8zswe+9/J+WW+SWvR+sl/5apA3KtnpEW2mOVH63kAVizzqcADQAA
   </data>
  </layer>
  <layer name="Symbol" width="52" height="16">

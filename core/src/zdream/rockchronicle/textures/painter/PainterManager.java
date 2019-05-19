@@ -14,10 +14,6 @@ public class PainterManager {
 
 	public PainterManager() {}
 	
-	/**
-	 * 
-	 */
-	
 	class PainterEntry {
 		IPainter ptr;
 		int zIndex;

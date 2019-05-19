@@ -5,15 +5,11 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.math.Rectangle;
 
 import zdream.rockchronicle.RockChronicle;
-import zdream.rockchronicle.core.Config;
 import zdream.rockchronicle.core.GameRuntime;
 import zdream.rockchronicle.core.character.parameter.CharacterParameter;
 import zdream.rockchronicle.platform.region.Region;
-import zdream.rockchronicle.platform.region.Room;
 import zdream.rockchronicle.sprite.character.megaman.MegamanInLevel;
 
 public class LevelScreen implements Screen {
@@ -32,7 +28,6 @@ public class LevelScreen implements Screen {
 	OrthographicCamera symbolCamera;
 	
 	Region region;
-	OrthogonalTiledMapRenderer mapRender;
 	
 	/*
 	 * 缓存人物
@@ -48,8 +43,7 @@ public class LevelScreen implements Screen {
 //		region = app.runtime.regionBuilder.buildForTerrainOnly("mm1cut");
 //		region = app.runtime.regionBuilder.build("mm1cut");
 		
-		app.runtime.worldCamera = worldCamera = new OrthographicCamera();
-		worldCamera.setToOrtho(false, app.width, app.height); // y 轴方向朝上
+		worldCamera = app.runtime.scene.camera;
 //		worldCamera.combined.scale(Config.INSTANCE.blockWidth, Config.INSTANCE.blockHeight, 1);
 //		worldCamera.combined.scale(2, 2, 1);
 		
@@ -67,7 +61,7 @@ public class LevelScreen implements Screen {
 		// 设置 megaman 的初始位置, 到 room 所对应的 spawn 点
 		// 人物设置必须晚于世界创建
 		runtime.createWorld();
-		runtime.setRegion("mm1cut");
+		runtime.setSpawnRegion("mm1cut");
 		region = runtime.curRegion;
 		
 		
@@ -98,7 +92,6 @@ public class LevelScreen implements Screen {
 		
 		// 显示部分
 		// mapRender
-		mapRender = new OrthogonalTiledMapRenderer(region.tmx, 1f / Config.INSTANCE.blockWidth);
 		fixMapRender();
 		
 		batch.setProjectionMatrix(worldCamera.combined); // 投影矩阵
@@ -115,25 +108,11 @@ public class LevelScreen implements Screen {
 	 * 修正 MapRender 渲染的瓦片地图的位置
 	 */
 	private void fixMapRender() {
-		Room curRoom = region.rooms[app.runtime.room];
-		
-		mapRender.setView(worldCamera);
-		Rectangle viewBounds = mapRender.getViewBounds();
-		
-		viewBounds.setX(viewBounds.x + curRoom.offsetx);
-		viewBounds.setY(viewBounds.y + curRoom.offsety);
-		
 		float dx = -worldCamera.position.x + worldCamera.viewportWidth / 2.0f;
 		float dy = -worldCamera.position.y + worldCamera.viewportHeight / 2.0f;
 		
 		batch.setProjectionMatrix(worldCamera.combined);
 		batch.getProjectionMatrix().translate(dx, dy, 0);
-		
-		dx -= curRoom.offsetx;
-		dy -= curRoom.offsety;
-		
-		mapRender.getBatch().getProjectionMatrix()
-			.translate (dx, dy, 0);
 	}
 	
 	@Override
@@ -156,8 +135,9 @@ public class LevelScreen implements Screen {
 		
 		// 渲染部分
 		// symbol 层是不能被 render 的
+		app.runtime.scene.updateCamera();
 		fixMapRender();
-		mapRender.render();
+		app.runtime.scene.renderMap();
 		
 //		batch.setTransformMatrix(worldCamera.projection);
 		app.runtime.drawEntries(batch, worldCamera);

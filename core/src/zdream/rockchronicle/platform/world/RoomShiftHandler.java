@@ -56,7 +56,7 @@ public class RoomShiftHandler {
 		
 		// TODO 如果 destRoom 来自其它的区域, 还需要修改数据
 		
-		OrthographicCamera camera = runtime.worldCamera;
+		OrthographicCamera camera = runtime.scene.camera;
 		Vector2 pos = new Vector2(camera.position.x - app.width / 2.0f,
 				camera.position.y - app.height / 2.0f); // 相对于当前房间
 		param.currentPos.set(pos);
@@ -315,7 +315,7 @@ public class RoomShiftHandler {
 		
 		// 更新镜头位置
 		RockChronicle app = RockChronicle.INSTANCE;
-		OrthographicCamera camera = app.runtime.worldCamera;
+		OrthographicCamera camera = app.runtime.scene.camera;
 		camera.position.x = app.width / 2.0f + param.currentPos.x;
 		camera.position.y = app.height / 2.0f + param.currentPos.y;
 		
@@ -338,23 +338,32 @@ public class RoomShiftHandler {
 		
 		Room srcRoom = param.gate.srcRoom;
 		Room destRoom = param.gate.destRoom;
-		runtime.setRoom(destRoom.index);
-		
-		int deltax = destRoom.offsetx - srcRoom.offsetx;
-		int deltay = destRoom.offsety - srcRoom.offsety;
+		runtime.setRoom(destRoom);
 		
 		// 设置角色位置
-		for (int i = 0; i < param.entries.size; i++) {
-			CharacterEntry entry = param.entries.get(i);
-			Box box = entry.getBoxModule().getBox();
-			box.addAnchorX(-deltax);
-			box.addAnchorY(-deltay);
+		int deltax = destRoom.offsetx - srcRoom.offsetx;
+		int deltay = destRoom.offsety - srcRoom.offsety;
+		if (srcRoom.region == destRoom.region) {
+			for (int i = 0; i < param.entries.size; i++) {
+				CharacterEntry entry = param.entries.get(i);
+				Box box = entry.getBoxModule().getBox();
+				box.addAnchorX(-deltax);
+				box.addAnchorY(-deltay);
+			}
+		} else {
+			Gate gate = param.gate;
+			for (int i = 0; i < param.entries.size; i++) {
+				CharacterEntry entry = param.entries.get(i);
+				Box box = entry.getBoxModule().getBox();
+				box.addAnchorX(-deltax + gate.offsetXOfRegion);
+				box.addAnchorY(-deltay + gate.offsetYOfRegion);
+			}
 		}
 		
-		// 更新镜头位置
-		OrthographicCamera camera = app.runtime.worldCamera;
-		camera.position.x = app.width / 2.0f;
-		camera.position.y = app.height / 2.0f;
+		// 镜头位置的更新将交给 SceneDesigner
+//		OrthographicCamera camera = app.runtime.scene.camera;
+//		camera.position.x = app.width / 2.0f;
+//		camera.position.y = app.height / 2.0f;
 		
 		// 结束
 		runtime.levelWorld.doResume();

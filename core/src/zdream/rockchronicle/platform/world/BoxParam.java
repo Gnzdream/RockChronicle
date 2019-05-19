@@ -1,12 +1,11 @@
 package zdream.rockchronicle.platform.world;
 
+import static java.lang.Math.floor;
+
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Pool.Poolable;
 
 import zdream.rockchronicle.platform.body.Box;
-
-import static java.lang.Math.floor;
-import static java.lang.Math.ceil;
 
 /**
  * 用于在检测碰撞盒子是否碰边时, 记录碰撞盒子数据的
@@ -36,10 +35,10 @@ public class BoxParam implements Poolable {
 	boolean xleftTightly;
 	
 	/**
-	 * 盒子右侧的横坐标, 向上取整. 如果盒子右侧横坐标为整数, 则减一.
+	 * 盒子右侧的横坐标, 向下取整. 如果盒子右侧横坐标为整数, 则减一.
 	 * 
-	 * 比如 0.5 -> 1
-	 * 比如 -0.5 -> 0
+	 * 比如 0.5 -> 0
+	 * 比如 -0.5 -> -1
 	 * 比如 2 -> 1
 	 */
 	int xright;
@@ -50,10 +49,10 @@ public class BoxParam implements Poolable {
 	boolean xrightTightly;
 	
 	/**
-	 * 盒子上侧的纵坐标, 向上取整. 如果盒子上侧纵坐标为整数, 则减一.
+	 * 盒子上侧的纵坐标, 向下取整. 如果盒子上侧纵坐标为整数, 则减一.
 	 * 
-	 * 比如 0.5 -> 1
-	 * 比如 -0.5 -> 0
+	 * 比如 0.5 -> 0
+	 * 比如 -0.5 -> -1
 	 * 比如 2 -> 1
 	 */
 	int ytop;
@@ -98,9 +97,9 @@ public class BoxParam implements Poolable {
 		xleftTightly = (fxleft == xleft);
 		
 		float fxright = fxleft + rect.width;
-		xright = (int) ceil(fxright);
+		xright = (int) floor(fxright);
 		if (xrightTightly = (fxright == xright)) {
-			xright -= 1;
+			xright--;
 		}
 		
 		float fybottom = rect.y;
@@ -108,9 +107,9 @@ public class BoxParam implements Poolable {
 		ybottomTightly = (fybottom == ybottom);
 		
 		float fytop = fybottom + rect.height;
-		ytop = (int) ceil(fytop);
+		ytop = (int) floor(fytop);
 		if (ytopTightly = (fytop == ytop)) {
-			ytop -= 1;
+			ytop--;
 		}
 	}
 

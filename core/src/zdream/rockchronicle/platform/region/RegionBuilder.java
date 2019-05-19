@@ -656,23 +656,23 @@ public class RegionBuilder {
 		int dx, dy;
 		switch (conn.direction) {
 		case DIRECTION_LEFT: {
-			dx = fromPoint.x - 1 - toPoint.x; // fromPoint.x - 1 = toPoint.x + dx
-			dy = fromPoint.y - toPoint.y; // fromPoint.y = toPoint.y + dy
+			dx = toPoint.x - fromPoint.x + 1; // fromPoint.x - 1 + dx = toPoint.x
+			dy = toPoint.y - fromPoint.y; // fromPoint.y + dy = toPoint.y
 			createGateHorizontal(to, from, dx, dy);
 		} break;
 		case DIRECTION_RIGHT: {
-			dx = fromPoint.x + 1 - toPoint.x; // fromPoint.x + 1 = toPoint.x + dx
-			dy = fromPoint.y - toPoint.y; // fromPoint.y = toPoint.y + dy
+			dx = toPoint.x - fromPoint.x - 1; // fromPoint.x + 1 + dx = toPoint.x
+			dy = toPoint.y - fromPoint.y; // fromPoint.y + dy = toPoint.y
 			createGateHorizontal(from, to, dx, dy);
 		} break;
 		case DIRECTION_TOP: {
-			dx = fromPoint.x - toPoint.x; // fromPoint.x = toPoint.x + dx
-			dy = fromPoint.y + 1 - toPoint.y; // fromPoint.y + 1 = toPoint.y + dy
+			dx = toPoint.x - fromPoint.x; // fromPoint.x + dx = toPoint.x
+			dy = toPoint.y - fromPoint.y - 1; // fromPoint.y + 1 + dy = toPoint.y
 			createGateVertical(to, from, dx, dy);
 		} break;
 		case DIRECTION_BOTTOM: {
-			dx = fromPoint.x - toPoint.x; // fromPoint.x = toPoint.x + dx
-			dy = fromPoint.y - 1 - toPoint.y; // fromPoint.y - 1 = toPoint.y + dy
+			dx = toPoint.x - fromPoint.x; // fromPoint.x + dx = toPoint.x
+			dy = toPoint.y - fromPoint.y + 1; // fromPoint.y - 1 + dy = toPoint.y
 			createGateVertical(from, to, dx, dy);
 		} break;
 
@@ -694,7 +694,7 @@ public class RegionBuilder {
 	 */
 	private void createGateHorizontal(Room rooml, Room roomr, int dx, int dy) {
 		int offsety1 = rooml.offsety;
-		int offsety2 = roomr.offsety + dy;
+		int offsety2 = roomr.offsety - dy;
 		
 		int ystart = Math.max(offsety1, offsety2);
 		int yend = Math.min(offsety1 + rooml.height - 1, offsety2 + roomr.height - 1);
@@ -709,10 +709,10 @@ public class RegionBuilder {
 		gate2.direction = DIRECTION_LEFT;
 		gate1.offset = offsety2 - offsety1;
 		gate2.offset = offsety1 - offsety2;
-		gate1.offsetXOfRegion = -dx;
-		gate1.offsetYOfRegion = -dy;
-		gate2.offsetXOfRegion = dx;
-		gate2.offsetYOfRegion = dy;
+		gate1.offsetXOfRegion = dx;
+		gate1.offsetYOfRegion = dy;
+		gate2.offsetXOfRegion = -dx;
+		gate2.offsetYOfRegion = -dy;
 		
 		IntArray ia1 = new IntArray(yend - ystart + 1);
 		IntArray ia2 = new IntArray(yend - ystart + 1);
@@ -755,7 +755,7 @@ public class RegionBuilder {
 	 */
 	private void createGateVertical(Room roomt, Room roomb, int dx, int dy) {
 		int offsety1 = roomt.offsetx;
-		int offsety2 = roomb.offsetx + dx;
+		int offsety2 = roomb.offsetx - dx;
 		
 		int xstart = Math.max(offsety1, offsety2);
 		int xend = Math.min(offsety1 + roomt.width - 1, offsety2 + roomb.width - 1);
@@ -771,10 +771,10 @@ public class RegionBuilder {
 		gate2.direction = DIRECTION_TOP;
 		gate1.offset = offsety2 - offsety1;
 		gate2.offset = offsety1 - offsety2;
-		gate1.offsetXOfRegion = -dx;
-		gate1.offsetYOfRegion = -dy;
-		gate2.offsetXOfRegion = dx;
-		gate2.offsetYOfRegion = dy;
+		gate1.offsetXOfRegion = dx;
+		gate1.offsetYOfRegion = dy;
+		gate2.offsetXOfRegion = -dx;
+		gate2.offsetYOfRegion = -dy;
 		
 		IntArray ia1 = new IntArray(xend - xstart + 1);
 		IntArray ia2 = new IntArray(xend - xstart + 1);
