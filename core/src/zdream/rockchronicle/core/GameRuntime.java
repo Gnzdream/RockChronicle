@@ -330,9 +330,9 @@ public class GameRuntime {
 		if (c1 == null) {
 			return false;
 		}
-		Gate gs = levelWorld.checkRoomShift(c1.getBoxModule().getBox());
-		if (gs != null) {
-			shift.doShift(gs);
+		Gate gate = levelWorld.checkRoomShift(c1.getBoxModule().getBox());
+		if (gate != null && shift.checkShift(c1, gate)) {
+			shift.doShift(gate);
 			return true;
 		}
 		return false;

@@ -28,6 +28,36 @@ public class RoomShiftHandler {
 	
 	public RoomShiftParam param;
 	
+	/**
+	 * <p>切换房间的额外判定
+	 * <p>已经满足有大门的条件了, 还需要判定:
+	 * <p>如果顺着重力及其它环境力的合力方向，碰到边缘就可以切房间；
+	 * 如果逆着合力方向，就需要额外判定，比如需要在攀爬状态、踩在指定的角色上等
+	 * </p>
+	 * @param entry
+	 * @param g
+	 * @return
+	 */
+	public boolean checkShift(CharacterEntry entry, Gate g) {
+		if (g.direction == DIRECTION_LEFT || g.direction == DIRECTION_RIGHT) {
+			return true;
+		}
+		
+		Box box = entry.getBoxModule().getBox();
+		boolean gravityDown = box.gravityDown && box.gravityScale > 0
+				|| !box.gravityDown && box.gravityScale < 0;
+		
+		if (gravityDown && g.direction == DIRECTION_BOTTOM
+				|| !gravityDown && g.direction == DIRECTION_TOP) {
+			// 顺着重力（合力）往下掉的
+			return true;
+		}
+		
+		// TODO 这里判断比如需要在攀爬状态、踩在指定的角色上等
+		
+		return false;
+	}
+	
 	public void doShift(Gate g) {
 		param = new RoomShiftParam();
 		param.gate = g;

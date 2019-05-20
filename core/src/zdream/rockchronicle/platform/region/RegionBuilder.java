@@ -761,12 +761,11 @@ public class RegionBuilder {
 		int xend = Math.min(offsety1 + roomt.width - 1, offsety2 + roomb.width - 1);
 		
 		int y1a = 0;
-		@SuppressWarnings("unused")
 		int y1b = 1;
 		int y2a = roomb.height - 1;
 		int y2b = y2a - 1;
 		
-		Gate gate1 = new Gate(roomt, roomb), gate2 = new Gate(roomt, roomb);
+		Gate gate1 = new Gate(roomt, roomb), gate2 = new Gate(roomb, roomt);
 		gate1.direction = DIRECTION_BOTTOM;
 		gate2.direction = DIRECTION_TOP;
 		gate1.offset = offsety2 - offsety1;
@@ -788,9 +787,9 @@ public class RegionBuilder {
 				if (Terrains.isEmpty(roomb.terrains[x2][y2b])) {
 					ia1.add(x1);
 				}
-				/*if (Terrains.isEmpty(rooml.terrains[x1][y1b])) { // TODO 要看梯子
+				if (Terrains.isEmpty(roomt.terrains[x1][y1b])) {
 					ia2.add(x2);
-				}*/
+				}
 			}
 		}
 		

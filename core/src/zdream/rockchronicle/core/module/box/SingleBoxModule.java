@@ -52,8 +52,15 @@ public class SingleBoxModule extends BoxModule {
 			box.anchor.y = oanchor.getFloat("y", 0f);
 		}
 		
-		box.gravityScale = object.getFloat("gravityScale", 0);
-		box.gravityDown = object.getBoolean("gravityDown", true);
+		box.gravityDown = true;
+		for (JsonValue entry = object.child; entry != null; entry = entry.next) {
+			switch (entry.name) {
+			case "gravityScale": box.gravityScale = entry.asFloat(); break;
+			case "gravityDown": box.gravityDown = entry.asBoolean(); break;
+			case "climbable": box.climbable = entry.asBoolean(); break;
+			case "posture": box.posture = entry.asByte(); break;
+			}
+		}
 	}
 
 	@Override

@@ -707,8 +707,9 @@ public class LevelWorld implements ITerrainStatic {
 	
 	/**
 	 * <p>检查指定角色的盒子是否到达房间边缘, 要进行房间的切换.
-	 * TODO 现在只判断左右切换.
-	 * <p>切换的第一个判断是碰断角色是否碰到了房间的边缘
+	 * <p>切换的第一个判断是碰断角色是否碰到了房间的边缘,
+	 * 而该方法仅判断位置是否满足, 此外仍然需要附加判定, 比如向上切房间需要爬墙等姿势,
+	 * 这些在该方法均不判定.
 	 * </p>
 	 * @param box
 	 *   指定角色的盒子, 一般是玩家控制角色的
@@ -736,7 +737,6 @@ public class LevelWorld implements ITerrainStatic {
 				if (g == null) { g = g2; }
 				if (g != g2) { break LEFT; }
 			}
-			// 下面是确定向左切换
 			return g;
 		}
 
@@ -755,7 +755,6 @@ public class LevelWorld implements ITerrainStatic {
 				if (g == null) { g = g2; }
 				if (g != g2) { break RIGHT; }
 			}
-			// 下面是确定向左切换
 			return g;
 		}
 		
@@ -771,7 +770,21 @@ public class LevelWorld implements ITerrainStatic {
 				if (g == null) { g = g2; }
 				if (g != g2) { break BOTTOM; }
 			}
-			// 下面是确定向左切换
+			return g;
+		}
+		
+		// 向上
+		TOP: {
+			if (p.ytop >= currentRoom.height) {
+				break TOP;
+			}
+			Gate g = null;
+			for (int x = p.xleft; x <= p.xright; x++) {
+				Gate g2 = findGate(currentRoom, Gate.DIRECTION_TOP, x);
+				if (g2 == null) { break TOP; }
+				if (g == null) { g = g2; }
+				if (g != g2) { break TOP; }
+			}
 			return g;
 		}
 		
