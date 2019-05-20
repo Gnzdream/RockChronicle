@@ -1,8 +1,9 @@
 package zdream.rockchronicle.platform.body;
 
+import static java.lang.Math.floor;
+
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
 
 import zdream.rockchronicle.platform.world.LevelWorld;
 
@@ -41,6 +42,7 @@ public class Box {
 	
 	private boolean dirt = true;
 	private final Rectangle pos = new Rectangle();
+	private final BoxOccupation occupation = new BoxOccupation();
 	
 	/**
 	 * 设置锚点位置
@@ -118,13 +120,45 @@ public class Box {
 	
 	public Rectangle getPosition() {
 		if (dirt) {
-			pos.width = box.width;
-			pos.height = box.height;
-			pos.x = box.x + anchor.x;
-			pos.y = box.y + anchor.y;
-			dirt = false;
+			recalc();
 		}
 		return pos;
+	}
+	
+	private void recalc() {
+		pos.width = box.width;
+		pos.height = box.height;
+		pos.x = box.x + anchor.x;
+		pos.y = box.y + anchor.y;
+		
+		float fxleft = pos.x;
+		occupation.xleft = (int) floor(fxleft);
+		occupation.xleftTightly = (fxleft == occupation.xleft);
+		
+		float fxright = fxleft + pos.width;
+		occupation.xright = (int) floor(fxright);
+		if (occupation.xrightTightly = (fxright == occupation.xright)) {
+			occupation.xright--;
+		}
+		
+		float fybottom = pos.y;
+		occupation.ybottom = (int) floor(fybottom);
+		occupation.ybottomTightly = (fybottom == occupation.ybottom);
+		
+		float fytop = fybottom + pos.height;
+		occupation.ytop = (int) floor(fytop);
+		if (occupation.ytopTightly = (fytop == occupation.ytop)) {
+			occupation.ytop--;
+		}
+		
+		dirt = false;
+	}
+	
+	public BoxOccupation getOccupation() {
+		if (dirt) {
+			recalc();
+		}
+		return occupation;
 	}
 	
 	/*
@@ -177,38 +211,30 @@ public class Box {
 	}
 	
 	/*
-	 * 其它检测参数部分
+	 * 配置参数
 	 */
-	
-	// ****** 左右碰撞检测
-	
 	/**
-	 * 左边或右边是否碰到边了
+	 * 受到的重力及其它环境力的合力, 是重力的几倍;
+	 * 受到相当于一倍重力的合力影响, 方向同 gravityDown 时, 参数为 1; 不受合力影响时为 0
 	 */
-	public boolean leftStop, rightStop;
-	
-	// ****** 落地检测
-	
+	public float gravityScale;
 	/**
-	 * 上边是否碰到边了
+	 * 受到的重力是否向下, 这里不计其它力.
+	 * 比较实际的意义是判断角色的纹理是正放还是倒放
 	 */
-	public boolean topStop;
+	public boolean gravityDown;
 	/**
 	 * 是否受地形的影响
 	 */
 	public boolean inTerrain = true;
-	/**
-	 * 踩在哪些地面上
-	 */
-	public Array<TerrainParam> grounds = new Array<>(4);
 	
-	/**
-	 * @return
-	 *   返回是否站在地面上
+	/*
+	 * 状态参数
 	 */
-	public boolean onTheGround() {
-		return grounds.size != 0;
-	}
+	/**
+	 * 四面是否碰到边了
+	 */
+	public boolean leftStop, rightStop, topStop, bottomStop;
 	
 	@Override
 	public String toString() {

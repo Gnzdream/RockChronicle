@@ -1,5 +1,7 @@
 package zdream.rockchronicle.utils;
 
+import java.util.Objects;
+
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
@@ -10,7 +12,7 @@ public class JsonUtils {
 	public static final JsonReader jreader = new JsonReader();
 	
 	/**
-	 * 克隆的结果中 name = null
+	 * 克隆 (深复制) 的结果中 name = null, 也将多余的 child、parent、next、prev 的引用设置为 null
 	 * @param src
 	 * @return
 	 */
@@ -20,7 +22,8 @@ public class JsonUtils {
 	}
 	
 	/**
-	 * 合并 json 数据. 现阶段只合并 json 类型为 object 的数据
+	 * 合并 json 数据. 现阶段只合并 json 类型为 object 的数据.
+	 * 如果 src != null, 合并后 dest 的数据将会加入到 src 中.
 	 * @param src
 	 * @param dest
 	 */
@@ -74,6 +77,51 @@ public class JsonUtils {
 		}
 		
 		return src;
+	}
+	
+	public static void clear(JsonValue v) {
+		v.child = null;
+		v.size = 0;
+	}
+	
+	public static JsonValue replace(JsonValue map, String key, JsonValue value) {
+		Objects.requireNonNull(key);
+		JsonValue entry = map.child;
+		value.prev = value.next = null;
+		value.name = key;
+		
+		for (; entry != null; entry = entry.next) {
+			if (!key.equals(value.name)) { 
+				continue;
+			}
+			
+			if (entry.prev != null) {
+				value.prev = entry.prev;
+				entry.prev.next = value;
+				entry.prev = null;
+			}
+			
+			if (entry.next != null) {
+				value.next = entry.next;
+				entry.next.prev = value;
+				entry.next = null;
+			}
+			
+			if (entry.parent != null) {
+				if (entry.parent.child == entry) {
+					entry.parent.child = value;
+				}
+				value.parent = entry.parent;
+				entry.parent = null;
+			}
+			
+			return entry;
+		}
+		
+		// 放到链表最后面
+		map.addChild(key, value);
+		
+		return null;
 	}
 
 }

@@ -2,11 +2,9 @@ package zdream.rockchronicle.core.module.state;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.JsonValue.ValueType;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
-import zdream.rockchronicle.core.character.parameter.JsonCollector;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
 /**
@@ -26,32 +24,40 @@ public class BaseStateModule extends StateModule {
 	}
 	
 	/**
-	 * 硬直剩余时间 (步), 状态项
+	 * 硬直剩余时间 (步), 临时
 	 */
 	public int stiffnessRemain;
 	
 	/**
-	 * 硬直默认持续时间 (步), 配置项
+	 * 硬直默认持续时间 (步), 长期
 	 */
 	public int stiffnessDuration;
 	
 	/**
-	 * 无敌剩余时间 (步), 状态项
+	 * 无敌剩余时间 (步), 临时
 	 */
 	public int immuneRemain;
 	
 	/**
-	 * 无敌默认持续时间 (步), 配置项
+	 * 无敌默认持续时间 (步), 长期
 	 */
 	public int immuneDuration;
 	
 	/**
-	 * 行动状态, 状态项, 包含但不限于: "left", "right", "stop"
+	 * <p>行动状态, 状态项, 包含但不限于: "walk", "stop", 临时
+	 * <p>补充:
+	 * <li>攀爬状态: "climb", "climbTop1", "climbTop2"
+	 * </li>
 	 */
 	public String motion;
 	
 	/**
-	 * 本步是否发出过攻击动作, 状态项
+	 * 是否朝右, 长期
+	 */
+	public boolean orientation = true;
+	
+	/**
+	 * 本步是否发出过攻击动作, 临时
 	 */
 	public boolean attacking;
 	
@@ -61,7 +67,6 @@ public class BaseStateModule extends StateModule {
 
 		initStateArguments(value);
 
-		addCollector(new JsonCollector(this::createStateParamJson, "state_param")); // 一般视为静态的
 		parent.addSubscribe("after_damage", this);
 	}
 
@@ -90,36 +95,40 @@ public class BaseStateModule extends StateModule {
 		return v;
 	}
 	
-	public JsonValue createStateParamJson() {
-		JsonValue v = new JsonValue(ValueType.object);
+	public JsonValue createSituationJson() {
+		JsonValue v = super.createSituationJson();
 		
 		v.addChild("stiffness", new JsonValue(stiffnessDuration));
 		v.addChild("immune", new JsonValue(immuneDuration));
+		v.addChild("orientation", new JsonValue(orientation));
 		
 		return v;
 	}
 	
-	@Override
-	protected boolean setJson(String first, JsonValue value) {
-		if ("state".equals(first)) {
-			setStateJson(value);
-		}
-		return super.setJson(first, value);
-	}
-	
-	public void setStateJson(JsonValue value) {
+	protected boolean setStateJson(JsonValue value) {
 		for (JsonValue entry = value.child; entry != null; entry = entry.next) {
 			switch (entry.name) {
 			case "motion":
 				this.motion = entry.asString();
-				break;
+				return true;
 			case "attacking":
 				this.attacking = entry.asBoolean();
-				break;
-			default:
-				break;
+				return true;
 			}
 		}
+		return super.setStateJson(value);
+	}
+	
+	@Override
+	protected boolean setSituationJson(JsonValue value) {
+		for (JsonValue entry = value.child; entry != null; entry = entry.next) {
+			switch (entry.name) {
+			case "orientation":
+				this.orientation = entry.asBoolean();
+				return true;
+			}
+		}
+		return super.setSituationJson(value);
 	}
 	
 	@Override

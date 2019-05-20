@@ -19,7 +19,8 @@
 			"height":0.8,
 			"x":-0.4,
 			"y":0
-		}
+		},
+		"gravityScale":1
 	},
 	"collision":
 	{

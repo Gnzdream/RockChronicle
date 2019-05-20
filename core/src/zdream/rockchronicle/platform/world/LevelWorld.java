@@ -5,9 +5,9 @@ import java.util.function.Predicate;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Pool;
 
 import zdream.rockchronicle.platform.body.Box;
+import zdream.rockchronicle.platform.body.BoxOccupation;
 import zdream.rockchronicle.platform.body.TerrainParam;
 import zdream.rockchronicle.platform.region.Gate;
 import zdream.rockchronicle.platform.region.ITerrainStatic;
@@ -25,13 +25,6 @@ public class LevelWorld implements ITerrainStatic {
 	}
 	
 	public Room currentRoom;
-	
-	private Pool<BoxParam> boxps = new Pool<BoxParam>() {
-		@Override
-		protected BoxParam newObject() {
-			return new BoxParam();
-		}
-	};
 	
 	public void doCreate() {
 		// 世界重力向下
@@ -183,8 +176,7 @@ public class LevelWorld implements ITerrainStatic {
 	}
 	
 	/**
-	 * <p>判断一个物体是否在地上.
-	 * 如果在地上, 在 box.grounds 设置踩在哪些地块上
+	 * <p>判断一个盒子是否下侧是否碰到了地形块、或其它允许踩的其它盒子
 	 * <p>当确定物体“嵌”在地里面, 现在不进行抬升操作
 	 * 
 	 * <p>注意: <br>
@@ -197,40 +189,33 @@ public class LevelWorld implements ITerrainStatic {
 	 */
 	public boolean bottomStop(Box box) {
 		if (!box.inTerrain) {
-			return false;
+			return box.bottomStop = false;
 		}
 		
-		box.grounds.clear();
-		Rectangle rect = box.getPosition();
+		// TODO 先跳过判断踩在别的盒子的判断
+		
+		BoxOccupation occ = box.getOccupation();
 		// 底边左端所在的格子 (x)
-		float fxleft = rect.x;
-		float fxright = rect.x + rect.width;
-		int xleft = Math.max((int) Math.floor(fxleft), 0);
-		int xright = Math.min((int) Math.floor(fxright), currentRoom.width - 1);
-		if (fxright == xright) {
-			xright--;
-		}
-		
-		float fybottom = rect.y;
-		int ybottom = (int) Math.floor(fybottom);
+		int xleft = Math.max(occ.xleft, 0);
+		int xright = Math.min(occ.xright, currentRoom.width - 1);
 		
 		// TODO 下面暂时不判断斜坡
 		
-		if (fybottom != ybottom) {
+		if (!occ.ybottomTightly) {
 			// 肯定不在地面上
-			return false;
+			return box.bottomStop = false;
 		}
 		
+		int ybottom = occ.ybottom;
 		// 落地检测部分
 		for (int x = xleft; x <= xright; x++) {
 			int terrain = getTerrain(x, ybottom - 1);
 			
 			if (terrain == TERRAIN_SOLID) { // TODO 其它实体块
-				TerrainParam param = new TerrainParam(x, ybottom, terrain);
-				box.grounds.add(param);
+				return box.bottomStop = true;
 			}
 		}
-		return box.onTheGround();
+		return box.bottomStop = false;
 	}
 	
 	/**
@@ -734,8 +719,7 @@ public class LevelWorld implements ITerrainStatic {
 			return null;
 		}
 		
-		BoxParam p = boxps.obtain();
-		p.handleBox(box);
+		BoxOccupation p = box.getOccupation();
 		
 		// 向左
 		LEFT: {
@@ -753,7 +737,6 @@ public class LevelWorld implements ITerrainStatic {
 				if (g != g2) { break LEFT; }
 			}
 			// 下面是确定向左切换
-			boxps.free(p);
 			return g;
 		}
 
@@ -773,7 +756,6 @@ public class LevelWorld implements ITerrainStatic {
 				if (g != g2) { break RIGHT; }
 			}
 			// 下面是确定向左切换
-			boxps.free(p);
 			return g;
 		}
 		
@@ -790,11 +772,8 @@ public class LevelWorld implements ITerrainStatic {
 				if (g != g2) { break BOTTOM; }
 			}
 			// 下面是确定向左切换
-			boxps.free(p);
 			return g;
 		}
-		
-		boxps.free(p);
 		
 		return null;
 	}

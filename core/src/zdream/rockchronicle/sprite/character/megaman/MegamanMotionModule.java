@@ -82,19 +82,29 @@ public class MegamanMotionModule extends TerrainMotionModule {
 	public void determine(LevelWorld world, int index, boolean hasNext) {
 		super.determine(world, index, hasNext);
 		
+		// state
 		String motion = "stop";
-		if (left) {
-			motion = "left";
-		} else if (right) {
-			motion = "right";
+		if (left || right) {
+			motion = "walk";
 		}
+		
 		JsonValue v = new JsonValue(ValueType.object);
 		v.addChild("motion", new JsonValue(motion));
+		parent.setJson("state", v);
+		
+		// situation
+		if (left) {
+			v = new JsonValue(ValueType.object);
+			v.addChild("orientation", new JsonValue(false));
+			parent.setJson("situation", v);
+		} else if (right) {
+			v = new JsonValue(ValueType.object);
+			v.addChild("orientation", new JsonValue(true));
+			parent.setJson("situation", v);
+		}
 		
 		// 修改速度
 		updateVelocity(world, index, hasNext);
-		
-		parent.setJson("state", v);
 	}
 	
 	public void updateVelocity(LevelWorld world, int index, boolean hasNext) {
@@ -103,13 +113,14 @@ public class MegamanMotionModule extends TerrainMotionModule {
 		float vx = vel.x, vy = vel.y;
 		
 		// 3. 执行上下移动 TODO
-		boolean bottomStop = box.onTheGround();
+		boolean bottomStop = box.bottomStop;
 		
 		// 设置的最终速度 Y
 		box.setVelocityY(vy);
 		
 		// 4. 执行左右移动
 		boolean stiffness = parent.getBoolean(new String[] {"state", "stiffness"}, false);
+		boolean orientation = parent.getBoolean(new String[] {"situation", "orientation"}, true);
 		if (stiffness) {
 			// 在击退 / 硬直状态下
 			if (orientation) {

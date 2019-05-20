@@ -81,6 +81,15 @@ public abstract class SpriteModule extends AbstractModule {
 		return sprite;
 	}
 	
+	/**
+	 * 获得纹理的朝向, 是向左还是向右
+	 * @return
+	 *   是否向右
+	 */
+	public boolean getOrientation() {
+		return parent.getBoolean(new String[] {"situation", "orientation"}, true);
+	}
+	
 	public void draw(SpriteBatch batch, OrthographicCamera camera) {
 		TextureSheetEntry entry = getCurrentTexture();
 		if (entry == null) {
@@ -94,7 +103,7 @@ public abstract class SpriteModule extends AbstractModule {
 		float fw = (float) entry.width / Config.INSTANCE.blockWidth,
 				fh = (float) entry.height / Config.INSTANCE.blockHeight;
 		
-		boolean orientation = parent.getBoolean(new String[] {"motion", "orientation"}, true);
+		boolean orientation = getOrientation();
 		if (orientation) {
 			sprite.setFlip(false, false);
 			x = getX() + entry.offsetx / (float) Config.INSTANCE.blockWidth;

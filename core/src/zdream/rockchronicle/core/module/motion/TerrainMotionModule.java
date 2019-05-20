@@ -55,16 +55,12 @@ public class TerrainMotionModule extends MotionModule {
 	/* **********
 	 * 资源事件 *
 	 ********** */
-	/*
-	 * 允许获取与修改:
-	 * motion.orientation
-	 */
 	@Override
 	public JsonValue getMotionJson() {
 		Box box = getSingleBox();
 		
 		JsonValue v = super.getMotionJson();
-		v.addChild("bottomStop", new JsonValue(box.onTheGround()));
+		v.addChild("bottomStop", new JsonValue(box.bottomStop));
 		v.addChild("topStop", new JsonValue(box.topStop));
 		v.addChild("leftStop", new JsonValue(box.leftStop));
 		v.addChild("rightStop", new JsonValue(box.rightStop));

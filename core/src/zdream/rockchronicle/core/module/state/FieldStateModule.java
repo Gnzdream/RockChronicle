@@ -44,25 +44,15 @@ public class FieldStateModule extends StateModule {
 		return v;
 	}
 	
-	@Override
-	protected boolean setJson(String first, JsonValue value) {
-		if ("state".equals(first)) {
-			setStateJson(value);
-			return true;
-		}
-		return super.setJson(first, value);
-	}
-	
-	public void setStateJson(JsonValue value) {
+	protected boolean setStateJson(JsonValue value) {
 		for (JsonValue entry = value.child; entry != null; entry = entry.next) {
 			switch (entry.name) {
 			case "active":
 				this.active = entry.asBoolean();
-				break;
-			default:
-				break;
+				return true;
 			}
 		}
+		return super.setStateJson(value);
 	}
 	
 	@Override

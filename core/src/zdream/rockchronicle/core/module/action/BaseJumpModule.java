@@ -1,4 +1,4 @@
-package zdream.rockchronicle.core.module.jump;
+package zdream.rockchronicle.core.module.action;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
@@ -7,16 +7,19 @@ import com.badlogic.gdx.utils.JsonValue.ValueType;
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.core.character.parameter.JsonCollector;
-import zdream.rockchronicle.core.module.box.BoxSetter;
+import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
 /**
- * 默认的单段跳的行动模块
+ * <p>默认的单段跳的行动模块
+ * <p>允许角色在不同重力、合力影响的情况下计算纵向的速度
+ * </p>
  * 
  * @author Zdream
  * @since v0.0.1
  * @date
  *   2019-05-07 (create)
+ *   2019-05-20 (last modified)
  */
 public class BaseJumpModule extends JumpModule {
 	
@@ -75,34 +78,63 @@ public class BaseJumpModule extends JumpModule {
 	public void determine(LevelWorld world, int index, boolean hasNext) {
 		super.determine(world, index, hasNext);
 		
+		// 攀爬 (楼梯) 状态、悬挂状态、附着状态
+		// TODO 如果在以上时, 下面的一切都不需要判断.
+		
 		boolean bottomStop = parent.getBoolean(new String[] {"motion", "bottomStop"}, false);
 		boolean topStop = parent.getBoolean(new String[] {"motion", "topStop"}, false);
-		float ovy = parent.getFloat(new String[] {"box", "velocity", "y"}, 0);
 		boolean stiffness = parent.getBoolean(new String[] {"state", "stiffness"}, false);
 		
+		Box box = parent.getBoxModule().getBox();
+		float ovy = 
+//				parent.getFloat(new String[] {"box", "velocity", "y"}, 0);
+				box.velocity.y;
+		float gravityScale = box.gravityScale;
+		
 		float vy = ovy;
-		if (bottomStop) {
-			vy = 0;
-			if (jumpStart && !stiffness) {
-				// 执行跳跃
-				vy = impulse;
-			}
-		} else {
-			float delta = decay;
-			if (vy > 0 && (jumpEnd || topStop || stiffness)) {
-				delta = 4 * decay;
-				if (vy >= -delta) {
-					delta = -vy;
+		boolean onTheGround = bottomStop && box.gravityDown || topStop && !box.gravityDown;
+		
+		if (gravityScale > 0) {
+			if (onTheGround) {
+				vy = 0;
+				if (jumpStart && !stiffness) {
+					// 执行跳跃
+					vy = (box.gravityDown) ? impulse : -impulse;
 				}
-			}
-			vy += delta;
-			if (vy < maxDropVelocity) {
-				vy = maxDropVelocity;
 			}
 		}
 		
+		if (!onTheGround && gravityScale != 0) {
+			float delta = decay * gravityScale;
+			float maxDropVelocity = this.maxDropVelocity * gravityScale;
+			if (box.gravityDown) {
+				if (vy > 0 && (jumpEnd || topStop || stiffness)) {
+					delta = 4 * decay;
+					if (vy >= -delta) {
+						delta = -vy;
+					}
+				}
+				vy += delta;
+				if (vy < maxDropVelocity) {
+					vy = maxDropVelocity;
+				}
+			} else {
+				if (vy < 0 && (jumpEnd || bottomStop || stiffness)) {
+					delta = 4 * decay;
+					if (vy <= delta) {
+						delta = vy;
+					}
+				}
+				vy -= delta;
+				maxDropVelocity *= -1;
+				if (vy > maxDropVelocity) {
+					vy = maxDropVelocity;
+				}
+			}
+		}
 		
-		parent.setJson("box", BoxSetter.newInstance().setVelocityY(vy).get());
+		box.velocity.y = vy;
+//		parent.setJson("box", BoxSetter.newInstance().setVelocityY(vy).get());
 	}
 	
 	@Override

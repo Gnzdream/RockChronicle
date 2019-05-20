@@ -20,7 +20,8 @@
 			"height":1.5,
 			"x":-0.416777,
 			"y":0
-		}
+		},
+		"gravityScale":1
 	},
 	"textures":
 	[

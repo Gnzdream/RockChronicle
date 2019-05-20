@@ -57,7 +57,7 @@ public class MegamanSpriteModule extends BaseSpriteModule {
 			case "stop":
 				setState("normal");
 				break;
-			case "left": case "right":
+			case "walk":
 				setState("walk");
 				break;
 

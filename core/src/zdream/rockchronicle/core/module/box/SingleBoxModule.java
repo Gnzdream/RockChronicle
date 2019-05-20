@@ -51,6 +51,9 @@ public class SingleBoxModule extends BoxModule {
 			box.anchor.x = oanchor.getFloat("x", 0f);
 			box.anchor.y = oanchor.getFloat("y", 0f);
 		}
+		
+		box.gravityScale = object.getFloat("gravityScale", 0);
+		box.gravityDown = object.getBoolean("gravityDown", true);
 	}
 
 	@Override

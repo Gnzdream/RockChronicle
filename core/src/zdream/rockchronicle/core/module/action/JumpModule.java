@@ -1,4 +1,4 @@
-package zdream.rockchronicle.core.module.jump;
+package zdream.rockchronicle.core.module.action;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.module.AbstractModule;

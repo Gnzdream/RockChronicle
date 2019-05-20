@@ -28,13 +28,6 @@ public abstract class MotionModule extends AbstractModule {
 	 * move right
 	 */
 	
-	/**
-	 * 朝向,
-	 * true: 右
-	 * false: 左
-	 */
-	public boolean orientation = true;
-	
 	public MotionModule(CharacterEntry ch) {
 		super(ch);
 		
@@ -54,12 +47,8 @@ public abstract class MotionModule extends AbstractModule {
 		addCollector(motionc);
 	}
 
-	private void initMotion(JsonValue object) {
-		if (object == null) {
-			orientation = true;
-			return;
-		}
-		orientation = object.getBoolean("orientation", true);
+	protected void initMotion(JsonValue object) {
+		
 	}
 
 	@Override
@@ -70,13 +59,8 @@ public abstract class MotionModule extends AbstractModule {
 	/* **********
 	 * 资源事件 *
 	 ********** */
-	/*
-	 * 允许获取与修改:
-	 * motion.orientation
-	 */
 	public JsonValue getMotionJson() {
 		JsonValue v = new JsonValue(ValueType.object);
-		v.addChild("orientation", new JsonValue(orientation));
 		return v;
 	}
 	
