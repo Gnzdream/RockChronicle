@@ -8,6 +8,7 @@
 		"camp":"base",
 		"state":"base",
 		"jump":"base",
+		"climb":"base",
 		"health":"reference",
 		"buff":"gradual-recovery"
 	},
@@ -36,6 +37,10 @@
 			"decay":-67,
 			"maxDropVelocity":-28
 		}
+	},
+	"climbParam":
+	{
+		"velocity":3
 	},
 	"state":
 	{

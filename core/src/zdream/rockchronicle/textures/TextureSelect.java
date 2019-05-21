@@ -45,9 +45,40 @@ public class TextureSelect {
 	}
 	
 	/**
+	 * 向前倒退时间
+	 * @param step
+	 *   时间单位: 步, 正整数
+	 */
+	public TextureSelect turnBack(int step) {
+		if (currentSeq == null) {
+			return this;
+		}
+		this.remain += step;
+		
+		int delta = currentSeq.step;
+		if (delta > 0) {
+			while (this.remain > delta) {
+				if (currentSeq.loopIdx < 0) {
+					current = (current <= 0) ? 0 : current - 1;
+				} else {
+					if (current > currentSeq.loopIdx) {
+						current --;
+					} else if (current == currentSeq.loopIdx) {
+						current = currentSeq.seqs.length - 1;
+					} else {
+						current = (current <= 0) ? 0 : current - 1;
+					}
+				}
+			}
+		}
+		
+		return this;
+	}
+	
+	/**
 	 * 告诉时间过了多少
 	 * @param step
-	 *   时间单位: 步
+	 *   时间单位: 步, 正整数
 	 */
 	public TextureSelect tick(int step) {
 		if (currentSeq == null) {

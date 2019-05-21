@@ -18,7 +18,6 @@ public class WeaponModule extends AbstractModule {
 
 	public WeaponModule(CharacterEntry ch) {
 		super(ch);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override

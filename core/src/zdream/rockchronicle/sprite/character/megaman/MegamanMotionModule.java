@@ -2,19 +2,13 @@ package zdream.rockchronicle.sprite.character.megaman;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
 
-import zdream.rockchronicle.RockChronicle;
-import zdream.rockchronicle.core.GameRuntime;
-import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
-import zdream.rockchronicle.core.character.parameter.CharacterParameter;
 import zdream.rockchronicle.core.module.motion.TerrainMotionModule;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
-import zdream.rockchronicle.sprite.bullet.base.MMBuster;
 
 public class MegamanMotionModule extends TerrainMotionModule {
 	
@@ -24,10 +18,6 @@ public class MegamanMotionModule extends TerrainMotionModule {
 	 * 是否向左或向右移动. 左和右不会同时为 true.
 	 */
 	boolean left, right;
-	/**
-	 * 攻击暂存. attackBegin 为暂存, inAttack 为状态
-	 */
-	boolean attackBegin, inAttack;
 	
 	/*
 	 * 移动静态参数: 格子 / 秒
@@ -53,11 +43,6 @@ public class MegamanMotionModule extends TerrainMotionModule {
 	 */
 	public float parryVel;
 	
-	/*
-	 * 武器参数 (暂存)
-	 */
-	public IntArray weaponEntryIds = new IntArray(8);
-	
 	public MegamanMotionModule(MegamanInLevel parent) {
 		super(parent);
 		this.parent = parent;
@@ -75,36 +60,40 @@ public class MegamanMotionModule extends TerrainMotionModule {
 		
 		// 添加事件监听
 		parent.addSubscribe("ctrl_axis", this);
-		parent.addSubscribe("ctrl_motion", this);
 	}
 	
 	@Override
 	public void determine(LevelWorld world, int index, boolean hasNext) {
 		super.determine(world, index, hasNext);
 		
-		// state
-		String motion = "stop";
-		if (left || right) {
-			motion = "walk";
-		}
-		
-		JsonValue v = new JsonValue(ValueType.object);
-		v.addChild("motion", new JsonValue(motion));
-		parent.setJson("state", v);
-		
-		// situation
-		if (left) {
+		boolean climbing = parent.getBoolean(new String[] {"climb", "climbing"}, false);
+		if (!climbing) { // 如果在攀爬状态, 所有的速度修改都不需要了
+			JsonValue v;
+			
+			// situation
+			if (left) {
+				v = new JsonValue(ValueType.object);
+				v.addChild("orientation", new JsonValue(false));
+				parent.setJson("situation", v);
+			} else if (right) {
+				v = new JsonValue(ValueType.object);
+				v.addChild("orientation", new JsonValue(true));
+				parent.setJson("situation", v);
+			}
+			
+			// state
+			String motion = "stop";
+			if (left || right) {
+				motion = "walk";
+			}
+			
 			v = new JsonValue(ValueType.object);
-			v.addChild("orientation", new JsonValue(false));
-			parent.setJson("situation", v);
-		} else if (right) {
-			v = new JsonValue(ValueType.object);
-			v.addChild("orientation", new JsonValue(true));
-			parent.setJson("situation", v);
+			v.addChild("motion", new JsonValue(motion));
+			parent.setJson("state", v);
+			
+			// 修改速度
+			updateVelocity(world, index, hasNext);
 		}
-		
-		// 修改速度
-		updateVelocity(world, index, hasNext);
 	}
 	
 	public void updateVelocity(LevelWorld world, int index, boolean hasNext) {
@@ -161,43 +150,6 @@ public class MegamanMotionModule extends TerrainMotionModule {
 		
 		// 设置的最终速度 X
 		box.setVelocityX(vx);
-		
-		// 其它 : 是否攻击
-		if (weaponEntryIds.size < 3 && attackBegin && !stiffness) {
-			float x = (orientation) ? box.anchor.x + 1 : box.anchor.x - 1;
-			MMBuster buster = (MMBuster) RockChronicle.INSTANCE.runtime.characterBuilder.create("megaman_buster",
-					CharacterParameter.newInstance()
-						.setBoxAnchor(x, box.anchor.y + 0.75f)
-						.setMotionOrientation(orientation)
-						.setMotionFlipX(!orientation)
-						.setCamp(parent.getInt(new String[] {"camp", "camp"}, 0))
-						.get());
-			weaponEntryIds.add(buster.id);
-			RockChronicle.INSTANCE.runtime.addEntry(buster);
-		}
-	}
-	
-	@Override
-	public void stepPassed() {
-		// 重置参数
-		this.attackBegin = false;
-		
-		// 子弹数重置
-		if (weaponEntryIds.size > 0) {
-			GameRuntime runtime = RockChronicle.INSTANCE.runtime;
-			for (int i = 0; i < weaponEntryIds.size; i++) { // weaponEntryIds.size 是变动的
-				int id = weaponEntryIds.get(i);
-				// 检查子弹是否存在. 后面还需要补充它是否弹开等描述子弹是否还有效的属性
-				
-				CharacterEntry entry = runtime.findEntry(id);
-				if (entry == null) entry = runtime.findEntryWaitingForAdd(id);
-				
-				if (entry == null) {
-					weaponEntryIds.removeIndex(i);
-					i--;
-				}
-			}
-		}
 	}
 	
 	@Override
@@ -205,9 +157,6 @@ public class MegamanMotionModule extends TerrainMotionModule {
 		switch (event.name) {
 		case "ctrl_axis":
 			recvCtrlAxis(event);
-			break;
-		case "ctrl_motion":
-			recvCtrlMotion(event);
 			break;
 
 		default:
@@ -221,13 +170,4 @@ public class MegamanMotionModule extends TerrainMotionModule {
 		right = event.value.getBoolean("right");
 	}
 	
-	private void recvCtrlMotion(CharacterEvent event) {
-		inAttack = event.value.getBoolean("attack");
-		boolean attackChange = event.value.getBoolean("attackChange");
-//		boolean slide = event.value.getBoolean("slide");
-//		boolean slideChange = event.value.getBoolean("slideChange");
-		
-		attackBegin = (inAttack && attackChange);
-	}
-
 }

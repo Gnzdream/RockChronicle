@@ -42,6 +42,9 @@ public class MegamanSpriteModule extends BaseSpriteModule {
 			return;
 		}
 		
+		// 是否在攀爬
+		// TODO 等待添加
+		
 		// 是否在跳跃
 		boolean bottomStop = parent.getBoolean(new String[] {"motion", "bottomStop"}, true);
 		if (!bottomStop) {

@@ -5,6 +5,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
+import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.core.character.parameter.JsonCollector;
 import zdream.rockchronicle.core.module.AbstractModule;
 import zdream.rockchronicle.platform.world.LevelWorld;
@@ -38,9 +39,6 @@ public abstract class StateModule extends AbstractModule {
 
 	public StateModule(CharacterEntry ch) {
 		super(ch);
-		
-		statec = new JsonCollector(this::createStateJson, "state");
-		situationc = new JsonCollector(this::createSituationJson, "situation");
 	}
 
 	@Override
@@ -63,8 +61,13 @@ public abstract class StateModule extends AbstractModule {
 	public void init(FileHandle file, JsonValue value) {
 		super.init(file, value);
 		
+		statec = new JsonCollector(this::createStateJson, "state");
+		situationc = new JsonCollector(this::createSituationJson, "situation");
+		
 		addCollector(statec);
 		addCollector(situationc);
+		
+		parent.addSubscribe("delete_situation", this);
 	}
 	
 	public JsonValue createStateJson() {
@@ -97,6 +100,14 @@ public abstract class StateModule extends AbstractModule {
 	protected boolean setSituationJson(JsonValue value) {
 		mergeJson(situation, value);
 		return true;
+	}
+	
+	public void receiveEvent(CharacterEvent event) {
+		if ("delete_situation".equals(event.name)) {
+			delete(situation, event.value.get("keys").asStringArray());
+			situationc.clear();
+		}
+		super.receiveEvent(event);
 	}
 
 }

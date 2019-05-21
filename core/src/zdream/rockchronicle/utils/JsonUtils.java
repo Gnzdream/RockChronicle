@@ -123,5 +123,18 @@ public class JsonUtils {
 		
 		return null;
 	}
+	
+	public static void delete(JsonValue map, String[] keys) {
+		Objects.requireNonNull(keys);
+		delete(map, keys, 0);
+	}
+	
+	private static void delete(JsonValue map, String[] keys, int offset) {
+		if (keys.length == offset + 1) {
+			map.remove(keys[offset]);
+			return;
+		}
+		delete(map.get(keys[offset]), keys, offset + 1);
+	}
 
 }

@@ -16,15 +16,18 @@ public class MegamanInLevel extends CharacterEntry implements IInputBindable {
 	MegamanControlModule ctrl;
 	MegamanMotionModule motion;
 	MegamanSpriteModule sprite;
+	MegamanWeaponModule weapon;
 	
 	{
 		ctrl = new MegamanControlModule(this);
 		motion = new MegamanMotionModule(this);
 		sprite = new MegamanSpriteModule(this);
+		weapon = new MegamanWeaponModule(this);
 		
 		this.addModule(ctrl);
 		this.addModule(motion);
 		this.addModule(sprite);
+		this.addModule(weapon);
 	}
 	
 	/**

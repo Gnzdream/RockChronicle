@@ -683,7 +683,7 @@ public class LevelWorld implements ITerrainStatic {
 	 * @return
 	 *   地形码
 	 */
-	public int getTerrain(int x, int y) {
+	public byte getTerrain(int x, int y) {
 		if (x < 0 || x >= currentRoom.width) {
 			return TERRAIN_SOLID;
 		}

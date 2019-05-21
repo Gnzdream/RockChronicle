@@ -81,6 +81,11 @@ public class BaseJumpModule extends JumpModule {
 		// 攀爬 (楼梯) 状态、悬挂状态、附着状态
 		// TODO 如果在以上时, 下面的一切都不需要判断.
 		
+		boolean climbing = parent.getBoolean(new String[] {"climb", "climbing"}, false);
+		if (climbing) {
+			return;
+		}
+		
 		boolean bottomStop = parent.getBoolean(new String[] {"motion", "bottomStop"}, false);
 		boolean topStop = parent.getBoolean(new String[] {"motion", "topStop"}, false);
 		boolean stiffness = parent.getBoolean(new String[] {"state", "stiffness"}, false);
@@ -104,6 +109,7 @@ public class BaseJumpModule extends JumpModule {
 			}
 		}
 		
+		// 下面判断落体运动
 		if (!onTheGround && gravityScale != 0) {
 			float delta = decay * gravityScale;
 			float maxDropVelocity = this.maxDropVelocity * gravityScale;

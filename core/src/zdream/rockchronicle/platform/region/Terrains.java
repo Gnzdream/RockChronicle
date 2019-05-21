@@ -36,5 +36,9 @@ public class Terrains implements ITerrainStatic {
 	public static boolean isEmpty(byte terrain) {
 		return terrain == TERRAIN_EMPTY || terrain == TERRAIN_STAB_LADDER;
 	}
+	
+	public static boolean isLadder(byte terrain) {
+		return terrain == TERRAIN_STAB_LADDER;
+	}
 
 }
