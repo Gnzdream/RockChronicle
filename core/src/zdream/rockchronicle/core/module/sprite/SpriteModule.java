@@ -44,11 +44,6 @@ public abstract class SpriteModule extends AbstractModule {
 	FileHandle baseFile;
 	Array<String> texturePaths;
 	
-	/*
-	 * 下面是计时相关的参数
-	 */
-	protected int steps;
-	
 	private void initTexturePaths(FileHandle file, JsonValue array) {
 		baseFile = file.parent();
 		

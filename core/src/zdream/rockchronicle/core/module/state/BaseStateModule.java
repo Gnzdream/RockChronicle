@@ -68,6 +68,7 @@ public class BaseStateModule extends StateModule {
 		initStateArguments(value);
 
 		parent.addSubscribe("after_damage", this);
+		parent.addSubscribe("open_fire", this);
 	}
 
 	private void initStateArguments(JsonValue value) {
@@ -170,6 +171,9 @@ public class BaseStateModule extends StateModule {
 				}
 				statec.clear();
 			}
+		} else if ("open_fire".equals(event.name)) {
+			this.attacking = true;
+			statec.clear();
 		}
 		super.receiveEvent(event);
 	}

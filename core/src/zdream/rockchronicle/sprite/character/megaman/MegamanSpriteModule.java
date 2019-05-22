@@ -1,6 +1,7 @@
 package zdream.rockchronicle.sprite.character.megaman;
 
 import zdream.rockchronicle.core.module.sprite.BaseSpriteModule;
+import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
 public class MegamanSpriteModule extends BaseSpriteModule {
@@ -27,49 +28,73 @@ public class MegamanSpriteModule extends BaseSpriteModule {
 	}
 	
 	String motion = "normal";
+	int attackRemain = 0;
 	
 	@Override
 	public void determine(LevelWorld world, int index, boolean hasNext) {
 		super.determine(world, index, hasNext);
-		steps++;
+		if (attackRemain > 0) {
+			attackRemain --;
+		}
 		
 		// 是否硬直
 		boolean stiffness = parent.getBoolean(new String[] {"state", "stiffness"}, false);
 		if (stiffness) {
 			motion = "stiffness";
 			setState("stiffness");
-			steps = 0;
 			return;
+		}
+		
+		// 攻击判定
+		boolean attacking = parent.getBoolean(new String[] {"state", "attacking"}, false);
+		if (attacking) {
+			attackRemain = LevelWorld.STEPS_PER_SECOND / 2;
 		}
 		
 		// 是否在攀爬
 		// TODO 等待添加
 		
+		Box box = parent.getBoxModule().getBox();
+		
 		// 是否在跳跃
 		boolean bottomStop = parent.getBoolean(new String[] {"motion", "bottomStop"}, true);
 		if (!bottomStop) {
 			motion = "jump";
-			setState("jump");
-			steps = 0;
+			
+			if (box.velocity.y >= 0) {
+				setState("jump");
+			} else {
+				setState("drop");
+			}
+			
 			return;
 		}
 		
 		String curMotion = parent.getString(new String[] {"state", "motion"}, "stop");
-		if (!curMotion.equals(motion)) {
-			switch (curMotion) {
-			case "stop":
-				setState("normal");
-				break;
-			case "walk":
-				setState("walk");
-				break;
-
-			default:
-				break;
+		switch (curMotion) {
+		case "stop":
+			setState("normal");
+			break;
+		case "walk": {
+			if (attackRemain > 0) {
+				if ("walk".equals(select.getState())) {
+					select.replaceState("walk_attack");
+				} else {
+					setState("walk_attack");
+				}
+			} else {
+				if ("walk_attack".equals(select.getState())) {
+					select.replaceState("walk");
+				} else {
+					setState("walk");
+				}
 			}
-			this.motion = curMotion;
-			steps = 0;
+		} break;
+
+		default:
+			break;
 		}
+		this.motion = curMotion;
 		
 	}
 	

@@ -23,7 +23,17 @@
 			"y":0
 		},
 		"gravityScale":1,
-		"climbable":true
+		"climbable":true,
+		"shapes":
+		[
+			{
+				"name":"normal",
+				"width":0.833334,
+				"height":1.5,
+				"x":-0.416777,
+				"y":0
+			}
+		]
 	},
 	"textures":
 	[

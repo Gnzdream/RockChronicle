@@ -775,7 +775,7 @@ public class LevelWorld implements ITerrainStatic {
 		
 		// 向上
 		TOP: {
-			if (p.ytop >= currentRoom.height) {
+			if (p.ytop < currentRoom.height) {
 				break TOP;
 			}
 			Gate g = null;

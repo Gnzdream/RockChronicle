@@ -30,7 +30,23 @@ public class TextureSelect {
 		setState(state);
 	}
 	
+	/**
+	 * 现在的状态
+	 * @return
+	 */
+	public String getState() {
+		return currentSeq.state;
+	}
+	
+	/**
+	 * 更新状态
+	 * @param state
+	 */
 	public void setState(String state) {
+		if (currentSeq != null && currentSeq.state.equals(state)) {
+			return;
+		}
+		
 		currentSeq = sheet.sequences.get(state);
 		this.current = 0;
 		if (currentSeq == null) {
@@ -39,6 +55,41 @@ public class TextureSelect {
 			this.remain = currentSeq.step;
 		}
 	}
+	
+	/**
+	 * 替换状态. 替换状态要求, 原状态和目标状态有相同的序列长度以及更新频率
+	 * ({@link TextureSequence#step}), 但不需要有相同的循环点.
+	 * @param state
+	 */
+	public void replaceState(String state) {
+		if (currentSeq != null && currentSeq.state.equals(state)) {
+			return;
+		}
+		
+		TextureSequence target = sheet.sequences.get(state);
+		if (target.step == currentSeq.step && target.seqs.length == currentSeq.seqs.length) {
+			this.currentSeq = target;
+			return;
+		}
+		throw new IllegalArgumentException(
+				String.format("序列 %s 和 %s 无法相互替换", state, currentSeq.state));
+	}
+	
+	/**
+	 * 更新现在是 sequence 的第几帧
+	 */
+	public void setCurrent(int current) {
+		if (current <= 0) {
+			current = 0;
+		} else if (current > currentSeq.seqs.length) {
+			current = currentSeq.seqs.length - 1;
+		} else {
+			this.current = current;
+		}
+		this.remain = 0;
+	}
+	
+	
 
 	public TextureSequence getSequence() {
 		return currentSeq;

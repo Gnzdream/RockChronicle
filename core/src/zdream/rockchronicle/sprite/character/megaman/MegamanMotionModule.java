@@ -71,14 +71,17 @@ public class MegamanMotionModule extends TerrainMotionModule {
 			JsonValue v;
 			
 			// situation
-			if (left) {
-				v = new JsonValue(ValueType.object);
-				v.addChild("orientation", new JsonValue(false));
-				parent.setJson("situation", v);
-			} else if (right) {
-				v = new JsonValue(ValueType.object);
-				v.addChild("orientation", new JsonValue(true));
-				parent.setJson("situation", v);
+			boolean stiffness = parent.getBoolean(new String[] {"state", "stiffness"}, false);
+			if (!stiffness) { // 受伤时不转向
+				if (left) {
+					v = new JsonValue(ValueType.object);
+					v.addChild("orientation", new JsonValue(false));
+					parent.setJson("situation", v);
+				} else if (right) {
+					v = new JsonValue(ValueType.object);
+					v.addChild("orientation", new JsonValue(true));
+					parent.setJson("situation", v);
+				}
 			}
 			
 			// state
@@ -91,65 +94,60 @@ public class MegamanMotionModule extends TerrainMotionModule {
 			v.addChild("motion", new JsonValue(motion));
 			parent.setJson("state", v);
 			
-			// 修改速度
-			updateVelocity(world, index, hasNext);
-		}
-	}
-	
-	public void updateVelocity(LevelWorld world, int index, boolean hasNext) {
-		Box box = getSingleBox();
-		Vector2 vel = box.velocity; // 速度
-		float vx = vel.x, vy = vel.y;
-		
-		// 3. 执行上下移动 TODO
-		boolean bottomStop = box.bottomStop;
-		
-		// 设置的最终速度 Y
-		box.setVelocityY(vy);
-		
-		// 4. 执行左右移动
-		boolean stiffness = parent.getBoolean(new String[] {"state", "stiffness"}, false);
-		boolean orientation = parent.getBoolean(new String[] {"situation", "orientation"}, true);
-		if (stiffness) {
-			// 在击退 / 硬直状态下
-			if (orientation) {
-				vx = -parryVel;
+			// 2. 修改速度
+			Box box = getSingleBox();
+			Vector2 vel = box.velocity; // 速度
+			float vx = vel.x, vy = vel.y;
+			
+			// 3. 执行上下移动 TODO
+			boolean bottomStop = box.bottomStop;
+			
+			// 设置的最终速度 Y
+			box.setVelocityY(vy);
+			
+			// 4. 执行左右移动
+			boolean orientation = parent.getBoolean(new String[] {"situation", "orientation"}, true);
+			if (stiffness) {
+				// 在击退 / 硬直状态下
+				if (orientation) {
+					vx = -parryVel;
+				} else {
+					vx = parryVel;
+				}
 			} else {
-				vx = parryVel;
-			}
-		} else {
-			// 正常情况下, 每秒增加 horizontalVelDelta 的水平速度, horizontalVelMax 为最值.
-			if (left) {
-				orientation = false;
-				if (bottomStop) {
-					vx -= horizontalVelDelta;
-					if (vx > 0 || box.leftStop) {
-						vx = 0;
-					} else if (vx < -horizontalVelMax) {
+				// 正常情况下, 每秒增加 horizontalVelDelta 的水平速度, horizontalVelMax 为最值.
+				if (left) {
+					orientation = false;
+					if (bottomStop) {
+						vx -= horizontalVelDelta;
+						if (vx > 0 || box.leftStop) {
+							vx = 0;
+						} else if (vx < -horizontalVelMax) {
+							vx = -horizontalVelMax;
+						}
+					} else {
 						vx = -horizontalVelMax;
 					}
-				} else {
-					vx = -horizontalVelMax;
-				}
-			} else if (right) {
-				orientation = true;
-				if (bottomStop) {
-					vx += horizontalVelDelta;
-					if (vx < 0 || box.rightStop) {
-						vx = 0;
-					} else if (vx > horizontalVelMax) {
+				} else if (right) {
+					orientation = true;
+					if (bottomStop) {
+						vx += horizontalVelDelta;
+						if (vx < 0 || box.rightStop) {
+							vx = 0;
+						} else if (vx > horizontalVelMax) {
+							vx = horizontalVelMax;
+						}
+					} else {
 						vx = horizontalVelMax;
 					}
 				} else {
-					vx = horizontalVelMax;
+					vx = 0; // 不在打滑状态下, 立即停住
 				}
-			} else {
-				vx = 0; // 不在打滑状态下, 立即停住
 			}
+			
+			// 设置的最终速度 X
+			box.setVelocityX(vx);
 		}
-		
-		// 设置的最终速度 X
-		box.setVelocityX(vx);
 	}
 	
 	@Override

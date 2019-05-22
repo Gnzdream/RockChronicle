@@ -29,6 +29,24 @@
 			"loopIndex":0
 		},
 		{
+			"state":"walk_attack",
+			"sequence":
+			[
+				"walk_attack_0",
+				"walk_attack_1",
+				"walk_attack_2",
+				"walk_attack_3",
+				"walk_attack_4",
+				"walk_attack_5",
+				"walk_attack_6",
+				"walk_attack_7",
+				"walk_attack_8",
+				"walk_attack_9"
+			],
+			"step":0.0666667,
+			"loopIndex":0
+		},
+		{
 			"state":"stiffness",
 			"sequence":
 			[
@@ -39,8 +57,20 @@
 			"state":"jump",
 			"sequence":
 			[
-				"jump_3"
-			]
+				"jump_1",
+				"jump_4"
+			],
+			"step":0.05,
+		},
+		{
+			"state":"drop",
+			"sequence":
+			[
+				"jump_3",
+				"jump_2",
+				"jump_1"
+			],
+			"step":0.0666667,
 		}
 	],
 	"textures":
@@ -54,6 +84,7 @@
 			"offx":-19,
 			"offy":-1
 		},
+
 		{
 			"name":"walk_0",
 			"x":40,
@@ -70,7 +101,7 @@
 			"w":33,
 			"h":37,
 			"offx":-20,
-			"offy":-1
+			"offy":0
 		},
 		{
 			"name":"walk_2",
@@ -79,7 +110,7 @@
 			"w":44,
 			"h":37,
 			"offx":-28,
-			"offy":-1
+			"offy":1
 		},
 		{
 			"name":"walk_3",
@@ -88,7 +119,7 @@
 			"w":34,
 			"h":36,
 			"offx":-23,
-			"offy":0
+			"offy":1
 		},
 		{
 			"name":"walk_4",
@@ -106,7 +137,7 @@
 			"w":25,
 			"h":35,
 			"offx":-14,
-			"offy":0
+			"offy":1
 		},
 		{
 			"name":"walk_6",
@@ -115,7 +146,7 @@
 			"w":26,
 			"h":37,
 			"offx":-15,
-			"offy":-1
+			"offy":0
 		},
 		{
 			"name":"walk_7",
@@ -124,7 +155,7 @@
 			"w":37,
 			"h":35,
 			"offx":-21,
-			"offy":0
+			"offy":3
 		},
 		{
 			"name":"walk_8",
@@ -133,7 +164,7 @@
 			"w":28,
 			"h":37,
 			"offx":-17,
-			"offy":-1
+			"offy":0
 		},
 		{
 			"name":"walk_9",
@@ -142,16 +173,135 @@
 			"w":25,
 			"h":35,
 			"offx":-14,
+			"offy":1
+		},
+
+		{
+			"name":"walk_attack_0",
+			"x":36,
+			"y":159,
+			"w":36,
+			"h":37,
+			"offx":-15,
+			"offy":-1
+		},
+		{
+			"name":"walk_attack_1",
+			"x":75,
+			"y":159,
+			"w":42,
+			"h":37,
+			"offx":-20,
 			"offy":0
 		},
 		{
+			"name":"walk_attack_2",
+			"x":122,
+			"y":159,
+			"w":47,
+			"h":37,
+			"offx":-28,
+			"offy":1
+		},
+		{
+			"name":"walk_attack_3",
+			"x":174,
+			"y":160,
+			"w":42,
+			"h":36,
+			"offx":-23,
+			"offy":1
+		},
+		{
+			"name":"walk_attack_4",
+			"x":221,
+			"y":159,
+			"w":37,
+			"h":37,
+			"offx":-16,
+			"offy":-1
+		},
+		{
+			"name":"walk_attack_5",
+			"x":263,
+			"y":161,
+			"w":35,
+			"h":35,
+			"offx":-14,
+			"offy":1
+		},
+		{
+			"name":"walk_attack_6",
+			"x":304,
+			"y":159,
+			"w":37,
+			"h":37,
+			"offx":-15,
+			"offy":0
+		},
+		{
+			"name":"walk_attack_7",
+			"x":346,
+			"y":161,
+			"w":43,
+			"h":35,
+			"offx":-21,
+			"offy":3
+		},
+		{
+			"name":"walk_attack_8",
+			"x":395,
+			"y":159,
+			"w":39,
+			"h":37,
+			"offx":-17,
+			"offy":0
+		},
+		{
+			"name":"walk_attack_9",
+			"x":441,
+			"y":161,
+			"w":36,
+			"h":35,
+			"offx":-14,
+			"offy":1
+		},
+
+		{
+			"name":"jump_1",
+			"x":82,
+			"y":215,
+			"w":30,
+			"h":48,
+			"offx":-15,
+			"offy":-10
+		},
+		{
+			"name":"jump_2",
+			"x":117,
+			"y":212,
+			"w":29,
+			"h":51,
+			"offx":-15,
+			"offy":-13
+		},
+		{
 			"name":"jump_3",
+			"x":155,
+			"y":209,
+			"w":30,
+			"h":54,
+			"offx":-16,
+			"offy":-16
+		},
+		{
+			"name":"jump_4",
 			"x":196,
 			"y":210,
 			"w":31,
 			"h":53,
-			"offx":-15,
-			"offy":-14
+			"offx":-17,
+			"offy":-15
 		},
 		{
 			"name":"stiffness_3",

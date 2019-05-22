@@ -54,6 +54,9 @@ public class RoomShiftHandler {
 		}
 		
 		// TODO 这里判断比如需要在攀爬状态、踩在指定的角色上等
+		if (entry.getBoolean(new String[] {"climb", "climbing"}, false)) {
+			return true;
+		}
 		
 		return false;
 	}
@@ -216,9 +219,9 @@ public class RoomShiftHandler {
 						float ybottom = rect.y;
 						Vector2 anchor = box.anchor;
 						
-						// 向下移屏后, 角色下边需要等于目标房间高 - 1 (与左右不同)
+						// 向下移屏后, 角色上边需要等于目标房间高 - 1
 						param.phase2EntryWidth[i] = (srcRoom.offsety + ybottom)
-								- (destRoom.offsety - g.offsetYOfRegion + destRoom.height - 1);
+								- (destRoom.offsety - g.offsetYOfRegion + destRoom.height - 1 - rect.height);
 						param.entriesPos[i] = new Vector2(anchor.x, anchor.y - param.phase2EntryWidth[i]);
 					}
 				} else {

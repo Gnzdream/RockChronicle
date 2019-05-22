@@ -124,7 +124,7 @@ public class ClimbModule extends AbstractModule {
 		}
 		// 这里附加判断:
 		// 角色是不能够攀爬房间区域以外的梯子的. 否则切换房间的判定将出现问题
-		if (!world.currentRoom.contain(centerPoint.x, centerPoint.y)) {
+		if (!world.currentRoom.containInRoom(centerPoint.x, centerPoint.y)) {
 			climbing = false;
 			climbc.clear(); return;
 		}
@@ -156,6 +156,7 @@ public class ClimbModule extends AbstractModule {
 		// vy
 		if (distance < 0.5f) {
 			// 两个快爬到顶端的状态, 速度和状态需要修改
+			System.out.println("distance < 0.5");
 			vy = 0;
 		} else {
 			// 离顶端还很远
@@ -176,11 +177,6 @@ public class ClimbModule extends AbstractModule {
 		
 		box.setVelocityX(vx);
 		box.setVelocityY(vy);
-	}
-	
-	@Override
-	public void stepPassed() {
-		super.stepPassed();
 	}
 	
 	@Override

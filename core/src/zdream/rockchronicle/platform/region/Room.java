@@ -88,6 +88,18 @@ public class Room {
 	public boolean contain(float x, float y) {
 		return this.offsetx <= x && this.offsetx + this.width >= x && this.offsety <= y && this.offsety + this.height >= y;
 	}
+
+	/**
+	 * 查看一个点是否在该房间范围内, 或者压住房间的边缘线.
+	 * @param x
+	 *   这个点在当前房间中的横坐标, 单位: 格子
+	 * @param y
+	 *   这个点在当前房间中的纵坐标, 单位: 格子
+	 * @return
+	 */
+	public boolean containInRoom(float x, float y) {
+		return 0 <= x && this.width >= x && 0 <= y && this.height >= y;
+	}
 	
 	/**
 	 * 查看一个区域点块是否在该房间范围内
@@ -99,6 +111,18 @@ public class Room {
 	 */
 	public boolean contain(int x, int y) {
 		return this.offsetx <= x && this.offsetx + this.width > x && this.offsety <= y && this.offsety + this.height > y;
+	}
+	
+	/**
+	 * 查看一个区域点块是否在该房间范围内
+	 * @param x
+	 *   这个点在当前房间中的横坐标, 单位: 格子
+	 * @param y
+	 *   这个点在当前房间中的纵坐标, 单位: 格子
+	 * @return
+	 */
+	public boolean containInRoom(int x, int y) {
+		return 0 <= x && this.width > x && 0 <= y && this.height > y;
 	}
 	
 	@Override
