@@ -58,7 +58,6 @@ public class SingleBoxModule extends BoxModule {
 			case "gravityScale": box.gravityScale = entry.asFloat(); break;
 			case "gravityDown": box.gravityDown = entry.asBoolean(); break;
 			case "climbable": box.climbable = entry.asBoolean(); break;
-			case "posture": box.posture = entry.asByte(); break;
 			}
 		}
 	}

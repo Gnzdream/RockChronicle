@@ -47,6 +47,39 @@
 			"loopIndex":0
 		},
 		{
+			"state":"climb",
+			"sequence":
+			[
+				"climb_0",
+				"climb_1",
+				"climb_2",
+				"climb_3"
+			],
+			"step":0.0666667,
+			"loopIndex":0
+		},
+		{
+			"state":"climb_top_0",
+			"sequence":
+			[
+				"climb_top_0"
+			]
+		},
+		{
+			"state":"climb_top_1",
+			"sequence":
+			[
+				"climb_top_1"
+			]
+		},
+		{
+			"state":"climb_attack",
+			"sequence":
+			[
+				"climb_attack"
+			]
+		},
+		{
 			"state":"stiffness",
 			"sequence":
 			[
@@ -69,6 +102,25 @@
 				"jump_3",
 				"jump_2",
 				"jump_1"
+			],
+			"step":0.0666667,
+		},
+		{
+			"state":"jump_attack",
+			"sequence":
+			[
+				"jump_attack_1",
+				"jump_attack_4"
+			],
+			"step":0.05,
+		},
+		{
+			"state":"drop_attack",
+			"sequence":
+			[
+				"jump_attack_3",
+				"jump_attack_2",
+				"jump_attack_1"
 			],
 			"step":0.0666667,
 		}
@@ -291,7 +343,7 @@
 			"y":209,
 			"w":30,
 			"h":54,
-			"offx":-16,
+			"offx":-17,
 			"offy":-16
 		},
 		{
@@ -303,6 +355,108 @@
 			"offx":-17,
 			"offy":-15
 		},
+
+		{
+			"name":"jump_attack_1",
+			"x":289,
+			"y":211,
+			"w":40,
+			"h":48,
+			"offx":-15,
+			"offy":-10
+		},
+		{
+			"name":"jump_attack_2",
+			"x":336,
+			"y":208,
+			"w":37,
+			"h":51,
+			"offx":-15,
+			"offy":-13
+		},
+		{
+			"name":"jump_attack_3",
+			"x":381,
+			"y":205,
+			"w":39,
+			"h":54,
+			"offx":-17,
+			"offy":-16
+		},
+		{
+			"name":"jump_attack_4",
+			"x":428,
+			"y":206,
+			"w":39,
+			"h":53,
+			"offx":-17,
+			"offy":-15
+		},
+
+		{
+			"name":"climb_0",
+			"x":211,
+			"y":274,
+			"w":23,
+			"h":53,
+			"offx":-1,
+			"offy":-9
+		},
+		{
+			"name":"climb_1",
+			"x":248,
+			"y":279,
+			"w":26,
+			"h":45,
+			"offx":-3,
+			"offy":-6
+		},
+		{
+			"name":"climb_2",
+			"x":284,
+			"y":279,
+			"w":26,
+			"h":45,
+			"offx":-3,
+			"offy":-6
+		},
+		{
+			"name":"climb_3",
+			"x":322,
+			"y":276,
+			"w":23,
+			"h":53,
+			"offx":-2,
+			"offy":-11
+		},
+		{
+			"name":"climb_top_0",
+			"x":361,
+			"y":279,
+			"w":29,
+			"h":38,
+			"offx":-5,
+			"offy":-18
+		},
+		{
+			"name":"climb_top_1",
+			"x":399,
+			"y":279,
+			"w":28,
+			"h":20,
+			"offx":-4,
+			"offy":0
+		},
+		{
+			"name":"climb_attack",
+			"x":440,
+			"y":275,
+			"w":30,
+			"h":53,
+			"offx":-2,
+			"offy":-10
+		},
+
 		{
 			"name":"stiffness_3",
 			"x":218,

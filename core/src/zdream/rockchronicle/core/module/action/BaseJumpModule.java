@@ -8,6 +8,8 @@ import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.core.character.parameter.JsonCollector;
 import zdream.rockchronicle.platform.body.Box;
+import zdream.rockchronicle.platform.body.BoxOccupation;
+import zdream.rockchronicle.platform.region.Terrains;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
 /**
@@ -97,7 +99,10 @@ public class BaseJumpModule extends JumpModule {
 		float gravityScale = box.gravityScale;
 		
 		float vy = ovy;
-		boolean onTheGround = bottomStop && box.gravityDown || topStop && !box.gravityDown;
+		boolean onTheGround = onTheGround(world, box, bottomStop, topStop);
+		JsonValue v = new JsonValue(ValueType.object);
+		v.addChild("onTheGround", new JsonValue(onTheGround));
+		parent.setJson("state", v);
 		
 		if (gravityScale > 0) {
 			if (onTheGround) {
@@ -141,6 +146,47 @@ public class BaseJumpModule extends JumpModule {
 		
 		box.velocity.y = vy;
 //		parent.setJson("box", BoxSetter.newInstance().setVelocityY(vy).get());
+	}
+	
+	/**
+	 * <p>判断角色是否站在某个物体上 (不悬在空中)
+	 * <p>这里有一个额外的判断内容, 就是是否爬梯子
+	 * </p>
+	 */
+	private boolean onTheGround(LevelWorld world, Box box,
+			boolean bottomStop, boolean topStop) {
+		if (bottomStop && box.gravityDown || topStop && !box.gravityDown) {
+			return true;
+		}
+		if (!box.climbable) {
+			return false;
+		}
+		
+		// 判断梯子部分
+		BoxOccupation occ = box.getOccupation();
+		if (!occ.ybottomTightly && box.gravityDown || !occ.ytopTightly && !box.gravityDown) {
+			return false;
+		}
+		
+		if (box.gravityDown) {
+			int ybottom = occ.ybottom - 1; // 角色底端再下面一格
+			for (int x = occ.xleft; x <= occ.xright; x++) {
+				if (Terrains.isLadder(world.getTerrain(x, ybottom))
+						&& !Terrains.isLadder(world.getTerrain(x, ybottom + 1))) {
+					return true;
+				}
+			}
+		} else {
+			int ybottom = occ.ytop + 1; // 角色顶端上面一格
+			for (int x = occ.xleft; x <= occ.xright; x++) {
+				if (Terrains.isLadder(world.getTerrain(x, ybottom))
+						&& !Terrains.isLadder(world.getTerrain(x, ybottom - 1))) {
+					return true;
+				}
+			}
+		}
+		
+		return false;
 	}
 	
 	@Override

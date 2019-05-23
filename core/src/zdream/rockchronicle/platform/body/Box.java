@@ -239,17 +239,6 @@ public class Box {
 	 * 四面是否碰到边了
 	 */
 	public boolean leftStop, rightStop, topStop, bottomStop;
-	/**
-	 * 标准姿势
-	 */
-	public byte posture;
-	
-	/** 普通姿势 */
-	public static final byte POSTURE_NORMAL = 0;
-	/** 攀爬姿势 */
-	public static final byte POSTURE_CLIMB = 1;
-	/** 悬挂、附着姿势 */
-	public static final byte POSTURE_HANG = 2;
 	
 	@Override
 	public String toString() {

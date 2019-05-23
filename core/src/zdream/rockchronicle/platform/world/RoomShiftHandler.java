@@ -219,9 +219,9 @@ public class RoomShiftHandler {
 						float ybottom = rect.y;
 						Vector2 anchor = box.anchor;
 						
-						// 向下移屏后, 角色上边需要等于目标房间高 - 1
+						// 向下移屏后, 角色上边需要等于目标房间高 - 0.1
 						param.phase2EntryWidth[i] = (srcRoom.offsety + ybottom)
-								- (destRoom.offsety - g.offsetYOfRegion + destRoom.height - 1 - rect.height);
+								- (destRoom.offsety - g.offsetYOfRegion + destRoom.height - 0.1f - rect.height);
 						param.entriesPos[i] = new Vector2(anchor.x, anchor.y - param.phase2EntryWidth[i]);
 					}
 				} else {
@@ -235,8 +235,8 @@ public class RoomShiftHandler {
 						float ybottom = rect.y; // 相对于 srcRoom
 						Vector2 anchor = box.anchor;
 
-						// 向上移屏后, 角色下边需要等于 1
-						param.phase2EntryWidth[i] = srcRoom.height + 1 - ybottom;
+						// 向上移屏后, 角色下边需要等于 0.1
+						param.phase2EntryWidth[i] = srcRoom.height + 0.1f - ybottom;
 						param.entriesPos[i] = new Vector2(anchor.x, anchor.y + param.phase2EntryWidth[i]);
 					}
 				}

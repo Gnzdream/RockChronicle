@@ -12,6 +12,7 @@ import zdream.rockchronicle.platform.body.TerrainParam;
 import zdream.rockchronicle.platform.region.Gate;
 import zdream.rockchronicle.platform.region.ITerrainStatic;
 import zdream.rockchronicle.platform.region.Room;
+import zdream.rockchronicle.platform.region.Terrains;
 
 /**
  * 关卡, 含物理世界
@@ -243,7 +244,7 @@ public class LevelWorld implements ITerrainStatic {
 		int ytop = (int) Math.ceil(fytop);
 		
 		if (ytop != fytop) {
-			// 肯定不在地面上
+			// 肯定上方没有碰边 (不考虑斜坡与其它地图块时)
 			return box.topStop = false;
 		}
 		
@@ -414,6 +415,7 @@ public class LevelWorld implements ITerrainStatic {
 	/**
 	 * <p>执行上下移动.
 	 * <p>根据 box 给出的位置和速度, 执行水平移动, 并将新的位置赋值到 box 中
+	 * <p>如果能够攀爬的角色, 允许站在梯子的顶端.
 	 * <p>TODO: 暂时不考虑斜坡、其它能动的刚体
 	 * </p>
 	 * @param box
@@ -452,12 +454,21 @@ public class LevelWorld implements ITerrainStatic {
 			}
 			
 			for (int x = xleft; x <= xright; x++) {
-				int terrain = getTerrain(x, ydbottom);
+				byte terrain = getTerrain(x, ydbottom);
 				
 				if (terrain == TERRAIN_SOLID) { // TODO 其它实体块
 					// 最后向左移动的结果就是撞到该格子
 					box.addAnchorY(ydbottom + 1 - fysbottom);
 					return;
+				} else if (Terrains.isLadder(terrain)) {
+					if (!box.climbable || !box.gravityDown) {
+						continue;
+					}
+					// 只有顶端的梯子才有效
+					if (!Terrains.isLadder(getTerrain(x, ydbottom + 1))) {
+						box.addAnchorY(ydbottom + 1 - fysbottom);
+						return; // 可能有浮点精度问题
+					}
 				}
 			}
 			box.addAnchorY(vy);
@@ -482,12 +493,21 @@ public class LevelWorld implements ITerrainStatic {
 			}
 			
 			for (int x = xleft; x <= xright; x++) {
-				int terrain = getTerrain(x, ystop); // 注意因为前面是 Math.ceil 所以用 ystop 而不是 fydtop
+				byte terrain = getTerrain(x, ystop); // 注意因为前面是 Math.ceil 所以用 ystop 而不是 fydtop
 				
 				if (terrain == TERRAIN_SOLID) { // TODO 其它实体块
-					// 最后向左移动的结果就是撞到该格子
-					box.addAnchorY(ystop - fystop);
+					// 最后向上移动的结果就是撞到该格子
+					box.addAnchorY(ystop - fystop); // ystop = ydtop - 1
 					return;
+				} else if (Terrains.isLadder(terrain)) {
+					if (!box.climbable || box.gravityDown) {
+						continue;
+					}
+					// 只有底端的梯子才有效
+					if (!Terrains.isLadder(getTerrain(x, ystop - 1))) {
+						box.addAnchorY(ystop - fystop);
+						return; // 可能有浮点精度问题
+					}
 				}
 			}
 			box.addAnchorY(vy);

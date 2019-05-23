@@ -10,6 +10,7 @@ import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.core.character.parameter.JsonCollector;
 import zdream.rockchronicle.core.module.AbstractModule;
 import zdream.rockchronicle.platform.body.Box;
+import zdream.rockchronicle.platform.body.BoxOccupation;
 import zdream.rockchronicle.platform.region.Terrains;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
@@ -45,10 +46,12 @@ public class ClimbModule extends AbstractModule {
 	byte upOrDown;
 	
 	/**
-	 * 是否在攀爬状态.
-	 * 如果上一帧为 true, 后面每帧都需要检测, 直到将其设置为 false
+	 * 攀爬状态参数, 0 表示不攀爬, 1 表示攀爬中, [2-13] 表示在梯子顶端的特殊攀爬状态,
+	 * 共 12 步时间 (0.1 s)
+	 * 
+	 * 如果上一帧不为 0, 后面每帧都需要检测, 直到将其设置为 0
 	 */
-	boolean climbing;
+	int climbing;
 	
 	/**
 	 * 由于在攀爬状态下攻击将有 0.5 秒时间不能上下移动, 这里记录剩余的恢复速度
@@ -98,13 +101,13 @@ public class ClimbModule extends AbstractModule {
 	public void determine(LevelWorld world, int index, boolean hasNext) {
 		super.determine(world, index, hasNext);
 		
-		if (!climbing && upOrDown == 0) {
+		if (climbing == 0 && upOrDown == 0) {
 			return;
 		}
 		
 		boolean stiffness = parent.getBoolean(new String[] {"state", "stiffness"}, false);
 		if (stiffness) { // 被攻击硬直时, 后面的判断都不用继续了
-			climbing = false;
+			climbing = 0;
 			climbc.clear(); return;
 		}
 		
@@ -118,21 +121,63 @@ public class ClimbModule extends AbstractModule {
 		Vector2 centerPoint = box.getPosition().getCenter(new Vector2());
 		// 现在查看这个中心点映射到的是哪个地形
 		byte terrain = world.getTerrain((int) centerPoint.x, (int) centerPoint.y);
-		if (!Terrains.isLadder(terrain)) {
-			climbing = false;
-			climbc.clear(); return;
+		if (!Terrains.isLadder(terrain) && climbing < 2) {
+			// 还有一种情况, 在梯子顶端按下将下降到下面的梯子上
+			BoxOccupation occ = box.getOccupation();
+			boolean flag = false;
+			
+			if (box.gravityDown && occ.ybottomTightly) {
+				if (Terrains.isLadder(world.getTerrain((int) centerPoint.x, occ.ybottom - 1))) {
+					System.out.println("降到梯子上");
+					return; // TODO
+				} else {
+					flag = true;
+				}
+			} else if (!box.gravityDown && occ.ytopTightly) {
+				if (Terrains.isLadder(world.getTerrain((int) centerPoint.x, occ.ytop + 1))) {
+					System.out.println("降到梯子上");
+					return; // TODO
+				} else {
+					flag = true;
+				}
+			} else {
+				flag = true;
+			}
+			
+			if (flag) {
+				climbing = 0;
+				climbc.clear(); return;
+			}
 		}
+		
+		// 特殊攀爬状态
+		if (climbing >= 2) {
+			if (this.upOrDown == 1) {
+				climbing++;
+			} else if (this.upOrDown == 2) {
+				climbing--;
+			}
+			
+			if (climbing > 13) {
+				// 站在楼梯顶端 TODO
+			} else if (climbing == 1) {
+				// 回到一般状态 TODO
+			} else {
+				// 其它 TODO
+			}
+		}
+		
 		// 这里附加判断:
 		// 角色是不能够攀爬房间区域以外的梯子的. 否则切换房间的判定将出现问题
 		if (!world.currentRoom.containInRoom(centerPoint.x, centerPoint.y)) {
-			climbing = false;
+			climbing = 0;
 			climbc.clear(); return;
 		}
 		
-		if (!climbing) {
+		if (climbing == 0) {
 			// 到了这里说明: 中心点是梯子的地形块, 不在房间外
 			// 原先还不是攀爬状态, 不在硬直状态, 按了上或者下
-			climbc.clear(); climbing = true;
+			climbc.clear(); climbing = 1;
 		}
 		
 		// 角色将改变形状 (共 3 个形状, 存储在 StateModule 中的 motion 字段)、
@@ -145,9 +190,11 @@ public class ClimbModule extends AbstractModule {
 		
 		// 下面需要粗略计算离梯子顶端的距离
 		int iy = (int) Math.ceil(centerPoint.y);
-//		boolean yTightly = centerPoint.y == iy;
+		boolean yTightly = centerPoint.y == iy;
 		float distance = (iy - centerPoint.y) +
-				(Terrains.isLadder(world.getTerrain((int) centerPoint.x, iy + 1)) ? 1 : 0);
+				(yTightly ?
+				(Terrains.isLadder(world.getTerrain((int) centerPoint.x, iy + 1)) ? 1 : 0) :
+				(Terrains.isLadder(world.getTerrain((int) centerPoint.x, iy)) ? 1 : 0));
 		
 		float vx, vy;
 		// vx
@@ -214,13 +261,13 @@ public class ClimbModule extends AbstractModule {
 		boolean jumpChange = event.value.getBoolean("jumpChange");
 		
 		if (jumpChange) {
-			climbing = false;
+			climbing = 0;
 			climbc.clear();
 		}
 	}
 	
 	private void recvOpenFire(CharacterEvent event) {
-		if (climbing) {
+		if (climbing != 0) {
 			haltRemain = LevelWorld.STEPS_PER_SECOND / 2;
 		}
 	}

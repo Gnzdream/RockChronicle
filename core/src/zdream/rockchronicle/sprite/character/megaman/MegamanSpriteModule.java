@@ -57,14 +57,24 @@ public class MegamanSpriteModule extends BaseSpriteModule {
 		Box box = parent.getBoxModule().getBox();
 		
 		// 是否在跳跃
-		boolean bottomStop = parent.getBoolean(new String[] {"motion", "bottomStop"}, true);
-		if (!bottomStop) {
+		boolean onTheGround = parent.getBoolean(new String[] {"state", "onTheGround"}, true);
+		if (!onTheGround) {
 			motion = "jump";
+			String s1 = (box.velocity.y >= 0) ? "jump" : "drop";
+			String s2 = (box.velocity.y >= 0) ? "jump_attack" : "drop_attack";
 			
-			if (box.velocity.y >= 0) {
-				setState("jump");
+			if (attackRemain > 0) {
+				if (s1.equals(select.getState())) {
+					select.replaceState(s2);
+				} else {
+					setState(s2);
+				}
 			} else {
-				setState("drop");
+				if (s2.equals(select.getState())) {
+					select.replaceState(s1);
+				} else {
+					setState(s1);
+				}
 			}
 			
 			return;
