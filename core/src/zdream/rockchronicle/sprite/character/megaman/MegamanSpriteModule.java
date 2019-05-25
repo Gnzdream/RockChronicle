@@ -42,6 +42,7 @@ public class MegamanSpriteModule extends BaseSpriteModule {
 		if (stiffness) {
 			motion = "stiffness";
 			setState("stiffness");
+			select.tick(1);
 			return;
 		}
 		
@@ -52,7 +53,17 @@ public class MegamanSpriteModule extends BaseSpriteModule {
 		}
 		
 		// 是否在攀爬
-		// TODO 等待添加
+		boolean climbing = parent.getBoolean(new String[] {"climb", "climbing"}, false);
+		if (climbing) {
+			int upOrDown = parent.getInt(new String[] {"climb", "upOrDown"}, 0);
+			motion = "climb";
+			setState("climb");
+			
+			if (upOrDown != 0) {
+				select.tick(1);
+			}
+			return;
+		}
 		
 		Box box = parent.getBoxModule().getBox();
 		
@@ -76,7 +87,8 @@ public class MegamanSpriteModule extends BaseSpriteModule {
 					setState(s1);
 				}
 			}
-			
+
+			select.tick(1);
 			return;
 		}
 		
@@ -105,7 +117,8 @@ public class MegamanSpriteModule extends BaseSpriteModule {
 			break;
 		}
 		this.motion = curMotion;
-		
+
+		select.tick(1);
 	}
 	
 }

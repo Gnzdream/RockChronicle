@@ -8,6 +8,8 @@ import com.badlogic.gdx.utils.JsonValue.ValueType;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.core.module.motion.TerrainMotionModule;
 import zdream.rockchronicle.platform.body.Box;
+import zdream.rockchronicle.platform.body.BoxOccupation;
+import zdream.rockchronicle.platform.region.Terrains;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
 public class MegamanMotionModule extends TerrainMotionModule {
@@ -18,6 +20,10 @@ public class MegamanMotionModule extends TerrainMotionModule {
 	 * 是否向左或向右移动. 左和右不会同时为 true.
 	 */
 	boolean left, right;
+	/**
+	 * 上一次计算的横坐标速度
+	 */
+	protected float lastvx;
 	
 	/*
 	 * 移动静态参数: 格子 / 秒
@@ -28,7 +34,27 @@ public class MegamanMotionModule extends TerrainMotionModule {
 		PARRY_VELOCITY = 1;
 	
 	/*
-	 * 移动参数
+	 * 原配置值
+	 */
+	/**
+	 * 水平速度增量 (线性), 单位: 格子 / (步 ^ 2)
+	 */
+	public float phorizontalVelDelta;
+	/**
+	 * 水平速度最大值, 单位: 格子 / 步
+	 */
+	public float phorizontalVelMax;
+	/**
+	 * 击退时的速度, 单位: 格子 / 步
+	 */
+	public float pparryVel;
+	/**
+	 * 当玩家下达停止命令时, 角色是否立即停止
+	 */
+	public boolean pstopSlide;
+	
+	/*
+	 * 移动参数 (当前值)
 	 */
 	/**
 	 * 水平速度增量 (线性), 单位: 格子 / (步 ^ 2)
@@ -42,16 +68,45 @@ public class MegamanMotionModule extends TerrainMotionModule {
 	 * 击退时的速度, 单位: 格子 / 步
 	 */
 	public float parryVel;
+	/**
+	 * 当玩家下达停止命令时, 角色是否立即停止
+	 */
+	public boolean stopSlide;
 	
 	public MegamanMotionModule(MegamanInLevel parent) {
 		super(parent);
 		this.parent = parent;
 		
-		this.horizontalVelDelta =
+		this.phorizontalVelDelta =
 				HORIZONTAL_VELOCITY_DELTA * LevelWorld.TIME_STEP * LevelWorld.TIME_STEP;
-		this.horizontalVelMax = HORIZONTAL_VELOCITY_MAX * LevelWorld.TIME_STEP;
-		this.parryVel = PARRY_VELOCITY * LevelWorld.TIME_STEP;
-		// boolean immune = parent.getBoolean(new String[] {"state", "immune"}, false);
+		this.phorizontalVelMax = HORIZONTAL_VELOCITY_MAX * LevelWorld.TIME_STEP;
+		this.pparryVel = PARRY_VELOCITY * LevelWorld.TIME_STEP;
+		this.pstopSlide = true;
+		
+		resetParam();
+	}
+	
+	private void resetParam() {
+		this.horizontalVelDelta = this.phorizontalVelDelta;
+		this.horizontalVelMax = this.phorizontalVelMax;
+		this.parryVel = this.pparryVel;
+		this.stopSlide = this.pstopSlide;
+	}
+	
+	private float calcVelocity(float velocity, float acceleration, float max) {
+		if (acceleration > 0) {
+			velocity += acceleration;
+			if (velocity >= max) {
+				return max;
+			}
+		} else { // (acceleration < 0)
+			velocity += acceleration;
+			if (velocity <= max) {
+				return max;
+			}
+		}
+		
+		return velocity;
 	}
 	
 	@Override
@@ -97,57 +152,117 @@ public class MegamanMotionModule extends TerrainMotionModule {
 			// 2. 修改速度
 			Box box = getSingleBox();
 			Vector2 vel = box.velocity; // 速度
-			float vx = vel.x, vy = vel.y;
+			float vx = vel.x;
 			
-			// 3. 执行上下移动 TODO
-			boolean bottomStop = box.bottomStop;
+			// 3. 查看是否落地, 并将数据提交至 state 中
+			boolean onTheGround = onTheGround(world, box, box.bottomStop, box.topStop);
+			v = new JsonValue(ValueType.object);
+			v.addChild("onTheGround", new JsonValue(onTheGround));
+			parent.setJson("state", v);
 			
-			// 设置的最终速度 Y
-			box.setVelocityY(vy);
+			// 最终速度 Y, 需要等待 jump 来改
 			
 			// 4. 执行左右移动
 			boolean orientation = parent.getBoolean(new String[] {"situation", "orientation"}, true);
 			if (stiffness) {
 				// 在击退 / 硬直状态下
-				if (orientation) {
-					vx = -parryVel;
+				if (stopSlide) {
+					if (orientation) {
+						vx = -parryVel;
+					} else {
+						vx = parryVel;
+					}
 				} else {
-					vx = parryVel;
+					if (orientation) {
+						vx = calcVelocity(vx, -horizontalVelDelta, -parryVel);
+					} else {
+						vx = calcVelocity(vx, horizontalVelDelta, parryVel);
+					}
 				}
 			} else {
 				// 正常情况下, 每秒增加 horizontalVelDelta 的水平速度, horizontalVelMax 为最值.
 				if (left) {
 					orientation = false;
-					if (bottomStop) {
-						vx -= horizontalVelDelta;
-						if (vx > 0 || box.leftStop) {
+					if (onTheGround) { // 落地, 向左走
+						if (vx > 0 && stopSlide || box.leftStop) {
 							vx = 0;
-						} else if (vx < -horizontalVelMax) {
-							vx = -horizontalVelMax;
+						} else {
+							vx = calcVelocity(lastvx, -horizontalVelDelta, -horizontalVelMax);
 						}
-					} else {
+					} else { // 空中
 						vx = -horizontalVelMax;
 					}
 				} else if (right) {
 					orientation = true;
-					if (bottomStop) {
-						vx += horizontalVelDelta;
-						if (vx < 0 || box.rightStop) {
+					if (onTheGround) { // 落地, 向右走
+						if (vx < 0 && stopSlide || box.rightStop) {
 							vx = 0;
-						} else if (vx > horizontalVelMax) {
-							vx = horizontalVelMax;
+						} else {
+							vx = calcVelocity(lastvx, horizontalVelDelta, horizontalVelMax);
 						}
-					} else {
+					} else { // 空中
 						vx = horizontalVelMax;
 					}
 				} else {
-					vx = 0; // 不在打滑状态下, 立即停住
+					if (stopSlide) {
+						vx = 0; // 不在打滑状态下, 立即停住
+					} else {
+						if (lastvx > 0) {
+							vx = calcVelocity(lastvx, -horizontalVelDelta, 0);
+						} else if (lastvx < 0) {
+							vx = calcVelocity(lastvx, horizontalVelDelta, 0);
+						} else {
+							vx = 0;
+						}
+					}
 				}
 			}
 			
 			// 设置的最终速度 X
 			box.setVelocityX(vx);
+			lastvx = vx;
 		}
+	}
+	
+	/**
+	 * <p>判断角色是否站在某个物体上 (不悬在空中)
+	 * <p>这里有一个额外的判断内容, 就是是否爬梯子
+	 * </p>
+	 */
+	private boolean onTheGround(LevelWorld world, Box box,
+			boolean bottomStop, boolean topStop) {
+		if (bottomStop && box.gravityDown || topStop && !box.gravityDown) {
+			return true;
+		}
+		if (!box.climbable) {
+			return false;
+		}
+		
+		// 判断梯子部分
+		BoxOccupation occ = box.getOccupation();
+		if (!occ.ybottomTightly && box.gravityDown || !occ.ytopTightly && !box.gravityDown) {
+			return false;
+		}
+		
+		if (box.gravityDown) {
+			int ybottom = occ.ybottom - 1; // 角色底端再下面一格
+			for (int x = occ.xleft; x <= occ.xright; x++) {
+				if (Terrains.isLadder(world.getTerrain(x, ybottom))
+						&& !Terrains.isLadder(world.getTerrain(x, ybottom + 1))) {
+					return true;
+				}
+			}
+		} else {
+			int ybottom = occ.ytop + 1; // 角色顶端上面一格
+			for (int x = occ.xleft; x <= occ.xright; x++) {
+				if (Terrains.isLadder(world.getTerrain(x, ybottom))
+						&& !Terrains.isLadder(world.getTerrain(x, ybottom - 1))) {
+					return true;
+				}
+			}
+		}
+		
+		return false;
 	}
 	
 	@Override
@@ -161,6 +276,13 @@ public class MegamanMotionModule extends TerrainMotionModule {
 			super.receiveEvent(event);
 			break;
 		}
+	}
+	
+	@Override
+	public void stepPassed() {
+		super.stepPassed();
+		
+		resetParam();
 	}
 	
 	private void recvCtrlAxis(CharacterEvent event) {

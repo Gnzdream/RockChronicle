@@ -93,6 +93,8 @@ public class ClimbModule extends AbstractModule {
 	private JsonValue createClimbJson() {
 		JsonValue v = new JsonValue(ValueType.object);
 		v.addChild("climbing", new JsonValue(climbing));
+		if (climbing > 0)
+			v.addChild("upOrDown", new JsonValue(upOrDown));
 		v.addChild("haltRemain", new JsonValue(haltRemain));
 		return v;
 	}
@@ -115,13 +117,14 @@ public class ClimbModule extends AbstractModule {
 		// 1. 梯子消失 (现在正在检查的)
 		// 2. 被攻击 (前面已经过滤)
 		// 3. 跳下来 (监听事件, 不在这里)
+		// 4. 顺着梯子到底, 站到了平地上
 		
 		Box box = parent.getBoxModule().getBox();
 		// 盒子的中心点
 		Vector2 centerPoint = box.getPosition().getCenter(new Vector2());
 		// 现在查看这个中心点映射到的是哪个地形
 		byte terrain = world.getTerrain((int) centerPoint.x, (int) centerPoint.y);
-		if (!Terrains.isLadder(terrain) && climbing < 2) {
+		if (!Terrains.isLadder(terrain) && climbing == 0) {
 			// 还有一种情况, 在梯子顶端按下将下降到下面的梯子上
 			BoxOccupation occ = box.getOccupation();
 			boolean flag = false;
@@ -147,6 +150,25 @@ public class ClimbModule extends AbstractModule {
 			if (flag) {
 				climbing = 0;
 				climbc.clear(); return;
+			}
+		}
+		
+		// 顺着梯子到底, 站到了平地上
+		if (Terrains.isLadder(terrain) && climbing == 1) {
+			BoxOccupation occ = box.getOccupation();
+			
+			if (box.gravityDown && occ.ybottomTightly) {
+				// TODO 其它平地块
+				if (world.getTerrain((int) centerPoint.x, occ.ybottom - 1) == TERRAIN_SOLID) {
+					climbing = 0; // 变成站立
+					return;
+				}
+			} else if (!box.gravityDown && occ.ytopTightly) {
+				// TODO 其它平地块
+				if (world.getTerrain((int) centerPoint.x, occ.ytop + 1) == TERRAIN_SOLID) {
+					climbing = 0; // 变成站立
+					return;
+				}
 			}
 		}
 		
@@ -177,6 +199,21 @@ public class ClimbModule extends AbstractModule {
 		if (climbing == 0) {
 			// 到了这里说明: 中心点是梯子的地形块, 不在房间外
 			// 原先还不是攀爬状态, 不在硬直状态, 按了上或者下
+			
+			BoxOccupation occ = box.getOccupation();
+			// 如果在梯子的底端, 你站在可站立方块上, 再按下也没有意义
+			if (box.gravityDown && occ.ybottomTightly && upOrDown == 2) {
+				// TODO 其它平地块
+				if (world.getTerrain((int) centerPoint.x, occ.ybottom - 1) == TERRAIN_SOLID) {
+					return;
+				}
+			} else if (!box.gravityDown && occ.ytopTightly && upOrDown == 1) {
+				// TODO 其它平地块
+				if (world.getTerrain((int) centerPoint.x, occ.ytop + 1) == TERRAIN_SOLID) {
+					return;
+				}
+			}
+			
 			climbc.clear(); climbing = 1;
 		}
 		
