@@ -3,6 +3,7 @@ package zdream.rockchronicle.core.module.box;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
+import com.badlogic.gdx.utils.ObjectMap;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.platform.body.Box;
@@ -21,7 +22,25 @@ import zdream.rockchronicle.platform.world.LevelWorld;
  */
 public class SingleBoxModule extends BoxModule {
 	
+	/**
+	 * 碰撞盒子
+	 */
 	public final Box box;
+	
+	/**
+	 * 所有的形态的集合
+	 */
+	public final ObjectMap<String, BoxPattern> patterns = new ObjectMap<>(10);
+	
+	/**
+	 * 当前的形态
+	 */
+	public String curPattern;
+	
+	/**
+	 * 下一步的形态
+	 */
+	public String nextPattern;
 
 	public SingleBoxModule(CharacterEntry ch) {
 		super(ch);
@@ -38,13 +57,6 @@ public class SingleBoxModule extends BoxModule {
 	public void initBox(JsonValue object) {
 		box.inTerrain = object.getBoolean("inTerrain", true);
 		
-		JsonValue orect = object.get("rect");
-		// TODO 暂时不考虑 def
-		box.box.width = orect.getFloat("width", 0);
-		box.box.height = orect.getFloat("height", 0);
-		box.box.x = orect.getFloat("x", 0);
-		box.box.y = orect.getFloat("y", 0);
-		
 		// 初始锚点位置
 		JsonValue oanchor = object.get("anchor");
 		if (oanchor != null) {
@@ -60,6 +72,54 @@ public class SingleBoxModule extends BoxModule {
 			case "climbable": box.climbable = entry.asBoolean(); break;
 			}
 		}
+		
+		// 形态
+		JsonValue apatterns = object.get("patterns");
+		if (apatterns != null) { // array
+			for (JsonValue opattern = apatterns.child; opattern != null; opattern = opattern.next) {
+				BoxPattern pattern = new BoxPattern();
+				pattern.name = opattern.getString("name");
+				pattern.width = opattern.getFloat("width");
+				pattern.height = opattern.getFloat("height");
+				pattern.x = opattern.getFloat("x");
+				pattern.y = opattern.getFloat("y");
+				
+				patterns.put(pattern.name, pattern);
+			}
+		}
+		
+		// 最后初始化形状
+		JsonValue orect = object.get("rect");
+		JsonValue def = orect.get("def");
+		
+		if (orect.has("width")) {
+			BoxPattern pattern = new BoxPattern();
+			pattern.name = "default";
+			pattern.width = orect.getFloat("width");
+			pattern.height = orect.getFloat("height");
+			pattern.x = orect.getFloat("x");
+			pattern.y = orect.getFloat("y");
+			patterns.put(pattern.name, pattern);
+			
+		}
+		
+		if (def == null) {
+			BoxPattern pattern = patterns.get("default");
+			curPattern = "default";
+			
+			box.box.width = pattern.width;
+			box.box.height = pattern.height;
+			box.box.x = pattern.x;
+			box.box.y = pattern.y;
+		} else {
+			curPattern = def.asString();
+			BoxPattern pattern = patterns.get(curPattern);
+
+			box.box.width = pattern.width;
+			box.box.height = pattern.height;
+			box.box.x = pattern.x;
+			box.box.y = pattern.y;
+		}
 	}
 
 	@Override
@@ -74,6 +134,20 @@ public class SingleBoxModule extends BoxModule {
 	
 	@Override
 	public void resetPosition(LevelWorld world, int index, boolean hasNext) {
+		box.lastAnchorX = box.anchor.x;
+		box.lastAnchorY = box.anchor.y;
+		
+		// 处理变换形态
+		if (nextPattern != null) {
+			BoxPattern pattern = patterns.get(nextPattern);
+			box.box.width = pattern.width;
+			box.box.height = pattern.height;
+			box.box.x = pattern.x;
+			box.box.y = pattern.y;
+			nextPattern = null;
+		}
+		
+		// 处理移动位置
 		world.execVerticalMotion(box);
 		world.execHorizontalMotion(box);
 	}
@@ -154,6 +228,11 @@ public class SingleBoxModule extends BoxModule {
 	@Override
 	public Box getBox() {
 		return box;
+	}
+
+	@Override
+	public void setNextPattern(String pattern) {
+		this.nextPattern = pattern;
 	}
 
 }

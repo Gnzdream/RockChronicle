@@ -88,8 +88,6 @@ public class TextureSelect {
 		}
 		this.remain = 0;
 	}
-	
-	
 
 	public TextureSequence getSequence() {
 		return currentSeq;
@@ -120,6 +118,7 @@ public class TextureSelect {
 						current = (current <= 0) ? 0 : current - 1;
 					}
 				}
+				this.remain -= delta;
 			}
 		}
 		

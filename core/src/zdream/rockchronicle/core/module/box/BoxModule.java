@@ -80,5 +80,11 @@ public abstract class BoxModule extends AbstractModule {
 	 * @return
 	 */
 	public abstract Box getBox();
+	
+	/**
+	 * 设置下一步的形态是什么
+	 * @param pattern
+	 */
+	public abstract void setNextPattern(String pattern);
 
 }

@@ -110,6 +110,7 @@ public class ClimbModule extends AbstractModule {
 		boolean stiffness = parent.getBoolean(new String[] {"state", "stiffness"}, false);
 		if (stiffness) { // 被攻击硬直时, 后面的判断都不用继续了
 			climbing = 0;
+			parent.getBoxModule().setNextPattern("normal");
 			climbc.clear(); return;
 		}
 		
@@ -130,16 +131,23 @@ public class ClimbModule extends AbstractModule {
 			boolean flag = false;
 			
 			if (box.gravityDown && occ.ybottomTightly) {
-				if (Terrains.isLadder(world.getTerrain((int) centerPoint.x, occ.ybottom - 1))) {
-					System.out.println("降到梯子上");
-					return; // TODO
+				if (Terrains.isLadder(world.getTerrain((int) centerPoint.x, occ.ybottom - 1)) && upOrDown == 2) {
+					// 向下降到梯子上
+					parent.getBoxModule().setNextPattern("climb_top_1");
+					box.setVelocityX(((int) centerPoint.x) + 0.5f - centerPoint.x);
+					// y 为梯子顶部, (整数), 即不动
+					climbing = 13;
+					return;
 				} else {
 					flag = true;
 				}
-			} else if (!box.gravityDown && occ.ytopTightly) {
+			} else if (!box.gravityDown && occ.ytopTightly && upOrDown == 1) {
 				if (Terrains.isLadder(world.getTerrain((int) centerPoint.x, occ.ytop + 1))) {
-					System.out.println("降到梯子上");
-					return; // TODO
+					parent.getBoxModule().setNextPattern("climb_top_1");
+					box.setVelocityX(((int) centerPoint.x) + 0.5f - centerPoint.x);
+					// y 为梯子顶部, (整数), 即不动
+					climbing = 13;
+					return;
 				} else {
 					flag = true;
 				}
@@ -149,6 +157,7 @@ public class ClimbModule extends AbstractModule {
 			
 			if (flag) {
 				climbing = 0;
+				parent.getBoxModule().setNextPattern("normal");
 				climbc.clear(); return;
 			}
 		}
@@ -161,12 +170,14 @@ public class ClimbModule extends AbstractModule {
 				// TODO 其它平地块
 				if (world.getTerrain((int) centerPoint.x, occ.ybottom - 1) == TERRAIN_SOLID) {
 					climbing = 0; // 变成站立
+					parent.getBoxModule().setNextPattern("normal");
 					return;
 				}
 			} else if (!box.gravityDown && occ.ytopTightly) {
 				// TODO 其它平地块
 				if (world.getTerrain((int) centerPoint.x, occ.ytop + 1) == TERRAIN_SOLID) {
 					climbing = 0; // 变成站立
+					parent.getBoxModule().setNextPattern("normal");
 					return;
 				}
 			}
@@ -174,25 +185,48 @@ public class ClimbModule extends AbstractModule {
 		
 		// 特殊攀爬状态
 		if (climbing >= 2) {
+			int last = climbing;
 			if (this.upOrDown == 1) {
-				climbing++;
+				climbing = (box.gravityDown) ? climbing + 1 : climbing - 1;
 			} else if (this.upOrDown == 2) {
-				climbing--;
+				climbing = (box.gravityDown) ? climbing - 1 : climbing + 1;
 			}
 			
 			if (climbing > 13) {
-				// 站在楼梯顶端 TODO
+				// 站在楼梯顶端
+				climbing = 0;
+				parent.getBoxModule().setNextPattern("normal");
+				box.setVelocityY(0);
 			} else if (climbing == 1) {
-				// 回到一般状态 TODO
+				// 回到一般状态
+				parent.getBoxModule().setNextPattern("normal");
+				float targety = (float) Math.ceil(box.anchor.y) - 0.55f;
+				box.setVelocityY(targety - box.anchor.y);
 			} else {
-				// 其它 TODO
+				
+				if (last == 7 && climbing == 8) {
+					parent.getBoxModule().setNextPattern("climb_top_1");
+					float targety = (float) Math.ceil(box.anchor.y);
+					box.setVelocityY(targety - box.anchor.y);
+				} else if (last == 8 && climbing == 7) {
+					parent.getBoxModule().setNextPattern("climb_top_0");
+					float targety = (float) Math.ceil(box.anchor.y) - 0.25f;
+					box.setAnchorY(targety);
+					box.setVelocityY(0);
+				} else {
+					box.setVelocityY(0);
+				}
 			}
+			
+			box.setVelocityX(0);
+			climbc.clear(); return;
 		}
 		
 		// 这里附加判断:
 		// 角色是不能够攀爬房间区域以外的梯子的. 否则切换房间的判定将出现问题
 		if (!world.currentRoom.containInRoom(centerPoint.x, centerPoint.y)) {
 			climbing = 0;
+			parent.getBoxModule().setNextPattern("normal");
 			climbc.clear(); return;
 		}
 		
@@ -225,10 +259,10 @@ public class ClimbModule extends AbstractModule {
 		
 		// 将根据角色与梯子顶端的距离来设置爬梯子状态;
 		
-		// 下面需要粗略计算离梯子顶端的距离
-		int iy = (int) Math.ceil(centerPoint.y);
-		boolean yTightly = centerPoint.y == iy;
-		float distance = (iy - centerPoint.y) +
+		// 下面需要粗略计算离梯子顶端的距离 (这里的 y 以角色锚点为准)
+		int iy = (int) Math.ceil(box.anchor.y);
+		boolean yTightly = box.anchor.y == iy;
+		float distance = (iy - box.anchor.y) +
 				(yTightly ?
 				(Terrains.isLadder(world.getTerrain((int) centerPoint.x, iy + 1)) ? 1 : 0) :
 				(Terrains.isLadder(world.getTerrain((int) centerPoint.x, iy)) ? 1 : 0));
@@ -240,8 +274,12 @@ public class ClimbModule extends AbstractModule {
 		// vy
 		if (distance < 0.5f) {
 			// 两个快爬到顶端的状态, 速度和状态需要修改
-			System.out.println("distance < 0.5");
-			vy = 0;
+			climbing = 2;
+			float targety = iy - 0.25f;
+			vy = targety - box.anchor.y;
+			
+			// 改变形态
+			parent.getBoxModule().setNextPattern("climb_top_0");
 		} else {
 			// 离顶端还很远
 			// 当在攻击状态时, 将不移动
@@ -299,6 +337,7 @@ public class ClimbModule extends AbstractModule {
 		
 		if (jumpChange) {
 			climbing = 0;
+			parent.getBoxModule().setNextPattern("normal");
 			climbc.clear();
 		}
 	}

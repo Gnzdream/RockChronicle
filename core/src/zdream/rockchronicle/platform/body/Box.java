@@ -9,6 +9,8 @@ import zdream.rockchronicle.platform.world.LevelWorld;
 
 public class Box {
 	
+//	private static Decimal
+	
 	private static int idCount = 1;
 	
 	/**
@@ -32,6 +34,11 @@ public class Box {
 	 * 单位 : 格子
 	 */
 	public final Vector2 anchor = new Vector2();
+	
+	/**
+	 * 上一步的锚点位置
+	 */
+	public float lastAnchorX, lastAnchorY;
 	
 	/**
 	 * 整个方块相对于锚点的位置.<br>

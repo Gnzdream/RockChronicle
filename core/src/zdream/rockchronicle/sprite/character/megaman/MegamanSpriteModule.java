@@ -31,8 +31,7 @@ public class MegamanSpriteModule extends BaseSpriteModule {
 	int attackRemain = 0;
 	
 	@Override
-	public void determine(LevelWorld world, int index, boolean hasNext) {
-		super.determine(world, index, hasNext);
+	public void selectTexture(LevelWorld world, int index, boolean hasNext) {
 		if (attackRemain > 0) {
 			attackRemain --;
 		}
@@ -53,14 +52,30 @@ public class MegamanSpriteModule extends BaseSpriteModule {
 		}
 		
 		// 是否在攀爬
-		boolean climbing = parent.getBoolean(new String[] {"climb", "climbing"}, false);
-		if (climbing) {
-			int upOrDown = parent.getInt(new String[] {"climb", "upOrDown"}, 0);
-			motion = "climb";
-			setState("climb");
+		int climbing = parent.getInt(new String[] {"climb", "climbing"}, 0);
+		if (climbing > 0) {
+			switch (climbing) {
+			case 1:
+				motion = "climb";
+				setState("climb");
+				break;
+			case 2: case 3: case 4: case 5: case 6: case 7:
+				motion = "climb";
+				setState("climb_top_0");
+				break;
+			case 8: case 9: case 10: case 11: case 12: case 13:
+				motion = "climb";
+				setState("climb_top_1");
+				break;
+			default:
+				break;
+			}
 			
-			if (upOrDown != 0) {
+			int upOrDown = parent.getInt(new String[] {"climb", "upOrDown"}, 0);
+			if (upOrDown == 1) {
 				select.tick(1);
+			} else if (upOrDown == 2) {
+				select.turnBack(1);
 			}
 			return;
 		}
