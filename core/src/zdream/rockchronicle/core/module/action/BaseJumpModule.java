@@ -2,11 +2,9 @@ package zdream.rockchronicle.core.module.action;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.JsonValue.ValueType;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
-import zdream.rockchronicle.core.character.parameter.JsonCollector;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
@@ -47,8 +45,6 @@ public class BaseJumpModule extends JumpModule {
 	 */
 	public int duration;
 	
-	protected JsonCollector jumpc;
-
 	public BaseJumpModule(CharacterEntry ch) {
 		super(ch);
 	}
@@ -65,7 +61,7 @@ public class BaseJumpModule extends JumpModule {
 		this.maxDropVelocity = oparam.getFloat("maxDropVelocity") * LevelWorld.TIME_STEP;
 		
 		parent.addSubscribe("ctrl_motion", this);
-		addCollector(jumpc = new JsonCollector(this::getJumpJson, "jump"));
+		setJumpParam();
 	}
 	
 	@Override
@@ -81,14 +77,14 @@ public class BaseJumpModule extends JumpModule {
 		// 攀爬 (楼梯) 状态、悬挂状态、附着状态
 		// TODO 如果在以上时, 下面的一切都不需要判断.
 		
-		boolean climbing = parent.getBoolean(new String[] {"climb", "climbing"}, false);
+		boolean climbing = getBoolean("climb.climbing", false);
 		if (climbing) {
 			return;
 		}
 		
-		boolean bottomStop = parent.getBoolean(new String[] {"motion", "bottomStop"}, false);
-		boolean topStop = parent.getBoolean(new String[] {"motion", "topStop"}, false);
-		boolean stiffness = parent.getBoolean(new String[] {"state", "stiffness"}, false);
+		boolean bottomStop = getBoolean("motion.bottomStop", false);
+		boolean topStop = getBoolean("motion.topStop", false);
+		boolean stiffness = getBoolean("state.stiffness", false);
 		
 		Box box = parent.getBoxModule().getBox();
 		float ovy = 
@@ -97,7 +93,7 @@ public class BaseJumpModule extends JumpModule {
 		float gravityScale = box.gravityScale;
 		
 		float vy = ovy;
-		boolean onTheGround = parent.getBoolean(new String[] {"state", "onTheGround"}, false);
+		boolean onTheGround = getBoolean("state.onTheGround", false);
 		
 		if (gravityScale > 0) {
 			if (onTheGround) {
@@ -140,6 +136,7 @@ public class BaseJumpModule extends JumpModule {
 		}
 		
 		box.velocity.y = vy;
+		setJumpState();
 //		parent.setJson("box", BoxSetter.newInstance().setVelocityY(vy).get());
 	}
 	
@@ -151,23 +148,23 @@ public class BaseJumpModule extends JumpModule {
 		super.stepPassed();
 	}
 	
-	public JsonValue getJumpJson() {
-		JsonValue v = new JsonValue(ValueType.object);
-		
-		// 现在的参数部分
-		v.addChild("duration", new JsonValue(duration));
-		v.addChild("inJump", new JsonValue(inJump));
-		v.addChild("jumpStart", new JsonValue(jumpStart));
-		v.addChild("jumpEnd", new JsonValue(jumpEnd));
-		
-		// param 部分
-		JsonValue oparam = new JsonValue(ValueType.object);
-		v.addChild(oparam);
-		oparam.addChild("impulse", new JsonValue(impulse));
-		oparam.addChild("decay", new JsonValue(decay));
-		oparam.addChild("maxDropVelocity", new JsonValue(maxDropVelocity));
-		
-		return v;
+	/**
+	 * 长期参数部分
+	 */
+	public void setJumpParam() {
+		setSituation("jump.param.impulse", new JsonValue(impulse));
+		setSituation("jump.param.decay", new JsonValue(decay));
+		setSituation("jump.param.maxDropVelocity", new JsonValue(maxDropVelocity));
+	}
+	
+	/**
+	 * 临时参数部分
+	 */
+	public void setJumpState() {
+		setState("jump.duration", new JsonValue(duration));
+		setState("jump.inJump", new JsonValue(inJump));
+		setState("jump.jumpStart", new JsonValue(jumpStart));
+		setState("jump.jumpEnd", new JsonValue(jumpEnd));
 	}
 	
 	@Override
@@ -189,6 +186,7 @@ public class BaseJumpModule extends JumpModule {
 		
 		jumpEnd = (!inJump && jumpChange);
 		jumpStart = (inJump && jumpChange);
+		setJumpState();
 	}
 	
 }

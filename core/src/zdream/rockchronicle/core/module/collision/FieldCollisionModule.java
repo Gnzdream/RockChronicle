@@ -55,25 +55,22 @@ public class FieldCollisionModule extends CollisionModule {
 		for (JsonValue entry = atargets.child; entry != null; entry = entry.next) {
 			targetCamps[i++] = entry.asInt();
 		}
+		
+		setCollisionSituation();
 	}
 	
-	@Override
-	public JsonValue getCollisionJson() {
-		JsonValue v = super.getCollisionJson();
-		
+	public void setCollisionSituation() {
 		JsonValue array = new JsonValue(ValueType.array);
-		v.addChild("targetTypes", array);
+		setSituation("collision.targetTypes", array);
 		for (int i = 0; i < targetTypes.length; i++) {
 			array.addChild(new JsonValue(targetTypes[i]));
 		}
 		
 		array = new JsonValue(ValueType.array);
-		v.addChild("targetCamps", array);
+		setSituation("collision.targetCamps", array);
 		for (int i = 0; i < targetCamps.length; i++) {
 			array.addChild(new JsonValue(targetCamps[i]));
 		}
-		
-		return v;
 	}
 	
 	/**
@@ -83,13 +80,11 @@ public class FieldCollisionModule extends CollisionModule {
 	 *   如果还需要判断其它的盒子, 则返回 true; 如果不再判断其它盒子, 返回 false
 	 */
 	protected boolean doForOverlapsBox(Box box) {
-		final String[] path = new String[] {"camp", "camp"};
-		
 		// 阵营判断部分
 		int targetId = box.parentId;
 		
 		CharacterEntry target = RockChronicle.INSTANCE.runtime.findEntry(targetId);
-		int targetCamp = target.getInt(path, 0);
+		int targetCamp = getInt("camp.camp", 0);
 		
 		boolean accepted = false;
 		for (int i = 0; i < targetCamps.length; i++) {
@@ -118,8 +113,7 @@ public class FieldCollisionModule extends CollisionModule {
 		
 		// 设置状态
 		JsonValue v = new JsonValue(ValueType.object);
-		v.addChild("active", new JsonValue(true));
-		parent.setJson("state", v);
+		setState("state.active", v);
 		
 		if ("once".equals(this.executeType)) {
 			isFunctioned = false;

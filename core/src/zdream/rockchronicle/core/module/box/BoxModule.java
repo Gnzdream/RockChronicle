@@ -4,7 +4,6 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
-import zdream.rockchronicle.core.character.parameter.JsonCollector;
 import zdream.rockchronicle.core.module.AbstractModule;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
@@ -21,19 +20,15 @@ public abstract class BoxModule extends AbstractModule {
 	
 	public static final String NAME = "Box";
 
-	protected JsonCollector boxc;
 	protected LevelWorld world;
 
 	public BoxModule(CharacterEntry parent) {
 		super(parent);
-		boxc = new JsonCollector(this::getBoxJson, "box");
 	}
 	
 	@Override
 	public void init(FileHandle file, JsonValue value) {
 		super.init(file, value);
-		
-		addCollector(boxc);
 	}
 
 	@Override
@@ -69,11 +64,6 @@ public abstract class BoxModule extends AbstractModule {
 	protected abstract void createBody();
 	protected abstract void destroyBody();
 	protected abstract JsonValue getBoxJson();
-	
-	public void modified() {
-		if (boxc != null)
-			boxc.clear();
-	}
 	
 	/**
 	 * 如果本角色只有一个碰撞盒子, 则调用该方法来获取其碰撞盒子

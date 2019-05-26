@@ -29,6 +29,9 @@ public class BulletCollisionModule extends CollisionModule {
 		} else {
 			damage = (int) (fdamage * 256 + 0.1f);
 		}
+		
+		setSituation("collision.level", new JsonValue(level));
+		setSituation("collision.damage", new JsonValue(damage));
 	}
 	
 	/* **********
@@ -42,15 +45,6 @@ public class BulletCollisionModule extends CollisionModule {
 	 * 碰撞真实伤害. (显示伤害 * 256) 非负数. 没有伤害的碰撞体该值为 -1
 	 */
 	public int damage;
-	
-	public JsonValue getCollisionJson() {
-		JsonValue v = super.getCollisionJson();
-		
-		v.addChild("level", new JsonValue(level));
-		v.addChild("damage", new JsonValue(damage));
-		
-		return v;
-	}
 	
 	/* **********
 	 * 碰撞逻辑 *
@@ -68,23 +62,21 @@ public class BulletCollisionModule extends CollisionModule {
 	 *   如果还需要判断其它的盒子, 则返回 true; 如果不再判断其它盒子, 返回 false
 	 */
 	protected boolean doForOverlapsBox(Box box) {
-		final String[] path = new String[] {"camp", "camp"};
-		
 		// 阵营判断部分
-		int camp = parent.getInt(path, 0);
+		int camp = getInt("camp.camp", 0);
 		int targetId = box.parentId;
 		
 		try {
 			CharacterEntry target = RockChronicle.INSTANCE.runtime.findEntry(targetId);
-			int targetCamp = target.getInt(path, 0);
+			int targetCamp = target.getInt("camp.camp", 0);
 			
-			JsonValue jattackAccepted = parent.getJson(new String[] {"camp", "attackAccepted"});
+			JsonValue jattackAccepted = getJson("camp.attackAccepted");
 			boolean attackAccepted = jattackAccepted.getBoolean(Integer.toString(targetCamp), true);
 			if (!attackAccepted) {
 				return true; // 自己不能够攻击对方
 			}
 			
-			JsonValue jdefenseAccepted = target.getJson(new String[] {"camp", "defenseAccepted"});
+			JsonValue jdefenseAccepted = getJson("camp.defenseAccepted");
 			boolean defenseAccepted = jdefenseAccepted.getBoolean(Integer.toString(camp), true);
 			if (!defenseAccepted) {
 				return true; // 对方不接受这次攻击

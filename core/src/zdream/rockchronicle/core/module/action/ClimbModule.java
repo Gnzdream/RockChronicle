@@ -1,20 +1,19 @@
 package zdream.rockchronicle.core.module.action;
 
+import static zdream.rockchronicle.platform.region.ITerrainStatic.TERRAIN_SOLID;
+import static zdream.rockchronicle.platform.world.LevelWorld.TIME_STEP;
+
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.JsonValue.ValueType;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
-import zdream.rockchronicle.core.character.parameter.JsonCollector;
 import zdream.rockchronicle.core.module.AbstractModule;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.body.BoxOccupation;
 import zdream.rockchronicle.platform.region.Terrains;
 import zdream.rockchronicle.platform.world.LevelWorld;
-
-import static zdream.rockchronicle.platform.world.LevelWorld.*;
 
 /**
  * <p>攀爬模块, 指攀爬梯子
@@ -24,13 +23,10 @@ import static zdream.rockchronicle.platform.world.LevelWorld.*;
  * @since v0.0.1
  * @date
  *   2019-05-20 (created)
- *   2019-05-20 (last modified)
+ *   2019-05-26 (last modified)
  */
 public class ClimbModule extends AbstractModule {
 
-	protected JsonCollector climbc, climbpc;
-	protected JsonValue param;
-	
 	/**
 	 * 攀爬速度, 每步攀爬的格子数. 配置项
 	 */
@@ -70,14 +66,11 @@ public class ClimbModule extends AbstractModule {
 		float fv = v.getFloat("velocity");
 		climbVelocity = fv * TIME_STEP;
 		
-		param = new JsonValue(ValueType.object);
-		param.addChild("velocity", new JsonValue(fv));
-		
 		parent.addSubscribe("ctrl_axis", this);
 		parent.addSubscribe("ctrl_motion", this);
 		parent.addSubscribe("open_fire", this);
-		addCollector(climbc = new JsonCollector(this::createClimbJson, "climb"));
-		addCollector(climbpc = new JsonCollector(() -> param, "climbParam"));
+		
+		setClimbParam();
 	}
 
 	@Override
@@ -90,13 +83,21 @@ public class ClimbModule extends AbstractModule {
 		return 0x81;
 	}
 	
-	private JsonValue createClimbJson() {
-		JsonValue v = new JsonValue(ValueType.object);
-		v.addChild("climbing", new JsonValue(climbing));
+	/**
+	 * 长期参数部分
+	 */
+	public void setClimbParam() {
+		setSituation("climb.param.velocity", new JsonValue(climbVelocity));
+	}
+	
+	/**
+	 * 临时参数部分
+	 */
+	public void setClimbState() {
+		setState("climb.climbing", new JsonValue(climbing));
 		if (climbing > 0)
-			v.addChild("upOrDown", new JsonValue(upOrDown));
-		v.addChild("haltRemain", new JsonValue(haltRemain));
-		return v;
+			setState("climb.upOrDown", new JsonValue(upOrDown));
+		setState("climb.haltRemain", new JsonValue(haltRemain));
 	}
 	
 	@Override
@@ -107,11 +108,11 @@ public class ClimbModule extends AbstractModule {
 			return;
 		}
 		
-		boolean stiffness = parent.getBoolean(new String[] {"state", "stiffness"}, false);
+		boolean stiffness = getBoolean("state.stiffness", false);
 		if (stiffness) { // 被攻击硬直时, 后面的判断都不用继续了
 			climbing = 0;
 			parent.getBoxModule().setNextPattern("normal");
-			climbc.clear(); return;
+			setClimbState(); return;
 		}
 		
 		// 检测是否在攀登状态. 取消攀登状态的可能有以下情况: 
@@ -137,7 +138,7 @@ public class ClimbModule extends AbstractModule {
 					box.setVelocityX(((int) centerPoint.x) + 0.5f - centerPoint.x);
 					// y 为梯子顶部, (整数), 即不动
 					climbing = 13;
-					return;
+					setClimbState(); return;
 				} else {
 					flag = true;
 				}
@@ -147,7 +148,7 @@ public class ClimbModule extends AbstractModule {
 					box.setVelocityX(((int) centerPoint.x) + 0.5f - centerPoint.x);
 					// y 为梯子顶部, (整数), 即不动
 					climbing = 13;
-					return;
+					setClimbState(); return;
 				} else {
 					flag = true;
 				}
@@ -158,7 +159,7 @@ public class ClimbModule extends AbstractModule {
 			if (flag) {
 				climbing = 0;
 				parent.getBoxModule().setNextPattern("normal");
-				climbc.clear(); return;
+				setClimbState(); return;
 			}
 		}
 		
@@ -171,14 +172,14 @@ public class ClimbModule extends AbstractModule {
 				if (world.getTerrain((int) centerPoint.x, occ.ybottom - 1) == TERRAIN_SOLID) {
 					climbing = 0; // 变成站立
 					parent.getBoxModule().setNextPattern("normal");
-					return;
+					setClimbState(); return;
 				}
 			} else if (!box.gravityDown && occ.ytopTightly) {
 				// TODO 其它平地块
 				if (world.getTerrain((int) centerPoint.x, occ.ytop + 1) == TERRAIN_SOLID) {
 					climbing = 0; // 变成站立
 					parent.getBoxModule().setNextPattern("normal");
-					return;
+					setClimbState(); return;
 				}
 			}
 		}
@@ -219,7 +220,7 @@ public class ClimbModule extends AbstractModule {
 			}
 			
 			box.setVelocityX(0);
-			climbc.clear(); return;
+			setClimbState(); return;
 		}
 		
 		// 这里附加判断:
@@ -227,7 +228,7 @@ public class ClimbModule extends AbstractModule {
 		if (!world.currentRoom.containInRoom(centerPoint.x, centerPoint.y)) {
 			climbing = 0;
 			parent.getBoxModule().setNextPattern("normal");
-			climbc.clear(); return;
+			setClimbState(); return;
 		}
 		
 		if (climbing == 0) {
@@ -248,7 +249,7 @@ public class ClimbModule extends AbstractModule {
 				}
 			}
 			
-			climbc.clear(); climbing = 1;
+			setClimbState(); climbing = 1;
 		}
 		
 		// 角色将改变形状 (共 3 个形状, 存储在 StateModule 中的 motion 字段)、
@@ -299,6 +300,7 @@ public class ClimbModule extends AbstractModule {
 		
 		box.setVelocityX(vx);
 		box.setVelocityY(vy);
+		setClimbState();
 	}
 	
 	@Override
@@ -338,7 +340,7 @@ public class ClimbModule extends AbstractModule {
 		if (jumpChange) {
 			climbing = 0;
 			parent.getBoxModule().setNextPattern("normal");
-			climbc.clear();
+			setClimbState();
 		}
 	}
 	

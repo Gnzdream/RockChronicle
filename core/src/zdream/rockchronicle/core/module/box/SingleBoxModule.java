@@ -188,44 +188,6 @@ public class SingleBoxModule extends BoxModule {
 	}
 	
 	@Override
-	public boolean setJson(String first, JsonValue value) {
-		if ("box".equals(first)) {
-			
-			boolean modified = false;
-			for (JsonValue entry = value.child; entry != null; entry = entry.next) {
-				switch (entry.name) {
-				case "anchor": {
-					JsonValue ax = entry.get("x");
-					JsonValue ay = entry.get("y");
-					if (ax != null) {
-						box.anchor.x = ax.asFloat(); modified = true;
-					}
-					if (ay != null) {
-						box.anchor.y = ay.asFloat(); modified = true;
-					}
-				} break;
-				case "velocity": {
-					JsonValue vx = entry.get("x");
-					JsonValue vy = entry.get("y");
-					if (vx != null) {
-						box.anchor.x = vx.asFloat(); modified = true;
-					}
-					if (vy != null) {
-						box.velocity.y = vy.asFloat(); modified = true;
-					}
-				} break;
-
-				default:
-					break;
-				}
-			}
-			
-			return modified;
-		}
-		return super.setJson(first, value);
-	}
-
-	@Override
 	public Box getBox() {
 		return box;
 	}

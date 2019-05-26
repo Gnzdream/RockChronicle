@@ -54,7 +54,7 @@ public class RoomShiftHandler {
 		}
 		
 		// TODO 这里判断比如需要在攀爬状态、踩在指定的角色上等
-		if (entry.getBoolean(new String[] {"climb", "climbing"}, false)) {
+		if (entry.getBoolean("climb.climbing", false)) {
 			return true;
 		}
 		

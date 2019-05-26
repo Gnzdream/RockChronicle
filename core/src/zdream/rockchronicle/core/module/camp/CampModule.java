@@ -9,7 +9,6 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
-import zdream.rockchronicle.core.character.parameter.JsonCollector;
 import zdream.rockchronicle.core.module.AbstractModule;
 
 /**
@@ -46,8 +45,6 @@ public class CampModule extends AbstractModule {
 	 */
 	public IntIntMap defenseTable = new IntIntMap(8);
 	
-	protected JsonCollector campc;
-	
 	public CampModule(CharacterEntry ch) {
 		super(ch);
 	}
@@ -81,44 +78,29 @@ public class CampModule extends AbstractModule {
 			}
 		}
 		
-		addCollector(campc = new JsonCollector(this::createCampJson, "camp"));
+		setCampState();
 	}
 	
 	public void setCamp(int camp) {
 		this.camp = camp;
 	}
 	
-	public JsonValue createCampJson() {
-		JsonValue v = new JsonValue(ValueType.object);
-		v.addChild("camp", new JsonValue(camp));
+	public void setCampState() {
+		setSituation("camp.camp", new JsonValue(camp));
 		
 		JsonValue attArray = new JsonValue(ValueType.object);
-		v.addChild("attackAccepted", attArray);
+		setSituation("attackAccepted", attArray);
 		for (Iterator<Entry> iterator = attackTable.iterator(); iterator.hasNext();) {
 			Entry e = iterator.next();
 			attArray.addChild(Integer.toString(e.key), new JsonValue(e.value));
 		}
 		
 		JsonValue defArray = new JsonValue(ValueType.object);
-		v.addChild("defenseAccepted", defArray);
+		setSituation("defenseAccepted", defArray);
 		for (Iterator<Entry> iterator = defenseTable.iterator(); iterator.hasNext();) {
 			Entry e = iterator.next();
 			defArray.addChild(Integer.toString(e.key), new JsonValue(e.value));
 		}
-		
-		return v;
 	}
 	
-	@Override
-	protected boolean setJson(String first, JsonValue value) {
-		if ("camp".equals(first)) {
-			// 现在只支持修改 camp
-			if (value.has("camp")) {
-				setCamp(value.getInt("camp"));
-			}
-		}
-		
-		return super.setJson(first, value);
-	}
-
 }

@@ -2,11 +2,9 @@ package zdream.rockchronicle.core.module.collision;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.JsonValue.ValueType;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
-import zdream.rockchronicle.core.character.parameter.JsonCollector;
 import zdream.rockchronicle.core.module.AbstractModule;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
@@ -40,16 +38,14 @@ public abstract class CollisionModule extends AbstractModule {
 		return -0x80;
 	}
 	
-	protected JsonCollector collisionc;
-	
 	@Override
 	public void init(FileHandle file, JsonValue value) {
 		super.init(file, value);
 		
 		JsonValue ocollisionc = value.get("collision");
 		executeType = ocollisionc.getString("execute", "repeat");
+		setSituation("collision.execute", new JsonValue(executeType));
 		
-		addCollector(collisionc = new JsonCollector(this::getCollisionJson, "collision"));
 		parent.addSubscribe("health_exhausted", this);
 	}
 	
@@ -81,14 +77,6 @@ public abstract class CollisionModule extends AbstractModule {
 	 * 执行方式
 	 */
 	public String executeType;
-	
-	public JsonValue getCollisionJson() {
-		JsonValue v = new JsonValue(ValueType.object);
-		
-		v.addChild("execute", new JsonValue(executeType));
-		
-		return v;
-	}
 	
 	/*
 	 * 状态

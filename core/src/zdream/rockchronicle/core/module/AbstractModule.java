@@ -1,12 +1,10 @@
 package zdream.rockchronicle.core.module;
 
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
-import zdream.rockchronicle.core.character.parameter.JsonCollector;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
 public abstract class AbstractModule {
@@ -40,9 +38,7 @@ public abstract class AbstractModule {
 	 * 用于每一步结束时的工作，包括重置临时参数、删除模块
 	 */
 	public void stepPassed() {
-		for (int i = 0; i < collectors.size; i++) {
-			collectors.get(i).clear();
-		}
+		
 	}
 
 	/**
@@ -51,9 +47,7 @@ public abstract class AbstractModule {
 	 * @param isPause
 	 */
 	public void onStepFinished(LevelWorld world, boolean isPause) {
-		for (int i = 0; i < collectors.size; i++) {
-			collectors.get(i).clear();
-		}
+		
 	}
 
 	public void willDestroy() {
@@ -61,7 +55,7 @@ public abstract class AbstractModule {
 	}
 	
 	public void dispose() {
-		parent.unbindResource(this);
+		// parent.unbindResource(this);
 	}
 	
 	/**
@@ -77,89 +71,43 @@ public abstract class AbstractModule {
 	/* **********
 	 * 资源事件 *
 	 ********** */
-	private final Array<JsonCollector> collectors = new Array<>();
 	
-	protected void addCollector(JsonCollector collector) {
-		parent.bindResource(collector.first, this);
-		collectors.add(collector);
+	public int getInt(String key, int defValue) {
+		return parent.getInt(key, defValue);
 	}
-	
-	protected void removeCollector(JsonCollector collector) {
-		parent.unbindResource(collector.first);
-		collectors.removeValue(collector, true);
+
+	public String getString(String key, String defValue) {
+		return parent.getString(key, defValue);
 	}
-	
-	public int getInt(String[] path, int defValue) {
-		for (int i = 0; i < collectors.size; i++) {
-			JsonCollector c = collectors.get(i);
-			if (path[0].equals(c.first)) {
-				return c.getInt(path, defValue);
-			}
-		}
-		return defValue;
+
+	public float getFloat(String key, float defValue) {
+		return parent.getFloat(key, defValue);
 	}
-	public String getString(String[] path, String defValue) {
-		for (int i = 0; i < collectors.size; i++) {
-			JsonCollector c = collectors.get(i);
-			if (path[0].equals(c.first)) {
-				return c.getString(path, defValue);
-			}
-		}
-		return defValue;
+
+	public boolean getBoolean(String key, boolean defValue) {
+		return parent.getBoolean(key, defValue);
 	}
-	public float getFloat(String[] path, float defValue) {
-		for (int i = 0; i < collectors.size; i++) {
-			JsonCollector c = collectors.get(i);
-			if (path[0].equals(c.first)) {
-				return c.getFloat(path, defValue);
-			}
-		}
-		return defValue;
+
+	public JsonValue getJson(String key) {
+		return parent.getJson(key);
 	}
-	public boolean getBoolean(String[] path, boolean defValue) {
-		for (int i = 0; i < collectors.size; i++) {
-			JsonCollector c = collectors.get(i);
-			if (path[0].equals(c.first)) {
-				return c.getBoolean(path, defValue);
-			}
-		}
-		return defValue;
+
+	public void setState(String key, JsonValue value) {
+		parent.setState(key, value);
 	}
-	public JsonValue getJson(String[] path) {
-		for (int i = 0; i < collectors.size; i++) {
-			JsonCollector c = collectors.get(i);
-			if (path[0].equals(c.first)) {
-				return c.getJson(path);
-			}
-		}
-		return null;
+
+	public void setSituation(String key, JsonValue value) {
+		parent.setSituation(key, value);
 	}
-	
-	/*
-	 * 返回值: 是否修改被允许 (accepted)
-	 */
-	public final boolean setJson0(String first, JsonValue value) {
-		boolean b = setJson(first, value);
-		
-		if (b) {
-			for (int i = 0; i < collectors.size; i++) {
-				JsonCollector c = collectors.get(i);
-				if (first.equals(c.first)) {
-					c.clear();
-				}
-			}
-		}
-		
-		return b;
+
+	public void removeState(String key) {
+		parent.removeState(key);
 	}
-	
-	/*
-	 * 返回值: 是否修改被允许 (accepted)
-	 */
-	protected boolean setJson(String first, JsonValue value) {
-		return false;
+
+	public void removeSituation(String key) {
+		parent.removeSituation(key);
 	}
-	
+
 	public void receiveEvent(CharacterEvent event) {
 		
 	}

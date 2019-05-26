@@ -3,12 +3,14 @@ package zdream.rockchronicle.core.character;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.ObjectMap;
 
 import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
@@ -22,7 +24,7 @@ import zdream.rockchronicle.platform.world.LevelWorld;
  * 
  * @author Zdream
  * @since v0.0.1
- * @date 2019-05-06 (modify)
+ * @date 2019-05-26 (modify)
  */
 public abstract class CharacterEntry {
 	
@@ -185,7 +187,7 @@ public abstract class CharacterEntry {
 		
 		// 清理工作
 		this.removeSubscribe(module);
-		this.unbindResource(module);
+//		this.unbindResource(module);
 		
 		if (inited) {
 			sortModules();
@@ -247,10 +249,6 @@ public abstract class CharacterEntry {
 				}
 			}
 		}
-		
-		for (int i = 0; i < ms.length; i++) {
-			ms[i].stepPassed();
-		}
 	}
 	
 	/**
@@ -264,12 +262,18 @@ public abstract class CharacterEntry {
 	 */
 	public void step(LevelWorld world, int index, boolean hasNext) {
 		getBoxModule().resetPosition(world, index, hasNext);
+		
+		for (int i = 0; i < modules.size; i++) {
+			modules.get(i).stepPassed();
+		}
+		
+		recent.putAll(states);
+		states.clear();
 	}
 
 	public void onStepFinished(LevelWorld world, boolean isPause) {
-		AbstractModule[] ms = modules.toArray(AbstractModule.class);
-		for (int i = 0; i < ms.length; i++) {
-			ms[i].onStepFinished(world, isPause);
+		for (int i = 0; i < modules.size; i++) {
+			modules.get(i).onStepFinished(world, isPause);
 		}
 	}
 	
@@ -293,7 +297,7 @@ public abstract class CharacterEntry {
 	 * 每个模块在启动时绑定一个或多个一级数据源, 它等同于该 Json 数据的一级子数据集
 	 * 所有对相应的资源数据的查询、设置数据都将指向该模块.
 	 */
-	private HashMap<String, AbstractModule> resources = new HashMap<>();
+//	private HashMap<String, AbstractModule> resources = new HashMap<>();
 	/*
 	 * 模拟 RSS 订阅
 	 */
@@ -304,40 +308,59 @@ public abstract class CharacterEntry {
 	private Array<CharacterEvent> events = new Array<>();
 	
 	/**
-	 * 绑定模块与资源的一级子数据集
-	 * @param key
-	 * @param module
-	 * @throws IllegalArgumentException
-	 *   当 key 已经被绑定时
+	 * <p>该角色保存的长期性状态数据
+	 * <p>这类数据将从放入 Map 中将一直存在, 直到角色销毁或其它模块将其删除.
+	 * <p>这里推荐模块从生成之后, 将其它模块或环境、角色需要查询的参数放在这里,
+	 * 销毁时手动清除存放的数据; 这里的 key 推荐采用 'state.stiffness' 这样,
+	 * 以点作为分割点整理层级关系.
+	 * </p>
 	 */
-	public void bindResource(String key, AbstractModule module) {
-		if (resources.containsKey(key)) {
-			throw new IllegalArgumentException(
-					String.format("角色 %s 的资源键 %s 已经被模块 %s 绑定, 无法与 %s 绑定",
-					this, key, resources.get(key), module));
-		}
-		resources.put(key, module);
-	}
+	private final ObjectMap<String, JsonValue> situations = new ObjectMap<>();
 	
 	/**
-	 * 解绑模块与资源的一级子数据集
-	 * @param key
+	 * <p>该角色保存的临时状态数据
+	 * <p>这类数据将从放入 Map 中后只存在一步的时间, 每步结束后将自动清空.
+	 * </p>
 	 */
-	public void unbindResource(String key) {
-		resources.remove(key);
-	}
+	private final ObjectMap<String, JsonValue> states = new ObjectMap<>();
 	
-	/**
-	 * 解绑某个模块的所有的资源
-	 * @param module
-	 */
-	public void unbindResource(AbstractModule module) {
-		for (Iterator<Entry<String, AbstractModule>> it = resources.entrySet().iterator(); it.hasNext();){
-			Entry<String, AbstractModule> item = it.next();
-		    if (item.getValue() == module)
-		    	it.remove();
-		}
-	}
+	private final ObjectMap<String, JsonValue> recent = new ObjectMap<>();
+	
+//	/**
+//	 * 绑定模块与资源的一级子数据集
+//	 * @param key
+//	 * @param module
+//	 * @throws IllegalArgumentException
+//	 *   当 key 已经被绑定时
+//	 */
+//	public void bindResource(String key, AbstractModule module) {
+//		if (resources.containsKey(key)) {
+//			throw new IllegalArgumentException(
+//					String.format("角色 %s 的资源键 %s 已经被模块 %s 绑定, 无法与 %s 绑定",
+//					this, key, resources.get(key), module));
+//		}
+//		resources.put(key, module);
+//	}
+//	
+//	/**
+//	 * 解绑模块与资源的一级子数据集
+//	 * @param key
+//	 */
+//	public void unbindResource(String key) {
+//		resources.remove(key);
+//	}
+//	
+//	/**
+//	 * 解绑某个模块的所有的资源
+//	 * @param module
+//	 */
+//	public void unbindResource(AbstractModule module) {
+//		for (Iterator<Entry<String, AbstractModule>> it = resources.entrySet().iterator(); it.hasNext();){
+//			Entry<String, AbstractModule> item = it.next();
+//		    if (item.getValue() == module)
+//		    	it.remove();
+//		}
+//	}
 	
 	/**
 	 * 添加订阅
@@ -387,33 +410,60 @@ public abstract class CharacterEntry {
 		}
 	}
 	
-	public int getInt(String[] path, int defValue) {
-		AbstractModule module = resources.get(path[0]);
-		return (module != null) ? module.getInt(path, defValue) : defValue;
+	public int getInt(String key, int defValue) {
+		JsonValue json = getJson(key);
+		return (json != null) ? json.asInt() : defValue;
 	}
-	public String getString(String[] path, String defValue) {
-		AbstractModule module = resources.get(path[0]);
-		return (module != null) ? module.getString(path, defValue) : defValue;
+	public String getString(String key, String defValue) {
+		JsonValue json = getJson(key);
+		return (json != null) ? json.asString() : defValue;
 	}
-	public float getFloat(String[] path, float defValue) {
-		AbstractModule module = resources.get(path[0]);
-		return (module != null) ? module.getFloat(path, defValue) : defValue;
+	public float getFloat(String key, float defValue) {
+		JsonValue json = getJson(key);
+		return (json != null) ? json.asFloat() : defValue;
 	}
-	public boolean getBoolean(String[] path, boolean defValue) {
-		AbstractModule module = resources.get(path[0]);
-		return (module != null) ? module.getBoolean(path, defValue) : defValue;
+	public boolean getBoolean(String key, boolean defValue) {
+		JsonValue json = getJson(key);
+		return (json != null) ? json.asBoolean() : defValue;
 	}
-	public JsonValue getJson(String[] path) {
-		AbstractModule module = resources.get(path[0]);
-		return (module != null) ? module.getJson(path) : null;
+	public JsonValue getJson(String key) {
+		if (states.containsKey(key)) {
+			return states.get(key);
+		}
+		if (recent.containsKey(key)) {
+			return states.get(key);
+		}
+		if (situations.containsKey(key)) {
+			return situations.get(key);
+		}
+		return null;
 	}
 	
 	/*
-	 * 返回值: 是否修改被允许 (accepted)
+	 * 设置或替换值, 临时数据
 	 */
-	public boolean setJson(String first, JsonValue value) {
-		AbstractModule module = resources.get(first);
-		return (module != null) ? module.setJson0(first, value) : false;
+	public void setState(String key, JsonValue value) {
+		states.put(key, value);
+		recent.remove(key);
+	}
+
+	/**
+	 * 设置或替换值, 永久数据
+	 * @throws NullPointerException
+	 *   当 value == null 时
+	 */
+	public void setSituation(String key, JsonValue value) {
+		Objects.requireNonNull(value);
+		situations.put(key, value);	
+	}
+	
+	public void removeState(String key) {
+		states.remove(key);
+		recent.remove(key);
+	}
+	
+	public void removeSituation(String key) {
+		situations.remove(key);
 	}
 	
 	/**
