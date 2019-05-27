@@ -20,12 +20,16 @@ import zdream.rockchronicle.core.character.event.CharacterEvent;
 public class BaseHealthModule extends HealthModule {
 	
 	/**
-	 * 实际血量 = 显示血量 * 256 (左移 8 位)
+	 * <p>实际血量 = 显示血量 * 256 (左移 8 位)
+	 * <p>存储位置 situation:health.hp
+	 * </p>
 	 */
 	public int hp;
 	/**
-	 * 实际血量最大值 = 显示血量最大值 * 256 (左移 8 位)
+	 * <p>实际血量最大值 = 显示血量最大值 * 256 (左移 8 位)
 	 * 28 * 256 = 7168
+	 * <p>存储位置 situation:health.hpMax
+	 * </p>
 	 */
 	public int hpMax;
 
@@ -42,19 +46,13 @@ public class BaseHealthModule extends HealthModule {
 		} else {
 			this.hp = hpMax;
 		}
-	}
-	
-	public JsonValue getHealthJson() {
-		JsonValue v = new JsonValue(ValueType.object);
 		
-		v.addChild("realHp", new JsonValue(hp));
-		v.addChild("realHpMax", new JsonValue(hpMax));
-		
-		return v;
+		setSituation("health.hp", new JsonValue(hp));
+		setSituation("health.hpMax", new JsonValue(hpMax));
 	}
 	
 	protected void executeOuterDamage(CharacterEvent event) {
-		boolean immune = parent.getBoolean(new String[] {"state", "immune"}, false);
+		boolean immune = getBoolean("state.immune", false);
 		
 		if (immune) {
 			event.value.addChild("result", new JsonValue("ignored"));
@@ -63,6 +61,7 @@ public class BaseHealthModule extends HealthModule {
 			int damage = v.getInt("damage");
 			
 			hp -= damage;
+			setSituation("health.hp", new JsonValue(hp));
 			if (hp <= 0) {
 				hp = 0;
 				CharacterEvent ne = new CharacterEvent("health_exhausted");
@@ -85,6 +84,7 @@ public class BaseHealthModule extends HealthModule {
 		} else {
 			hp += value;
 		}
+		setSituation("health.hp", new JsonValue(hp));
 	}
 
 }

@@ -57,7 +57,6 @@ public class LinearMotionModule extends MotionModule {
 		Box box = getSingleBox();
 		box.setVelocityX(flipX ? -vx : vx);
 		box.setVelocityY(flipY ? -vy : vy);
-		parent.getBoxModule().modified();
 	}
 
 }

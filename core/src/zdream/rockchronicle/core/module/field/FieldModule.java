@@ -57,7 +57,7 @@ public abstract class FieldModule extends AbstractModule {
 	 */
 	public boolean isActive() {
 		if (needTrigger) {
-			return parent.getBoolean(new String[] {"state", "active"}, false);
+			return getBoolean("field.active", false);
 		} else {
 			return true;
 		}

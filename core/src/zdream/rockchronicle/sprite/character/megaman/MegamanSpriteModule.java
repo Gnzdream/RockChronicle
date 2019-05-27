@@ -37,7 +37,7 @@ public class MegamanSpriteModule extends BaseSpriteModule {
 		}
 		
 		// 是否硬直
-		boolean stiffness = parent.getBoolean(new String[] {"state", "stiffness"}, false);
+		boolean stiffness = getBoolean("state.stiffness", false);
 		if (stiffness) {
 			motion = "stiffness";
 			setState("stiffness");
@@ -46,13 +46,13 @@ public class MegamanSpriteModule extends BaseSpriteModule {
 		}
 		
 		// 攻击判定
-		boolean attacking = parent.getBoolean(new String[] {"state", "attacking"}, false);
+		boolean attacking = getBoolean("state.attacking", false);
 		if (attacking) {
 			attackRemain = LevelWorld.STEPS_PER_SECOND / 2;
 		}
 		
 		// 是否在攀爬
-		int climbing = parent.getInt(new String[] {"climb", "climbing"}, 0);
+		int climbing = getInt("climb.climbing", 0);
 		if (climbing > 0) {
 			switch (climbing) {
 			case 1:
@@ -71,7 +71,7 @@ public class MegamanSpriteModule extends BaseSpriteModule {
 				break;
 			}
 			
-			int upOrDown = parent.getInt(new String[] {"climb", "upOrDown"}, 0);
+			int upOrDown = getInt("climb.upOrDown", 0);
 			if (upOrDown == 1) {
 				select.tick(1);
 			} else if (upOrDown == 2) {
@@ -83,7 +83,7 @@ public class MegamanSpriteModule extends BaseSpriteModule {
 		Box box = parent.getBoxModule().getBox();
 		
 		// 是否在跳跃
-		boolean onTheGround = parent.getBoolean(new String[] {"state", "onTheGround"}, true);
+		boolean onTheGround = getBoolean("state.onTheGround", true);
 		if (!onTheGround) {
 			motion = "jump";
 			String s1 = (box.velocity.y >= 0) ? "jump" : "drop";
@@ -107,7 +107,7 @@ public class MegamanSpriteModule extends BaseSpriteModule {
 			return;
 		}
 		
-		String curMotion = parent.getString(new String[] {"state", "motion"}, "stop");
+		String curMotion = getString("state.motion", "stop");
 		switch (curMotion) {
 		case "stop":
 			setState("normal");

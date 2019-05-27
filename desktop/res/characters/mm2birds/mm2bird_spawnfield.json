@@ -8,7 +8,6 @@
 		"sprite":"shape",
 		"camp":"base",
 		"collision":"field",
-		"state":"field",
 		"field":"spawn"
 	},
 	"box":

@@ -82,7 +82,7 @@ public abstract class SpriteModule extends AbstractModule {
 	 *   是否向右
 	 */
 	public boolean getOrientation() {
-		return parent.getBoolean(new String[] {"situation", "orientation"}, true);
+		return getBoolean("state.orientation", true);
 	}
 	
 	public void draw(SpriteBatch batch, OrthographicCamera camera) {
@@ -107,7 +107,7 @@ public abstract class SpriteModule extends AbstractModule {
 			x = getX() - entry.offsetx / (float) Config.INSTANCE.blockWidth - fw;
 		}
 		
-		int immune = parent.getInt(new String[] {"state", "immune"}, 0);
+		int immune = getInt("state.immune", 0);
 		
 		// 绘画
 		batch.begin();
@@ -129,9 +129,6 @@ public abstract class SpriteModule extends AbstractModule {
 		batch.end();
 	}
 	
-	private static final String[] PATH_ANCHOR_X = {"box", "anchor", "x"};
-	private static final String[] PATH_ANCHOR_Y = {"box", "anchor", "y"};
-	
 	/**
 	 * 获取 x 坐标.
 	 */
@@ -140,7 +137,7 @@ public abstract class SpriteModule extends AbstractModule {
 		if (box != null) {
 			return box.anchor.x;
 		}
-		return parent.getFloat(PATH_ANCHOR_X, 0);
+		return 0;
 	}
 	
 	/**
@@ -151,7 +148,7 @@ public abstract class SpriteModule extends AbstractModule {
 		if (box != null) {
 			return box.anchor.y;
 		}
-		return parent.getFloat(PATH_ANCHOR_Y, 0);
+		return 0;
 	}
 	
 	/**

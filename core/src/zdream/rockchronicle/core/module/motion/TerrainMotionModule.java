@@ -41,7 +41,6 @@ public class TerrainMotionModule extends MotionModule {
 				world.topStop(box);
 				world.leftStop(box);
 				world.rightStop(box);
-				super.motionc.clear();
 				
 				// 位置重合修正
 				boolean glitch = world.correctOverlapBox(box);
@@ -50,21 +49,20 @@ public class TerrainMotionModule extends MotionModule {
 				}
 			}
 		}
+		
+		setMotionState();
 	}
 
 	/* **********
 	 * 资源事件 *
 	 ********** */
-	@Override
-	public JsonValue getMotionJson() {
+	public void setMotionState() {
 		Box box = getSingleBox();
 		
-		JsonValue v = super.getMotionJson();
-		v.addChild("bottomStop", new JsonValue(box.bottomStop));
-		v.addChild("topStop", new JsonValue(box.topStop));
-		v.addChild("leftStop", new JsonValue(box.leftStop));
-		v.addChild("rightStop", new JsonValue(box.rightStop));
-		return v;
+		setState("motion.bottomStop", new JsonValue(box.bottomStop));
+		setState("motion.topStop", new JsonValue(box.topStop));
+		setState("motion.leftStop", new JsonValue(box.leftStop));
+		setState("motion.rightStop", new JsonValue(box.rightStop));
 	}
 
 }

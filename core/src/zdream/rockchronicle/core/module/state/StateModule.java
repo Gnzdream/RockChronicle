@@ -2,15 +2,9 @@ package zdream.rockchronicle.core.module.state;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.JsonValue.ValueType;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
-import zdream.rockchronicle.core.character.event.CharacterEvent;
-import zdream.rockchronicle.core.character.parameter.JsonCollector;
 import zdream.rockchronicle.core.module.AbstractModule;
-import zdream.rockchronicle.platform.world.LevelWorld;
-
-import static zdream.rockchronicle.utils.JsonUtils.*;
 
 /**
  * <p>抽象状态记录的模块
@@ -25,17 +19,6 @@ import static zdream.rockchronicle.utils.JsonUtils.*;
 public abstract class StateModule extends AbstractModule {
 	
 	public static final String NAME = "State";
-
-	protected JsonCollector statec, situationc;
-	
-	/**
-	 * 长期性状态数据, 不会自动清除
-	 */
-	protected final JsonValue situation = new JsonValue(ValueType.object);
-	/**
-	 * 短期性状态数据, 下一步时间开始时自动清除
-	 */
-	protected final JsonValue state = new JsonValue(ValueType.object);
 
 	public StateModule(CharacterEntry ch) {
 		super(ch);
@@ -52,62 +35,8 @@ public abstract class StateModule extends AbstractModule {
 	}
 	
 	@Override
-	public void determine(LevelWorld world, int index, boolean hasNext) {
-		super.determine(world, index, hasNext);
-		clear(state);
-	}
-	
-	@Override
 	public void init(FileHandle file, JsonValue value) {
 		super.init(file, value);
-		
-		statec = new JsonCollector(this::createStateJson, "state");
-		situationc = new JsonCollector(this::createSituationJson, "situation");
-		
-		addCollector(statec);
-		addCollector(situationc);
-		
-		parent.addSubscribe("delete_situation", this);
 	}
 	
-	public JsonValue createStateJson() {
-		JsonValue v = new JsonValue(ValueType.object);
-		mergeJson(v, state);
-		return v;
-	}
-	
-	public JsonValue createSituationJson() {
-		JsonValue v = new JsonValue(ValueType.object);
-		mergeJson(v, situation);
-		return v;
-	}
-	
-	@Override
-	protected boolean setJson(String first, JsonValue value) {
-		if ("state".equals(first)) {
-			return setStateJson(value);
-		} else if ("situation".equals(first)) {
-			return setSituationJson(value);
-		}
-		return super.setJson(first, value);
-	}
-
-	protected boolean setStateJson(JsonValue value) {
-		mergeJson(state, value);
-		return true;
-	}
-
-	protected boolean setSituationJson(JsonValue value) {
-		mergeJson(situation, value);
-		return true;
-	}
-	
-	public void receiveEvent(CharacterEvent event) {
-		if ("delete_situation".equals(event.name)) {
-			delete(situation, event.value.get("keys").asStringArray());
-			situationc.clear();
-		}
-		super.receiveEvent(event);
-	}
-
 }

@@ -15,7 +15,7 @@ import zdream.rockchronicle.platform.world.LevelWorld;
  * @since v0.0.1
  * @date
  *   2019-05-12 (create)
- *   2019-05-12 (last modified)
+ *   2019-05-27 (last modified)
  */
 public class BaseStateModule extends StateModule {
 
@@ -83,53 +83,21 @@ public class BaseStateModule extends StateModule {
 		
 		stiffnessDuration = (int) (oparam.getFloat("stiffness", 0) * LevelWorld.STEPS_PER_SECOND);
 		immuneDuration = (int) (oparam.getFloat("immune", 0) * LevelWorld.STEPS_PER_SECOND);
+		
+		setSituation();
 	}
 	
-	public JsonValue createStateJson() {
-		JsonValue v = super.createStateJson();
-		
-		v.addChild("stiffness", new JsonValue(stiffnessRemain));
-		v.addChild("immune", new JsonValue(immuneRemain));
-		v.addChild("motion", new JsonValue(motion));
-		v.addChild("attacking", new JsonValue(attacking));
-		
-		return v;
+	private void setBaseState() {
+		setState("state.stiffness", new JsonValue(stiffnessRemain));
+		setState("state.immune", new JsonValue(immuneRemain));
+		setState("state.motion", new JsonValue(motion));
+		setState("state.attacking", new JsonValue(attacking));
 	}
 	
-	public JsonValue createSituationJson() {
-		JsonValue v = super.createSituationJson();
-		
-		v.addChild("stiffness", new JsonValue(stiffnessDuration));
-		v.addChild("immune", new JsonValue(immuneDuration));
-		v.addChild("orientation", new JsonValue(orientation));
-		
-		return v;
-	}
-	
-	protected boolean setStateJson(JsonValue value) {
-		for (JsonValue entry = value.child; entry != null; entry = entry.next) {
-			switch (entry.name) {
-			case "motion":
-				this.motion = entry.asString();
-				return true;
-			case "attacking":
-				this.attacking = entry.asBoolean();
-				return true;
-			}
-		}
-		return super.setStateJson(value);
-	}
-	
-	@Override
-	protected boolean setSituationJson(JsonValue value) {
-		for (JsonValue entry = value.child; entry != null; entry = entry.next) {
-			switch (entry.name) {
-			case "orientation":
-				this.orientation = entry.asBoolean();
-				return true;
-			}
-		}
-		return super.setSituationJson(value);
+	private void setSituation() {
+		setSituation("state.param.stiffness", new JsonValue(stiffnessDuration));
+		setSituation("state.param.immune", new JsonValue(immuneDuration));
+		setSituation("state.param.orientation", new JsonValue(orientation));
 	}
 	
 	@Override
@@ -142,7 +110,8 @@ public class BaseStateModule extends StateModule {
 		if (this.immuneRemain > 0) {
 			this.immuneRemain--;
 		}
-		statec.clear();
+		
+		setBaseState();
 	}
 	
 	@Override
@@ -169,11 +138,11 @@ public class BaseStateModule extends StateModule {
 				if (this.immuneDuration > 0) {
 					this.immuneRemain = immuneDuration;
 				}
-				statec.clear();
+				setBaseState();
 			}
 		} else if ("open_fire".equals(event.name)) {
 			this.attacking = true;
-			statec.clear();
+			setBaseState();
 		}
 		super.receiveEvent(event);
 	}

@@ -76,10 +76,6 @@
 		{
 			"name":"base",
 			"class":"zdream.rockchronicle.core.module.state.BaseStateModule"
-		},
-		{
-			"name":"field",
-			"class":"zdream.rockchronicle.core.module.state.FieldStateModule"
 		}
 	],
 	"buff":

@@ -231,6 +231,15 @@ public abstract class CharacterEntry {
 	 *   本帧是否还会再调用
 	 */
 	public void determine(LevelWorld world, int index, boolean hasNext) {
+		// 清理上次的数据
+		for (int i = 0; i < modules.size; i++) {
+			modules.get(i).stepPassed();
+		}
+		recent.clear();
+		recent.putAll(states);
+		states.clear();
+		
+		// 开始现在的操作流程
 		AbstractModule[] ms = modules.toArray(AbstractModule.class);
 		for (int i = 0; i < ms.length; i++) {
 			ms[i].determine(world, index, hasNext);
@@ -262,13 +271,6 @@ public abstract class CharacterEntry {
 	 */
 	public void step(LevelWorld world, int index, boolean hasNext) {
 		getBoxModule().resetPosition(world, index, hasNext);
-		
-		for (int i = 0; i < modules.size; i++) {
-			modules.get(i).stepPassed();
-		}
-		
-		recent.putAll(states);
-		states.clear();
 	}
 
 	public void onStepFinished(LevelWorld world, boolean isPause) {
@@ -427,22 +429,22 @@ public abstract class CharacterEntry {
 		return (json != null) ? json.asBoolean() : defValue;
 	}
 	public JsonValue getJson(String key) {
-		if (states.containsKey(key)) {
-			return states.get(key);
+		JsonValue v = states.get(key);
+		
+//		if (v == null) {
+//			v = recent.get(key);
+//		}
+		if (v == null) {
+			v = situations.get(key);
 		}
-		if (recent.containsKey(key)) {
-			return states.get(key);
-		}
-		if (situations.containsKey(key)) {
-			return situations.get(key);
-		}
-		return null;
+		return v;
 	}
 	
 	/*
 	 * 设置或替换值, 临时数据
 	 */
 	public void setState(String key, JsonValue value) {
+		Objects.requireNonNull(value);
 		states.put(key, value);
 		recent.remove(key);
 	}

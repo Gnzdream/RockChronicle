@@ -5,7 +5,6 @@ import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
-import zdream.rockchronicle.core.character.parameter.JsonCollector;
 import zdream.rockchronicle.core.module.AbstractModule;
 
 /**
@@ -31,7 +30,6 @@ public abstract class HealthModule extends AbstractModule {
 		super.init(file, value);
 		
 		initHealthArguments(value);
-		addCollector(new JsonCollector(this::getHealthJson, "health"));
 		parent.addSubscribe("outside_collision", this);
 		parent.addSubscribe("inside_recovery", this);
 	}
@@ -45,8 +43,6 @@ public abstract class HealthModule extends AbstractModule {
 	
 	protected abstract void initHealthArguments(JsonValue root);
 	
-	public abstract JsonValue getHealthJson();
-
 	@Override
 	public String name() {
 		return NAME;

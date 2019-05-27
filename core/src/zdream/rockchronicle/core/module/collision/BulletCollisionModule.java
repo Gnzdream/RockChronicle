@@ -76,7 +76,7 @@ public class BulletCollisionModule extends CollisionModule {
 				return true; // 自己不能够攻击对方
 			}
 			
-			JsonValue jdefenseAccepted = getJson("camp.defenseAccepted");
+			JsonValue jdefenseAccepted = target.getJson("camp.defenseAccepted");
 			boolean defenseAccepted = jdefenseAccepted.getBoolean(Integer.toString(camp), true);
 			if (!defenseAccepted) {
 				return true; // 对方不接受这次攻击

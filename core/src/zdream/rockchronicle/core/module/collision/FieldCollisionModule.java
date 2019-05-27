@@ -113,7 +113,7 @@ public class FieldCollisionModule extends CollisionModule {
 		
 		// 设置状态
 		JsonValue v = new JsonValue(ValueType.object);
-		setState("state.active", v);
+		setState("field.active", v);
 		
 		if ("once".equals(this.executeType)) {
 			isFunctioned = false;

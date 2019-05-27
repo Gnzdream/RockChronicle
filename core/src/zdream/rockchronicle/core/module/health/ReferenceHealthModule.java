@@ -48,21 +48,15 @@ public class ReferenceHealthModule extends HealthModule {
 		if (ref.equals("megaman")) {
 			hpRef = RockChronicle.INSTANCE.runtime.cast.megaman;
 		}
-	}
-
-	@Override
-	public JsonValue getHealthJson() {
-		JsonValue v = new JsonValue(ValueType.object);
-
-		v.addChild("realHp", new JsonValue(hpRef.hp));
-		v.addChild("realHpMax", new JsonValue(hpRef.hpMax));
 		
-		return v;
+		setSituation("health.hp", new JsonValue(hpRef.hp));
+		setSituation("health.hpMax", new JsonValue(hpRef.hpMax));
+		setSituation("health.ref", new JsonValue(ref));
 	}
 
 	@Override
 	protected void executeOuterDamage(CharacterEvent event) {
-		boolean immune = parent.getBoolean(new String[] {"state", "immune"}, false);
+		boolean immune = getBoolean("state.immune", false);
 		
 		if (immune) {
 			event.value.addChild("result", new JsonValue("ignored"));
@@ -72,6 +66,7 @@ public class ReferenceHealthModule extends HealthModule {
 			Gdx.app.log("ReferenceHealthModule", String.format("%s 收到伤害 %d", ref, damage));
 			
 			hpRef.hp -= damage;
+			setSituation("health.hp", new JsonValue(hpRef.hp));
 			if (hpRef.hp <= 0) {
 				hpRef.hp = 0;
 				CharacterEvent ne = new CharacterEvent("health_exhausted");
@@ -94,6 +89,7 @@ public class ReferenceHealthModule extends HealthModule {
 		} else {
 			hpRef.hp += value;
 		}
+		setSituation("health.hp", new JsonValue(hpRef.hp));
 	}
 
 }

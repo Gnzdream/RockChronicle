@@ -3,7 +3,6 @@ package zdream.rockchronicle.sprite.character.megaman;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.JsonValue.ValueType;
 
 import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.GameRuntime;
@@ -56,14 +55,14 @@ public class MegamanWeaponModule extends WeaponModule {
 	private void handleAttack(LevelWorld world, int index, boolean hasNext) {
 		Box box = getSingleBox();
 		
-		boolean stiffness = parent.getBoolean(new String[] {"state", "stiffness"}, false);
+		boolean stiffness = getBoolean("state.stiffness", false);
 		
 		// 其它 : 是否攻击
 		if (weaponEntryIds.size < 3 && attackBegin && !stiffness) {
-			boolean climbing = parent.getBoolean(new String[] {"climb", "climbing"}, false);
+			boolean climbing = getBoolean("climb.climbing", false);
 			
 			// 计算朝向
-			boolean orientation = parent.getBoolean(new String[] {"situation", "orientation"}, true); // true : 向右
+			boolean orientation = getBoolean("state.orientation", true); // true : 向右
 			if (climbing) {
 				boolean left = parent.ctrl.lastLeft;
 				boolean right = parent.ctrl.lastRight;
@@ -71,9 +70,7 @@ public class MegamanWeaponModule extends WeaponModule {
 				if (orientation && left || !orientation && right) {
 					// 转向
 					orientation = right;
-					JsonValue v = new JsonValue(ValueType.object);
-					v.addChild("orientation", new JsonValue(right));
-					parent.setJson("situation", v);
+					setState("state.orientation", new JsonValue(right));
 				}
 			}
 			
@@ -83,7 +80,7 @@ public class MegamanWeaponModule extends WeaponModule {
 						.setBoxAnchor(x, box.anchor.y + 0.85f)
 						.setMotionOrientation(orientation)
 						.setMotionFlipX(!orientation)
-						.setCamp(parent.getInt(new String[] {"camp", "camp"}, 0))
+						.setCamp(getInt("camp.camp", 0))
 						.get());
 			weaponEntryIds.add(buster.id);
 			RockChronicle.INSTANCE.runtime.addEntry(buster);
