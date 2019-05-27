@@ -6,8 +6,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
-import zdream.rockchronicle.platform.body.Box;
-import zdream.rockchronicle.platform.world.LevelWorld;
+import zdream.rockchronicle.core.move.LinearMovement;
 
 /**
  * <p>线性移动的角色的行动模块
@@ -29,6 +28,8 @@ public class LinearMotionModule extends MotionModule {
 	 * 启动时的横纵坐标的速度 (格 / 步). 配置项
 	 */
 	float vx, vy;
+	
+	LinearMovement movement;
 
 	public LinearMotionModule(CharacterEntry ch) {
 		super(ch);
@@ -50,13 +51,11 @@ public class LinearMotionModule extends MotionModule {
 			vx = ovel.getFloat("x", 0f) * TIME_STEP;
 			vy = ovel.getFloat("y", 0f) * TIME_STEP;
 		}
+		
+		movement = new LinearMovement();
+		movement.vx = flipX ? -vx : vx;
+		movement.vy = flipY ? -vy : vy;
+		
+		parent.getBoxModule().addMovable(movement, 0);
 	}
-	
-	@Override
-	public void determine(LevelWorld world, int index, boolean hasNext) {
-		Box box = getSingleBox();
-		box.setVelocityX(flipX ? -vx : vx);
-		box.setVelocityY(flipY ? -vy : vy);
-	}
-
 }

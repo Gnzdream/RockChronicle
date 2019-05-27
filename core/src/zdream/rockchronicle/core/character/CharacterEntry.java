@@ -1,8 +1,6 @@
 package zdream.rockchronicle.core.character;
 
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map.Entry;
 import java.util.Objects;
 
 import com.badlogic.gdx.files.FileHandle;
@@ -11,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.ObjectMap.Entry;
 
 import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
@@ -24,7 +23,8 @@ import zdream.rockchronicle.platform.world.LevelWorld;
  * 
  * @author Zdream
  * @since v0.0.1
- * @date 2019-05-26 (modify)
+ * @date
+ *   2019-05-26 (last modified)
  */
 public abstract class CharacterEntry {
 	
@@ -132,9 +132,9 @@ public abstract class CharacterEntry {
 		}
 		
 		RockChronicle.INSTANCE.runtime.removeEntry(this);
-		moduleMap.forEach((n, m) -> {
+		moduleMap.forEach(p -> {
 			try {
-				m.willDestroy();
+				p.value.willDestroy();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -148,9 +148,9 @@ public abstract class CharacterEntry {
 	 * 回收. 该方法由系统 (GameRuntime) 调用, 自己不能调用
 	 */
 	public void dispose() {
-		moduleMap.forEach((n, m) -> {
+		moduleMap.forEach(p -> {
 			try {
-				m.dispose();
+				p.value.dispose();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -168,7 +168,7 @@ public abstract class CharacterEntry {
 	 * 控制模块, 让 AI 或者用户的键盘或手柄控制它
 	 * 等等
 	 */
-	protected final HashMap<String, AbstractModule> moduleMap = new HashMap<>();
+	protected final ObjectMap<String, AbstractModule> moduleMap = new ObjectMap<>(16);
 	private Array<AbstractModule> modules;
 	
 	public void addModule(AbstractModule module) {
@@ -199,7 +199,7 @@ public abstract class CharacterEntry {
 	}
 	
 	private void sortModules() {
-		modules = new Array<>(moduleMap.size());
+		modules = new Array<>(moduleMap.size);
 		moduleMap.values().forEach(m -> modules.add(m));
 		
 		modules.sort((a, b) -> {
@@ -270,7 +270,7 @@ public abstract class CharacterEntry {
 	 *   本帧是否还会再调用
 	 */
 	public void step(LevelWorld world, int index, boolean hasNext) {
-		getBoxModule().resetPosition(world, index, hasNext);
+		getBoxModule().move(world);
 	}
 
 	public void onStepFinished(LevelWorld world, boolean isPause) {
@@ -303,7 +303,7 @@ public abstract class CharacterEntry {
 	/*
 	 * 模拟 RSS 订阅
 	 */
-	private HashMap<String, Array<AbstractModule>> subscribes = new HashMap<>();
+	private ObjectMap<String, Array<AbstractModule>> subscribes = new ObjectMap<>();
 	/*
 	 * 所有的事件都是异步的. 等待中的事件列表
 	 */
@@ -401,9 +401,9 @@ public abstract class CharacterEntry {
 	 * @param module
 	 */
 	public void removeSubscribe(AbstractModule module) {
-		for (Iterator<Entry<String, Array<AbstractModule>>> it = subscribes.entrySet().iterator(); it.hasNext();){
+		for (Iterator<Entry<String, Array<AbstractModule>>> it = subscribes.iterator(); it.hasNext();){
 			Entry<String, Array<AbstractModule>> item = it.next();
-			Array<AbstractModule> array = item.getValue();
+			Array<AbstractModule> array = item.value;
 			
 			array.removeValue(module, true);
 			if (array.size == 0) {

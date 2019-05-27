@@ -18,7 +18,8 @@ import zdream.rockchronicle.platform.body.Box;
  * @author Zdream
  * @since v0.0.1
  * @date
- *   2019-05-12 (create)
+ *   2019-05-12 (created)
+ *   2019-05-27 (last modified)
  */
 public class FieldCollisionModule extends CollisionModule {
 	
@@ -84,7 +85,7 @@ public class FieldCollisionModule extends CollisionModule {
 		int targetId = box.parentId;
 		
 		CharacterEntry target = RockChronicle.INSTANCE.runtime.findEntry(targetId);
-		int targetCamp = getInt("camp.camp", 0);
+		int targetCamp = target.getInt("camp.camp", 0);
 		
 		boolean accepted = false;
 		for (int i = 0; i < targetCamps.length; i++) {
@@ -112,8 +113,7 @@ public class FieldCollisionModule extends CollisionModule {
 		}
 		
 		// 设置状态
-		JsonValue v = new JsonValue(ValueType.object);
-		setState("field.active", v);
+		setState("field.active", new JsonValue(true));
 		
 		if ("once".equals(this.executeType)) {
 			isFunctioned = false;

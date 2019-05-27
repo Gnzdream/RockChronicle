@@ -133,7 +133,7 @@ public class SingleBoxModule extends BoxModule {
 	}
 	
 	@Override
-	public void resetPosition(LevelWorld world, int index, boolean hasNext) {
+	public void move(LevelWorld world) {
 		box.lastAnchorX = box.anchor.x;
 		box.lastAnchorY = box.anchor.y;
 		
@@ -145,6 +145,11 @@ public class SingleBoxModule extends BoxModule {
 			box.box.x = pattern.x;
 			box.box.y = pattern.y;
 			nextPattern = null;
+		}
+		
+		// 执行移动实例
+		for (int i = 0; i < movables.size; i++) {
+			movables.get(i).movable.move(world, box);
 		}
 		
 		// 处理移动位置

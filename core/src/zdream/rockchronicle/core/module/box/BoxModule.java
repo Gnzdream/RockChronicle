@@ -1,10 +1,14 @@
 package zdream.rockchronicle.core.module.box;
 
+import java.util.Objects;
+
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.module.AbstractModule;
+import zdream.rockchronicle.core.move.IMovable;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
@@ -40,17 +44,6 @@ public abstract class BoxModule extends AbstractModule {
 	public int priority() {
 		return -100;
 	}
-	
-	/**
-	 * 每一帧来刷新一下状态
-	 * @param world
-	 *   关卡世界实体
-	 * @param index
-	 *   本帧的第几次调用. 第一次为 0
-	 * @param hasNext
-	 *   本帧是否还会再调用
-	 */
-	public abstract void resetPosition(LevelWorld world, int index, boolean hasNext);
 
 	public final void doCreateBody(LevelWorld world) {
 		this.world = world;
@@ -76,5 +69,57 @@ public abstract class BoxModule extends AbstractModule {
 	 * @param pattern
 	 */
 	public abstract void setNextPattern(String pattern);
+	
+	/* **********
+	 * 移动执行 *
+	 ********** */
+	
+	class MovableNode implements Comparable<MovableNode> {
+		IMovable movable;
+		int priority;
+		public MovableNode(IMovable movable, int priority) {
+			super();
+			this.movable = movable;
+			this.priority = priority;
+		}
+		@Override
+		public int compareTo(MovableNode o) {
+			// 优先级高的排前面
+			return (priority < o.priority) ? 1 : ((priority == o.priority) ? 0 : -1);
+		}
+	}
+	
+	protected final Array<MovableNode> movables = new Array<>(8);
+	
+	/**
+	 * 添加行动执行实例
+	 * @param movable
+	 * @param priority
+	 *   优先度
+	 */
+	public void addMovable(IMovable movable, int priority) {
+		Objects.requireNonNull(movable);
+		movables.add(new MovableNode(movable, priority));
+	}
+	
+	/**
+	 * 删除行动执行实例
+	 * @param movable
+	 */
+	public void removeMovable(IMovable movable) {
+		for (int i = 0; i < movables.size; i++) {
+			if (movables.get(i).movable == movable) {
+				movables.removeIndex(i);
+				i--;
+			}
+		}
+	}
+	
+	/**
+	 * 世界每走一步, 角色进行一次行动
+	 * @param world
+	 *   关卡世界实体
+	 */
+	public abstract void move(LevelWorld world);
 
 }
