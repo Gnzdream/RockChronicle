@@ -126,9 +126,12 @@ public class BaseJumpModule extends JumpModule implements IMovable {
 	 * 暂时数据
 	 */
 	float lastvy = 0;
-
+	
 	@Override
-	public void move(LevelWorld world, Box box, CharacterEntry entry) {
+	public void determine(LevelWorld world, int index, boolean hasNext) {
+		super.determine(world, index, hasNext);
+		
+		Box box = parent.getBoxModule().getBox();
 		
 		// 攀爬 (楼梯) 状态、悬挂状态、附着状态
 		// TODO 如果在以上状态时, 下面的一切都不需要判断.
@@ -139,14 +142,10 @@ public class BaseJumpModule extends JumpModule implements IMovable {
 			return;
 		}
 		
-		boolean bottomStop = getBoolean("motion.bottomStop", false);
-		boolean topStop = getBoolean("motion.topStop", false);
 		boolean stiffness = getBoolean("state.stiffness", false);
 		
-		float ovy = lastvy;
+		float vy = lastvy;
 		float gravityScale = box.gravityScale;
-		
-		float vy = ovy;
 		boolean onTheGround = getBoolean("state.onTheGround", false);
 		
 		if (gravityScale > 0) {
@@ -164,6 +163,7 @@ public class BaseJumpModule extends JumpModule implements IMovable {
 			float delta = decay * gravityScale;
 			float maxDropVelocity = this.maxDropVelocity * gravityScale;
 			if (box.gravityDown) {
+				boolean topStop = getBoolean("motion.topStop", false);
 				if (vy > 0 && (jumpEnd || topStop || stiffness)) {
 					delta = 4 * decay;
 					if (vy >= -delta) {
@@ -175,6 +175,7 @@ public class BaseJumpModule extends JumpModule implements IMovable {
 					vy = maxDropVelocity;
 				}
 			} else {
+				boolean bottomStop = getBoolean("motion.bottomStop", false);
 				if (vy < 0 && (jumpEnd || bottomStop || stiffness)) {
 					delta = 4 * decay;
 					if (vy <= delta) {
@@ -189,8 +190,17 @@ public class BaseJumpModule extends JumpModule implements IMovable {
 			}
 		}
 		
-		lastvy = box.velocity.y = vy;
+		if (lastvy != vy)
+			lastvy = vy;
+		setState("jump.direction", vy > 0 ? new JsonValue(1) : (vy == 0 ? new JsonValue(0) : new JsonValue(-1)));
 		setJumpState();
+	}
+	
+	@Override
+	public void move(LevelWorld world, Box box, CharacterEntry entry) {
+		if (lastvy != 0)
+			System.out.println(lastvy);
+		box.setVelocityY(lastvy);
 	}
 	
 }

@@ -87,7 +87,7 @@ public class MegamanSpriteModule extends BaseSpriteModule {
 		if (!onTheGround) {
 			motion = "jump";
 			String s1 = (box.velocity.y >= 0) ? "jump" : "drop";
-			String s2 = (box.velocity.y >= 0) ? "jump_attack" : "drop_attack";
+			String s2 = (getInt("jump.direction", 0) >= 0) ? "jump_attack" : "drop_attack";
 			
 			if (attackRemain > 0) {
 				if (s1.equals(select.getState())) {
