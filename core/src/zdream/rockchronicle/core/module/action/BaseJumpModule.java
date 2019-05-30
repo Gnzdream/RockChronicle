@@ -5,6 +5,7 @@ import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
+import zdream.rockchronicle.core.move.IMovable;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
@@ -19,7 +20,7 @@ import zdream.rockchronicle.platform.world.LevelWorld;
  *   2019-05-07 (create)
  *   2019-05-20 (last modified)
  */
-public class BaseJumpModule extends JumpModule {
+public class BaseJumpModule extends JumpModule implements IMovable {
 	
 	public float impulse; // param.impulse
 	public float decay; // param.decay
@@ -36,7 +37,7 @@ public class BaseJumpModule extends JumpModule {
 	public boolean jumpEnd;
 	
 	/**
-	 * 本帧跳跃键是否按下
+	 * 本帧跳跃键是否在按下状态
 	 */
 	public boolean inJump;
 	
@@ -61,83 +62,15 @@ public class BaseJumpModule extends JumpModule {
 		this.maxDropVelocity = oparam.getFloat("maxDropVelocity") * LevelWorld.TIME_STEP;
 		
 		parent.addSubscribe("ctrl_motion", this);
+		parent.getBoxModule().addMovable(this, 10);
 		setJumpParam();
 	}
 	
 	@Override
 	public void willDestroy() {
 		parent.removeSubscribe("ctrl_motion", this);
+		parent.getBoxModule().removeMovable(this);
 		super.willDestroy();
-	}
-	
-	@Override
-	public void determine(LevelWorld world, int index, boolean hasNext) {
-		super.determine(world, index, hasNext);
-		
-		// 攀爬 (楼梯) 状态、悬挂状态、附着状态
-		// TODO 如果在以上时, 下面的一切都不需要判断.
-		
-		boolean climbing = getBoolean("climb.climbing", false);
-		if (climbing) {
-			return;
-		}
-		
-		boolean bottomStop = getBoolean("motion.bottomStop", false);
-		boolean topStop = getBoolean("motion.topStop", false);
-		boolean stiffness = getBoolean("state.stiffness", false);
-		
-		Box box = parent.getBoxModule().getBox();
-		float ovy = 
-//				parent.getFloat(new String[] {"box", "velocity", "y"}, 0);
-				box.velocity.y;
-		float gravityScale = box.gravityScale;
-		
-		float vy = ovy;
-		boolean onTheGround = getBoolean("state.onTheGround", false);
-		
-		if (gravityScale > 0) {
-			if (onTheGround) {
-				vy = 0;
-				if (jumpStart && !stiffness) {
-					// 执行跳跃
-					vy = (box.gravityDown) ? impulse : -impulse;
-				}
-			}
-		}
-		
-		// 下面判断落体运动
-		if (!onTheGround && gravityScale != 0) {
-			float delta = decay * gravityScale;
-			float maxDropVelocity = this.maxDropVelocity * gravityScale;
-			if (box.gravityDown) {
-				if (vy > 0 && (jumpEnd || topStop || stiffness)) {
-					delta = 4 * decay;
-					if (vy >= -delta) {
-						delta = -vy;
-					}
-				}
-				vy += delta;
-				if (vy < maxDropVelocity) {
-					vy = maxDropVelocity;
-				}
-			} else {
-				if (vy < 0 && (jumpEnd || bottomStop || stiffness)) {
-					delta = 4 * decay;
-					if (vy <= delta) {
-						delta = vy;
-					}
-				}
-				vy -= delta;
-				maxDropVelocity *= -1;
-				if (vy > maxDropVelocity) {
-					vy = maxDropVelocity;
-				}
-			}
-		}
-		
-		box.velocity.y = vy;
-		setJumpState();
-//		parent.setJson("box", BoxSetter.newInstance().setVelocityY(vy).get());
 	}
 	
 	@Override
@@ -186,6 +119,77 @@ public class BaseJumpModule extends JumpModule {
 		
 		jumpEnd = (!inJump && jumpChange);
 		jumpStart = (inJump && jumpChange);
+		setJumpState();
+	}
+	
+	/*
+	 * 暂时数据
+	 */
+	float lastvy = 0;
+
+	@Override
+	public void move(LevelWorld world, Box box, CharacterEntry entry) {
+		
+		// 攀爬 (楼梯) 状态、悬挂状态、附着状态
+		// TODO 如果在以上状态时, 下面的一切都不需要判断.
+		
+		boolean climbing = getBoolean("climb.climbing", false);
+		if (climbing) {
+			lastvy = 0;
+			return;
+		}
+		
+		boolean bottomStop = getBoolean("motion.bottomStop", false);
+		boolean topStop = getBoolean("motion.topStop", false);
+		boolean stiffness = getBoolean("state.stiffness", false);
+		
+		float ovy = lastvy;
+		float gravityScale = box.gravityScale;
+		
+		float vy = ovy;
+		boolean onTheGround = getBoolean("state.onTheGround", false);
+		
+		if (gravityScale > 0) {
+			if (onTheGround) {
+				vy = 0;
+				if (jumpStart && !stiffness) {
+					// 执行跳跃
+					vy = (box.gravityDown) ? impulse : -impulse;
+				}
+			}
+		}
+		
+		// 下面判断落体运动
+		if (!onTheGround && gravityScale != 0) {
+			float delta = decay * gravityScale;
+			float maxDropVelocity = this.maxDropVelocity * gravityScale;
+			if (box.gravityDown) {
+				if (vy > 0 && (jumpEnd || topStop || stiffness)) {
+					delta = 4 * decay;
+					if (vy >= -delta) {
+						delta = -vy;
+					}
+				}
+				vy += delta;
+				if (vy < maxDropVelocity) {
+					vy = maxDropVelocity;
+				}
+			} else {
+				if (vy < 0 && (jumpEnd || bottomStop || stiffness)) {
+					delta = 4 * decay;
+					if (vy <= delta) {
+						delta = vy;
+					}
+				}
+				vy -= delta;
+				maxDropVelocity *= -1;
+				if (vy > maxDropVelocity) {
+					vy = maxDropVelocity;
+				}
+			}
+		}
+		
+		lastvy = box.velocity.y = vy;
 		setJumpState();
 	}
 	

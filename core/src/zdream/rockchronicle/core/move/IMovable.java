@@ -1,5 +1,6 @@
 package zdream.rockchronicle.core.move;
 
+import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
@@ -17,9 +18,7 @@ public interface IMovable {
 	
 	/**
 	 * 为 box 执行相应的移动计划
-	 * @param world
-	 * @param box
 	 */
-	public void move(LevelWorld world, Box box);
+	public void move(LevelWorld world, Box box, CharacterEntry entry);
 
 }

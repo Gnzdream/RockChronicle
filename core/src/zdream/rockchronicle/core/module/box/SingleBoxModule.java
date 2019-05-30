@@ -149,12 +149,14 @@ public class SingleBoxModule extends BoxModule {
 		
 		// 执行移动实例
 		for (int i = 0; i < movables.size; i++) {
-			movables.get(i).movable.move(world, box);
+			movables.get(i).movable.move(world, box, parent);
 		}
 		
 		// 处理移动位置
 		world.execVerticalMotion(box);
 		world.execHorizontalMotion(box);
+		box.velocity.x = 0;
+		box.velocity.y = 0;
 	}
 	
 	/* **********

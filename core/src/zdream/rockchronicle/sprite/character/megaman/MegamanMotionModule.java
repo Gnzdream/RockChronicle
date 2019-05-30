@@ -4,14 +4,16 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.JsonValue;
 
+import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.core.module.motion.TerrainMotionModule;
+import zdream.rockchronicle.core.move.IMovable;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.body.BoxOccupation;
 import zdream.rockchronicle.platform.region.Terrains;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
-public class MegamanMotionModule extends TerrainMotionModule {
+public class MegamanMotionModule extends TerrainMotionModule implements IMovable {
 	
 	MegamanInLevel parent;
 	
@@ -114,12 +116,11 @@ public class MegamanMotionModule extends TerrainMotionModule {
 		
 		// 添加事件监听
 		parent.addSubscribe("ctrl_axis", this);
+		parent.getBoxModule().addMovable(this, 0);
 	}
-	
+
 	@Override
-	public void determine(LevelWorld world, int index, boolean hasNext) {
-		super.determine(world, index, hasNext);
-		
+	public void move(LevelWorld world, Box box, CharacterEntry entry) {
 		boolean climbing = getBoolean("climb.climbing", false);
 		if (!climbing) { // 如果在攀爬状态, 所有的速度修改都不需要了
 			// situation
@@ -141,7 +142,6 @@ public class MegamanMotionModule extends TerrainMotionModule {
 			setState("state.motion", new JsonValue(motion));
 			
 			// 2. 修改速度
-			Box box = getSingleBox();
 			Vector2 vel = box.velocity; // 速度
 			float vx = vel.x;
 			
