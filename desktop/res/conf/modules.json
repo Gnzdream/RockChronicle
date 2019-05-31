@@ -8,6 +8,10 @@
 		{
 			"name":"linear",
 			"class":"zdream.rockchronicle.core.module.motion.LinearMotionModule"
+		},
+		{
+			"name":"parabola",
+			"class":"zdream.rockchronicle.core.module.motion.ParabolaMotionModule"
 		}
 	],
 	"box":
