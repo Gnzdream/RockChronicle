@@ -1,47 +1,8 @@
 {
 	"image":"mm2shotman.png",
-	"default":"R_A",
+	"default":"B_A",
 	"select":
 	[
-		{
-			"state":"R_A",
-			"sequence":
-			[
-				"R_A1"
-			]
-		},
-		{
-			"state":"R_C",
-			"sequence":
-			[
-				"R_C1"
-			]
-		},
-		{
-			"state":"R_A_to_C",
-			"sequence":
-			[
-				"R_A2",
-				"R_B1",
-				"R_B2",
-				"R_C1",
-				"R_C2"
-			],
-			"step":0.1
-		},
-		{
-			"state":"R_C_to_A",
-			"sequence":
-			[
-				"R_C1",
-				"R_B2",
-				"R_B1",
-				"R_A2",
-				"R_A1"
-			],
-			"step":0.1
-		},
-
 		{
 			"state":"B_A",
 			"sequence":
@@ -83,61 +44,6 @@
 	],
 	"textures":
 	[
-		{
-			"name":"R_A1",
-			"x":2,
-			"y":8,
-			"w":46,
-			"h":35,
-			"offx":-23,
-			"offy":0
-		},
-		{
-			"name":"R_A2",
-			"x":52,
-			"y":7,
-			"w":46,
-			"h":35,
-			"offx":-23,
-			"offy":0
-		},
-		{
-			"name":"R_B1",
-			"x":102,
-			"y":8,
-			"w":46,
-			"h":35,
-			"offx":-23,
-			"offy":0
-		},
-		{
-			"name":"R_B2",
-			"x":152,
-			"y":6,
-			"w":46,
-			"h":37,
-			"offx":-23,
-			"offy":0
-		},
-		{
-			"name":"R_C1",
-			"x":202,
-			"y":2,
-			"w":43,
-			"h":41,
-			"offx":-23,
-			"offy":0
-		},
-		{
-			"name":"R_C2",
-			"x":252,
-			"y":2,
-			"w":43,
-			"h":41,
-			"offx":-23,
-			"offy":0
-		},
-
 		{
 			"name":"B_A1",
 			"x":2,
