@@ -118,99 +118,110 @@ public class MegamanMotionModule extends TerrainMotionModule implements IMovable
 		parent.addSubscribe("ctrl_axis", this);
 		parent.getBoxModule().addMovable(this, 0);
 	}
+	
+	@Override
+	public void determine(LevelWorld world, int index, boolean hasNext) {
+		super.determine(world, index, hasNext);
+		
+		Box box = getSingleBox();
+		
+		boolean onTheGround = onTheGround(world, box, box.bottomStop, box.topStop);
+		setSituation("state.onTheGround", new JsonValue(onTheGround));
+	}
 
 	@Override
 	public void move(LevelWorld world, Box box, CharacterEntry entry) {
 		boolean climbing = getBoolean("climb.climbing", false);
-		if (!climbing) { // 如果在攀爬状态, 所有的速度修改都不需要了
-			// situation
-			boolean stiffness = getBoolean("state.stiffness", false);
-			if (!stiffness) { // 受伤时不转向
-				if (left) {
-					setSituation("state.orientation", new JsonValue(false));
-				} else if (right) {
-					setSituation("state.orientation", new JsonValue(true));
-				}
+		if (climbing) { // 如果在攀爬状态, 所有的速度修改都不需要了
+			return;
+		}
+		
+		// situation
+		boolean stiffness = getBoolean("state.stiffness", false);
+		if (!stiffness) { // 受伤时不转向
+			if (left) {
+				setSituation("state.orientation", new JsonValue(false));
+			} else if (right) {
+				setSituation("state.orientation", new JsonValue(true));
 			}
-			
-			// state
-			String motion = "stop";
-			if (left || right) {
-				motion = "walk";
-			}
-			
-			setState("state.motion", new JsonValue(motion));
-			
-			// 2. 修改速度
-			Vector2 vel = box.velocity; // 速度
-			float vx = vel.x;
-			
-			// 3. 查看是否落地, 并将数据提交至 state 中
-			boolean onTheGround = onTheGround(world, box, box.bottomStop, box.topStop);
-			setSituation("state.onTheGround", new JsonValue(onTheGround));
-			
-			// 最终速度 Y, 需要等待 jump 来改
-			
-			// 4. 执行左右移动
-			boolean orientation = getBoolean("state.orientation", true);
-			if (stiffness) {
-				// 在击退 / 硬直状态下
-				if (stopSlide) {
-					if (orientation) {
-						vx = -parryVel;
-					} else {
-						vx = parryVel;
-					}
+		}
+		
+		// state
+		String motion = "stop";
+		if (left || right) {
+			motion = "walk";
+		}
+		
+		setState("state.motion", new JsonValue(motion));
+		
+		// 2. 修改速度
+		Vector2 vel = box.velocity; // 速度
+		float vx = vel.x;
+		
+		// 3. 查看是否落地, 并将数据提交至 state 中
+		boolean onTheGround = getBoolean("state.onTheGround", false);
+		
+		// 最终速度 Y, 需要等待 jump 来改
+		
+		// 4. 执行左右移动
+		boolean orientation = getBoolean("state.orientation", true);
+		if (stiffness) {
+			// 在击退 / 硬直状态下
+			if (stopSlide) {
+				if (orientation) {
+					vx = -parryVel;
 				} else {
-					if (orientation) {
-						vx = calcVelocity(vx, -horizontalVelDelta, -parryVel);
-					} else {
-						vx = calcVelocity(vx, horizontalVelDelta, parryVel);
-					}
+					vx = parryVel;
 				}
 			} else {
-				// 正常情况下, 每秒增加 horizontalVelDelta 的水平速度, horizontalVelMax 为最值.
-				if (left) {
-					orientation = false;
-					if (onTheGround) { // 落地, 向左走
-						if (vx > 0 && stopSlide || box.leftStop) {
-							vx = 0;
-						} else {
-							vx = calcVelocity(lastvx, -horizontalVelDelta, -horizontalVelMax);
-						}
-					} else { // 空中
-						vx = -horizontalVelMax;
-					}
-				} else if (right) {
-					orientation = true;
-					if (onTheGround) { // 落地, 向右走
-						if (vx < 0 && stopSlide || box.rightStop) {
-							vx = 0;
-						} else {
-							vx = calcVelocity(lastvx, horizontalVelDelta, horizontalVelMax);
-						}
-					} else { // 空中
-						vx = horizontalVelMax;
-					}
+				if (orientation) {
+					vx = calcVelocity(vx, -horizontalVelDelta, -parryVel);
 				} else {
-					if (stopSlide) {
-						vx = 0; // 不在打滑状态下, 立即停住
+					vx = calcVelocity(vx, horizontalVelDelta, parryVel);
+				}
+			}
+		} else {
+			// 正常情况下, 每秒增加 horizontalVelDelta 的水平速度, horizontalVelMax 为最值.
+			if (left) {
+				orientation = false;
+				if (onTheGround) { // 落地, 向左走
+					if (vx > 0 && stopSlide || box.leftStop) {
+						vx = 0;
 					} else {
-						if (lastvx > 0) {
-							vx = calcVelocity(lastvx, -horizontalVelDelta, 0);
-						} else if (lastvx < 0) {
-							vx = calcVelocity(lastvx, horizontalVelDelta, 0);
-						} else {
-							vx = 0;
-						}
+						vx = calcVelocity(lastvx, -horizontalVelDelta, -horizontalVelMax);
+					}
+				} else { // 空中
+					vx = -horizontalVelMax;
+				}
+			} else if (right) {
+				orientation = true;
+				if (onTheGround) { // 落地, 向右走
+					if (vx < 0 && stopSlide || box.rightStop) {
+						vx = 0;
+					} else {
+						vx = calcVelocity(lastvx, horizontalVelDelta, horizontalVelMax);
+					}
+				} else { // 空中
+					vx = horizontalVelMax;
+				}
+			} else {
+				if (stopSlide) {
+					vx = 0; // 不在打滑状态下, 立即停住
+				} else {
+					if (lastvx > 0) {
+						vx = calcVelocity(lastvx, -horizontalVelDelta, 0);
+					} else if (lastvx < 0) {
+						vx = calcVelocity(lastvx, horizontalVelDelta, 0);
+					} else {
+						vx = 0;
 					}
 				}
 			}
-			
-			// 设置的最终速度 X
-			box.setVelocityX(vx);
-			lastvx = vx;
 		}
+		
+		// 设置的最终速度 X
+		box.setVelocityX(vx);
+		lastvx = vx;
 	}
 	
 	/**
