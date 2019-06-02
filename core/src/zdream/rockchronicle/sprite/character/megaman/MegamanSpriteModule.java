@@ -1,7 +1,6 @@
 package zdream.rockchronicle.sprite.character.megaman;
 
 import zdream.rockchronicle.core.module.sprite.BaseSpriteModule;
-import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
 public class MegamanSpriteModule extends BaseSpriteModule {
@@ -80,14 +79,15 @@ public class MegamanSpriteModule extends BaseSpriteModule {
 			return;
 		}
 		
-		Box box = parent.getBoxModule().getBox();
+//		Box box = parent.getBoxModule().getBox();
 		
 		// 是否在跳跃
 		boolean onTheGround = getBoolean("state.onTheGround", true);
 		if (!onTheGround) {
 			motion = "jump";
-			String s1 = (box.velocity.y >= 0) ? "jump" : "drop";
-			String s2 = (getInt("jump.direction", 0) >= 0) ? "jump_attack" : "drop_attack";
+			boolean direction = getInt("jump.direction", 0) >= 0;
+			String s1 = (direction) ? "jump" : "drop";
+			String s2 = (direction) ? "jump_attack" : "drop_attack";
 			
 			if (attackRemain > 0) {
 				if (s1.equals(select.getState())) {

@@ -204,8 +204,6 @@ public class BaseJumpModule extends JumpModule implements IMovable {
 			return;
 		}
 		
-		if (lastvy != 0)
-			System.out.println(lastvy);
 		box.setVelocityY(lastvy);
 	}
 	

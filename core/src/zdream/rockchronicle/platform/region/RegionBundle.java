@@ -36,6 +36,7 @@ class RegionBundle {
 
 	Region region;
 	ObjectMap<String, JsonValue> fields = new ObjectMap<>();
+	ObjectMap<String, JsonValue> foes = new ObjectMap<>();
 	
 	/*
 	 * 辅助部分

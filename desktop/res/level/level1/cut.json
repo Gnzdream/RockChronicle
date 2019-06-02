@@ -19,6 +19,16 @@
 				}
 			}
 		}
+	],
+	"foes":
+	[
+		{
+			"key" : "E-1",
+			"param":
+			{
+				"name" : "mm2shotman"
+			}
+		}
 	]
 },
 {

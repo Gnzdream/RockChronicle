@@ -13,7 +13,7 @@ import com.badlogic.gdx.utils.JsonValue;
  *   2019-05-12 (create)
  *   2019-05-12 (last modified)
  */
-public class Field {
+public class FieldDef {
 
 	/**
 	 * <p>所属房间.

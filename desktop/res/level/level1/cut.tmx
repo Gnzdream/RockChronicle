@@ -1,34 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.2" tiledversion="2018.11.13" orientation="orthogonal" renderorder="right-up" width="52" height="16" tilewidth="24" tileheight="24" infinite="0" nextlayerid="6" nextobjectid="7">
+<map version="1.0" tiledversion="1.1.3" orientation="orthogonal" renderorder="right-up" width="52" height="16" tilewidth="24" tileheight="24" infinite="0" nextobjectid="8">
  <tileset firstgid="1" source="mm1cuttiles.tsx"/>
  <tileset firstgid="201" name="symbol" tilewidth="24" tileheight="24" tilecount="100" columns="10">
   <image source="../symbol/symbol.png" width="240" height="240"/>
  </tileset>
- <layer id="1" name="back" width="52" height="16" locked="1">
+ <layer name="back" width="52" height="16" locked="1">
   <data encoding="base64" compression="gzip">
    H4sIAAAAAAAACu3PsQkAQAgEQZuw/1aNTMxvMdiD5zFapotZQ51tpR85PXrI6dFDTo+e20vfhCf90x5qev56qBbVGWtlr7gADQAA
   </data>
  </layer>
- <objectgroup id="2" name="Fields" locked="1">
+ <objectgroup name="Fields" locked="1">
   <object id="1" name="field01" x="144" y="24" width="408" height="216"/>
  </objectgroup>
- <layer id="3" name="Terrain" width="52" height="16">
+ <layer name="Terrain" width="52" height="16">
   <data encoding="base64" compression="gzip">
    H4sIAAAAAAAACu2W4QqAIAyELfBXvUTv/5IhMYjhuTN1RnSwHyuc99mMhfCL1XKLDYRW7lmp7j28JDyj9/DS13iQcn1n5UizeKz7w67XauVZG9f3Vq/v8xau3v1Wy3U07ve0X2vFctXyePlHsrgsHvHPcs/+X2uf6PwZHmY+SO9H3fUYLp9M/1g8uXlHvKf6+6Bczj8SPtGsp/nR/DaSQ3LtB/GUWHSNWfOop05TcrWJAA0AAA==
   </data>
  </layer>
- <layer id="4" name="Symbol" width="52" height="16">
+ <layer name="Symbol" width="52" height="16">
   <data encoding="base64" compression="gzip">
    H4sIAAAAAAAACmNgGH7gJI3NP0UnO0bBKBgFo2AUjIJRMAqoBU4PtANGGLhMY/Ov0MmO4QgA82sl/gANAAA=
   </data>
  </layer>
- <objectgroup id="5" name="Points">
+ <objectgroup name="Points">
   <object id="5" name="1-A" x="648" y="360">
    <properties>
     <property name="destPoint" value="2-A"/>
     <property name="destRegion" value="mm1cut-2"/>
     <property name="direction" value="bottom"/>
     <property name="type" value="connection"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="7" name="E-1" x="1032" y="216">
+   <properties>
+    <property name="def" value="E-1"/>
+    <property name="type" value="foe"/>
    </properties>
    <point/>
   </object>

@@ -127,18 +127,11 @@ public class MegamanMotionModule extends TerrainMotionModule implements IMovable
 		
 		boolean onTheGround = onTheGround(world, box, box.bottomStop, box.topStop);
 		setSituation("state.onTheGround", new JsonValue(onTheGround));
-	}
-
-	@Override
-	public void move(LevelWorld world, Box box, CharacterEntry entry) {
-		boolean climbing = getBoolean("climb.climbing", false);
-		if (climbing) { // 如果在攀爬状态, 所有的速度修改都不需要了
-			return;
-		}
 		
-		// situation
 		boolean stiffness = getBoolean("state.stiffness", false);
-		if (!stiffness) { // 受伤时不转向
+		if (stiffness) { // 受伤时不转向
+			return;
+		} else {
 			if (left) {
 				setSituation("state.orientation", new JsonValue(false));
 			} else if (right) {
@@ -151,10 +144,19 @@ public class MegamanMotionModule extends TerrainMotionModule implements IMovable
 		if (left || right) {
 			motion = "walk";
 		}
-		
 		setState("state.motion", new JsonValue(motion));
 		
+	}
+
+	@Override
+	public void move(LevelWorld world, Box box, CharacterEntry entry) {
+		boolean climbing = getBoolean("climb.climbing", false);
+		if (climbing) { // 1. 如果在攀爬状态, 所有的速度修改都不需要了
+			return;
+		}
+		
 		// 2. 修改速度
+		boolean stiffness = getBoolean("state.stiffness", false);
 		Vector2 vel = box.velocity; // 速度
 		float vx = vel.x;
 		
@@ -183,23 +185,27 @@ public class MegamanMotionModule extends TerrainMotionModule implements IMovable
 		} else {
 			// 正常情况下, 每秒增加 horizontalVelDelta 的水平速度, horizontalVelMax 为最值.
 			if (left) {
-				orientation = false;
 				if (onTheGround) { // 落地, 向左走
-					if (vx > 0 && stopSlide || box.leftStop) {
+					if (lastvx > 0 && stopSlide || box.leftStop) {
 						vx = 0;
 					} else {
 						vx = calcVelocity(lastvx, -horizontalVelDelta, -horizontalVelMax);
+						if (vx > 0) {
+							System.out.println("error");
+						}
 					}
 				} else { // 空中
 					vx = -horizontalVelMax;
 				}
 			} else if (right) {
-				orientation = true;
 				if (onTheGround) { // 落地, 向右走
-					if (vx < 0 && stopSlide || box.rightStop) {
+					if (lastvx < 0 && stopSlide || box.rightStop) {
 						vx = 0;
 					} else {
 						vx = calcVelocity(lastvx, horizontalVelDelta, horizontalVelMax);
+						if (vx < 0) {
+							System.out.println("error");
+						}
 					}
 				} else { // 空中
 					vx = horizontalVelMax;

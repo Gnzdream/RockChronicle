@@ -284,6 +284,16 @@ public class RegionBuilder {
 				bundle.fields.put(key, param);
 			}
 		}
+		
+		// foes
+		JsonValue afoes = json.get("foes");
+		if (afoes != null && afoes.size > 0) {
+			for (JsonValue ofieldPair = afoes.child; ofieldPair != null; ofieldPair = ofieldPair.next) {
+				String key = ofieldPair.getString("key");
+				JsonValue param = ofieldPair.get("param");
+				bundle.foes.put(key, param);
+			}
+		}
 	}
 	
 	/**
@@ -594,7 +604,7 @@ public class RegionBuilder {
 				for (int j = 0; j < rooms.length; j++) {
 					Room room = rooms[j];
 					if (room.overlaps(x, y, w, h)) {
-						Field f = createFieldForRoom(room, x, y, w, h, param);
+						FieldDef f = createFieldForRoom(room, x, y, w, h, param);
 						room.fields.add(f);
 					}
 				}
@@ -803,8 +813,8 @@ public class RegionBuilder {
 		}
 	}
 	
-	private Field createFieldForRoom(Room room, float x, float y, float w, float h, JsonValue param) {
-		Field f = new Field();
+	private FieldDef createFieldForRoom(Room room, float x, float y, float w, float h, JsonValue param) {
+		FieldDef f = new FieldDef();
 		
 		f.param = JsonUtils.clone(param);
 		f.room = room.index;
@@ -833,7 +843,7 @@ public class RegionBuilder {
 		obox = f.param.get("box");
 		if (obox == null) {
 			obox = new JsonValue(ValueType.object);
-			f.param.addChild(obox);
+			f.param.addChild("box", obox);
 		}
 		JsonValue orect = new JsonValue(ValueType.object);
 		obox.addChild("rect", orect);
@@ -845,8 +855,32 @@ public class RegionBuilder {
 		return f;
 	}
 	
+	private FoeDef createFoeForRoom(Room room, float x, float y, JsonValue param) {
+		FoeDef p = new FoeDef();
+		
+		p.name = param.get("name").asString();
+		p.param = JsonUtils.clone(param);
+		p.x = x - room.offsetx;
+		p.y = y - room.offsety;
+		
+		// 利用位置数据改写 rect 数值
+		JsonValue obox = p.param.get("box");
+		if (obox == null) {
+			obox = new JsonValue(ValueType.object);
+			p.param.addChild("box", obox);
+		}
+		JsonValue oanchor = new JsonValue(ValueType.object);
+		obox.addChild("anchor", oanchor);
+		oanchor.addChild("x", new JsonValue(p.x));
+		oanchor.addChild("y", new JsonValue(p.y));
+		
+		return p;
+	}
+	
 	/**
-	 * 扫描 tmx 的点位的参数, 将数据整合成 {@link RegionPoint} 添加到 {@link Region#points} 中
+	 * 扫描 tmx 的点位的参数, 
+	 * 1. 如果是特殊点位, 将数据整合成 {@link RegionPoint} 添加到 {@link Region#points} 中;
+	 * 2. 如果是怪物生成点位, 将数据整合成 {@link FoeDef} 添加到 {@link Room#foes} 中;
 	 * @param bundle
 	 */
 	private void initPoint(RegionBundle bundle) {
@@ -866,25 +900,36 @@ public class RegionBuilder {
 			}
 			RectangleMapObject rp = (RectangleMapObject) obj;
 			Rectangle rect = rp.getRectangle();
-			
-			int x = (int) rect.x / Config.INSTANCE.blockWidth;
-			int y = (int) rect.y / Config.INSTANCE.blockHeight;
-			RegionPoint p = new RegionPoint();
-			p.x = x;
-			p.y = y;
-			p.name = rp.getName();
-			
-			MapProperties prop = rp.getProperties();
-			p.type = prop.get("type", "normal", String.class);
-			bundle.region.points.add(p);
-			
-			switch (p.type) {
-			case "connection":
-				createConnectionProperties(bundle, p, rp);
-				break;
 
-			default:
-				break;
+			MapProperties prop = rp.getProperties();
+			String type = prop.get("type", "normal", String.class);
+			
+			switch (type) {
+			// 敌人点位
+			case "foe": {
+				String def = prop.get("def", String.class);
+				
+				float x = rect.x / Config.INSTANCE.blockWidth;
+				float y = rect.y / Config.INSTANCE.blockHeight;
+				
+				Room room = bundle.region.of(x, y);
+				FoeDef p = createFoeForRoom(room, x, y, bundle.foes.get(def));
+				room.foes.add(p);
+			} break;
+			
+			// 连接点位
+			case "connection": default: {
+				int x = (int) rect.x / Config.INSTANCE.blockWidth;
+				int y = (int) rect.y / Config.INSTANCE.blockHeight;
+				RegionPoint p = new RegionPoint();
+				p.x = x;
+				p.y = y;
+				p.name = rp.getName();
+				p.type = type;
+				bundle.region.points.add(p);
+				if ("connection".equals(type))
+					createConnectionProperties(bundle, p, rp);
+			} break;
 			}
 		}
 		

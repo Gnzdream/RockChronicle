@@ -13,7 +13,8 @@ import zdream.rockchronicle.core.character.CharacterBuilder;
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.input.IInputBindable;
 import zdream.rockchronicle.platform.region.ConnectionProperties;
-import zdream.rockchronicle.platform.region.Field;
+import zdream.rockchronicle.platform.region.FieldDef;
+import zdream.rockchronicle.platform.region.FoeDef;
 import zdream.rockchronicle.platform.region.Gate;
 import zdream.rockchronicle.platform.region.Region;
 import zdream.rockchronicle.platform.region.RegionBuilder;
@@ -115,11 +116,20 @@ public class GameRuntime {
 			}
 		}
 		
-		// 将场放入世界
 		Room r = curRegion.rooms[this.room];
-		final int length = r.fields.size;
+		// 将场放入世界
+		int length = r.fields.size;
 		for (int i = 0; i < length; i++) {
-			Field f = r.fields.get(i);
+			FieldDef f = r.fields.get(i);
+			
+			CharacterEntry entry = characterBuilder.create(f.name, f.param);
+			addEntry(entry);
+		}
+		
+		// 将怪放入世界
+		length = r.foes.size;
+		for (int i = 0; i < length; i++) {
+			FoeDef f = r.foes.get(i);
 			
 			CharacterEntry entry = characterBuilder.create(f.name, f.param);
 			addEntry(entry);

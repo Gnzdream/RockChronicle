@@ -54,9 +54,14 @@ public class Room {
 	public Array<Gate> gates = new Array<>(4);
 	
 	/**
+	 * 所有敌人怪物点位
+	 */
+	public Array<FoeDef> foes = new Array<>();
+	
+	/**
 	 * 所有场的合集
 	 */
-	public final Array<Field> fields = new Array<>(4);
+	public final Array<FieldDef> fields = new Array<>(4);
 	
 	/**
 	 * 查看一个方形是否在该房间范围内, 或者和该房间的区域重合. 不考虑碰边的情况

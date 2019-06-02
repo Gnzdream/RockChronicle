@@ -383,8 +383,9 @@ public class ClimbModule extends AbstractModule implements IMovable {
 	
 	private void recvCtrlMotion(CharacterEvent event) {
 		boolean jumpChange = event.value.getBoolean("jumpChange");
+		boolean jump = event.value.getBoolean("jump");
 		
-		if (jumpChange) {
+		if (jumpChange && jump) {
 			climbing = 0;
 			parent.getBoxModule().setNextPattern("normal");
 			setClimbState();

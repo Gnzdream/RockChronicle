@@ -41,7 +41,7 @@ public class BaseStateModule extends StateModule {
 	/**
 	 * 无敌默认持续时间 (步), 长期
 	 */
-	public int immuneDuration;
+	public int immuneDuration = 6;
 	
 	/**
 	 * <p>行动状态, 状态项, 包含但不限于: "walk", "stop", 临时
@@ -82,7 +82,11 @@ public class BaseStateModule extends StateModule {
 		}
 		
 		stiffnessDuration = (int) (oparam.getFloat("stiffness", 0) * LevelWorld.STEPS_PER_SECOND);
-		immuneDuration = (int) (oparam.getFloat("immune", 0) * LevelWorld.STEPS_PER_SECOND);
+		
+		float fImmune = oparam.getFloat("immune", -1);
+		if (fImmune >= 0) {
+			immuneDuration = (int) (fImmune * LevelWorld.STEPS_PER_SECOND);
+		}
 		
 		setSituation();
 	}

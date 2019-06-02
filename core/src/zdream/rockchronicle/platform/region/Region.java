@@ -73,6 +73,22 @@ public class Region {
 		}
 		return null;
 	}
+	
+	/**
+	 * 查看这个点在哪个房间中
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	public Room of(float x, float y) {
+		for (int i = 0; i < rooms.length; i++) {
+			Room r = rooms[i];
+			if (r.contain(x, y)) {
+				return r;
+			}
+		}
+		return null;
+	}
 
 	@Override
 	public int hashCode() {

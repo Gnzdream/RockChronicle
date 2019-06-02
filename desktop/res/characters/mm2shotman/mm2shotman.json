@@ -6,6 +6,7 @@
 	{
 		"box":"single",
 		"camp":"base",
+		"state":"base",
 		"sprite":"base",
 		"collision":"bullet",
 		"health":"base",
@@ -41,7 +42,7 @@
 	},
 	"textures":
 	[
-		"sprites/mm2shotman_sheet.json"
+		"sprites/mm2shotman_sheet_a.json"
 	],
 	"destroyParam":
 	{
