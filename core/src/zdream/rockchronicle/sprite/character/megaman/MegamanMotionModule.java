@@ -145,7 +145,6 @@ public class MegamanMotionModule extends TerrainMotionModule implements IMovable
 			motion = "walk";
 		}
 		setState("state.motion", new JsonValue(motion));
-		
 	}
 
 	@Override

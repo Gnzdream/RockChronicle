@@ -77,8 +77,8 @@ public class MegamanWeaponModule extends WeaponModule {
 			float x = (orientation) ? box.anchor.x + 1 : box.anchor.x - 1;
 			MMBuster buster = (MMBuster) RockChronicle.INSTANCE.runtime.characterBuilder.create("megaman_buster",
 					CharacterParameter.newInstance()
-						.setBoxAnchor(x, box.anchor.y + 0.85f)
-						.setMotionOrientation(orientation)
+						.setBoxAnchor(x, box.anchor.y + 0.75f)
+						.setStateOrientation(orientation)
 						.setMotionFlipX(!orientation)
 						.setCamp(getInt("camp.camp", 0))
 						.get());

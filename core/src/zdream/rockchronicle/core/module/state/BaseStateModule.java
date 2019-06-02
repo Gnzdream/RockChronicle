@@ -44,14 +44,6 @@ public class BaseStateModule extends StateModule {
 	public int immuneDuration = 6;
 	
 	/**
-	 * <p>行动状态, 状态项, 包含但不限于: "walk", "stop", 临时
-	 * <p>补充:
-	 * <li>攀爬状态: "climb", "climbTop1", "climbTop2"
-	 * </li>
-	 */
-	public String motion;
-	
-	/**
 	 * 是否朝右, 长期
 	 */
 	public boolean orientation = true;
@@ -96,7 +88,6 @@ public class BaseStateModule extends StateModule {
 	private void setBaseState() {
 		setState("state.stiffness", new JsonValue(stiffnessRemain));
 		setState("state.immune", new JsonValue(immuneRemain));
-		setState("state.motion", new JsonValue(motion));
 		setState("state.attacking", new JsonValue(attacking));
 	}
 	
@@ -123,7 +114,6 @@ public class BaseStateModule extends StateModule {
 	@Override
 	public void stepPassed() {
 		this.attacking = false;
-		this.motion = "stop";
 		
 		super.stepPassed();
 	}

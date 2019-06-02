@@ -27,6 +27,10 @@ public class ParabolaMotionModule extends MotionModule {
 	 * 横纵坐标的加速度 (每步的速度变化量). 配置项
 	 */
 	float ax, ay;
+	/**
+	 * 横坐标和纵坐标方向是否调转. 配置项
+	 */
+	boolean flipX, flipY;
 	
 	ParabolaMovement movement;
 
@@ -39,6 +43,10 @@ public class ParabolaMotionModule extends MotionModule {
 		super.init(file, value);
 		
 		JsonValue omotion = value.get("motion");
+		if (omotion != null) {
+			flipX = omotion.getBoolean("flipX", false);
+			flipY = omotion.getBoolean("flipY", false);
+		}
 		
 		// 初始速度
 		JsonValue ovel = omotion.get("velocity");
@@ -48,17 +56,17 @@ public class ParabolaMotionModule extends MotionModule {
 		}
 		
 		movement = new ParabolaMovement();
-		movement.vx = vx;
-		movement.vy = vy;
+		movement.vx = (flipX) ? -vx : vx;
+		movement.vy = (flipY) ? -vy : vy;
 		
 		JsonValue oacc = omotion.get("acceleration");
 		if (oacc != null) {
-			ax = ovel.getFloat("x", 0f) * TIME_STEP * TIME_STEP;
-			ay = ovel.getFloat("y", 0f) * TIME_STEP * TIME_STEP;
+			ax = oacc.getFloat("x", 0f) * TIME_STEP * TIME_STEP;
+			ay = oacc.getFloat("y", 0f) * TIME_STEP * TIME_STEP;
 		}
 		
-		movement.ax = ax;
-		movement.ay = ay;
+		movement.ax = (flipX) ? -ax : ax;
+		movement.ay = (flipY) ? -ay : ay;
 		
 		parent.getBoxModule().addMovable(movement, 0);
 	}

@@ -46,7 +46,6 @@ public class TextureSelect {
 		if (currentSeq != null && currentSeq.state.equals(state)) {
 			return;
 		}
-		
 		currentSeq = sheet.sequences.get(state);
 		this.current = 0;
 		if (currentSeq == null) {

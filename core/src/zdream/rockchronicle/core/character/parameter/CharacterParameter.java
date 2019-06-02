@@ -3,6 +3,8 @@ package zdream.rockchronicle.core.character.parameter;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
 
+import zdream.rockchronicle.utils.JsonUtils;
+
 /**
  * 角色初始化数据的创建工具
  * 
@@ -32,9 +34,19 @@ public class CharacterParameter implements IValueCreator<JsonValue> {
 		return this;
 	}
 	
-	public CharacterParameter setMotionOrientation(boolean orientation) {
+	public CharacterParameter setMotionVelocity(float x, float y) {
 		JsonValue current = value;
 		current = createIfNotExist(current, "motion");
+		current = createIfNotExist(current, "velocity");
+		
+		current.addChild("x", new JsonValue(x));
+		current.addChild("y", new JsonValue(y));
+		return this;
+	}
+	
+	public CharacterParameter setStateOrientation(boolean orientation) {
+		JsonValue current = value;
+		current = createIfNotExist(current, "state");
 		
 		current.addChild("orientation", new JsonValue(orientation));
 		return this;
@@ -62,6 +74,17 @@ public class CharacterParameter implements IValueCreator<JsonValue> {
 	public static CharacterParameter newInstance() {
 		CharacterParameter p = new CharacterParameter();
 		p.value = new JsonValue(ValueType.object);
+		return p;
+	}
+	
+	/**
+	 * @param param
+	 *   内部 param 会克隆一次
+	 * @return
+	 */
+	public static CharacterParameter newInstance(JsonValue param) {
+		CharacterParameter p = new CharacterParameter();
+		p.value = JsonUtils.clone(param);
 		return p;
 	}
 	

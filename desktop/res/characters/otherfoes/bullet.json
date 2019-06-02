@@ -1,0 +1,43 @@
+{
+	"name":"parabola_bullet",
+	"class":"zdream.rockchronicle.sprite.foes.base.BaseFoe",
+	"type":"bullet",
+	"modules":
+	{
+		"box":"single",
+		"camp":"base",
+		"collision":"bullet",
+		"sprite":"shape",
+		"motion":"parabola",
+		"destroy":"outside"
+	},
+	"box":
+	{
+		"inTerrain":false,
+		"rect":
+		{
+			"width":0.333334,
+			"height":0.333334,
+			"x":-0.166667,
+			"y":-0.166667
+		}
+		
+	},
+	"collision":
+	{
+		"damage":1,
+		"execute":"once"
+	},
+	"destroyParam":
+	{
+		"life":1,
+		"outsideDuration":0.1
+	},
+	"motion":
+	{
+		"acceleration":
+		{
+			"y":-67
+		}
+	}
+}

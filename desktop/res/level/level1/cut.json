@@ -32,6 +32,13 @@
 					"orientation" : false
 				}
 			}
+		},
+		{
+			"key" : "E-2",
+			"param":
+			{
+				"name" : "mm2shotman"
+			}
 		}
 	]
 },

@@ -53,11 +53,49 @@
 	},
 	"weapon":
 	{
-		"spawnPosition":
-		{
-			"x":0.666667,
-			"y":1
-		}
+		"weapons":
+		[
+			{
+				"name":"A",
+				"model":"parabola_bullet",
+				"spawnPosition":
+				{
+					"x":0.9,
+					"y":1
+				},
+				"param":
+				{
+					"motion":
+					{
+						"velocity":
+						{
+							"x":16,
+							"y":4
+						}
+					}
+				}
+			},
+			{
+				"name":"C",
+				"model":"parabola_bullet",
+				"spawnPosition":
+				{
+					"x":0.7,
+					"y":1.5
+				},
+				"param":
+				{
+					"motion":
+					{
+						"velocity":
+						{
+							"x":6,
+							"y":16
+						}
+					}
+				}
+			}
+		]
 	},
 	"control":
 	{
