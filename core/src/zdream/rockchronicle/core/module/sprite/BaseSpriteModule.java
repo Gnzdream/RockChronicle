@@ -4,6 +4,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
+import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.platform.world.LevelWorld;
 import zdream.rockchronicle.textures.TextureSelect;
 import zdream.rockchronicle.textures.TextureSheetEntry;
@@ -31,6 +32,9 @@ public class BaseSpriteModule extends SpriteModule {
 		super.init(file, value);
 		
 		select.setSheet(textures);
+		
+		// 监听事件
+		parent.addSubscribe("motion_select", this);
 	}
 	
 	public void setState(String stateName) {
@@ -58,6 +62,15 @@ public class BaseSpriteModule extends SpriteModule {
 		}
 		
 		return select.select();
+	}
+	
+	@Override
+	public void receiveEvent(CharacterEvent event) {
+		if ("motion_select".equals(event.name)) {
+			setState(event.value.getString("motion"));
+		}
+		
+		super.receiveEvent(event);
 	}
 
 }

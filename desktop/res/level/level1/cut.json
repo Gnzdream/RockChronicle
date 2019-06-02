@@ -26,7 +26,11 @@
 			"key" : "E-1",
 			"param":
 			{
-				"name" : "mm2shotman"
+				"name" : "mm2shotman",
+				"state" :
+				{
+					"orientation" : false
+				}
 			}
 		}
 	]

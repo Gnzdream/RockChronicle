@@ -121,6 +121,11 @@ public class SingleBoxModule extends BoxModule {
 			box.box.y = pattern.y;
 		}
 	}
+	
+	@Override
+	public String description() {
+		return "single";
+	}
 
 	@Override
 	public void createBody() {

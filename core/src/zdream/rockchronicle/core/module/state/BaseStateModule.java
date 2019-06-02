@@ -76,8 +76,10 @@ public class BaseStateModule extends StateModule {
 		if (ostate == null) {
 			return;
 		}
+		orientation = ostate.getBoolean("orientation", true);
 		JsonValue oparam = ostate.get("param");
 		if (oparam == null) {
+			setSituation();
 			return;
 		}
 		
@@ -101,7 +103,7 @@ public class BaseStateModule extends StateModule {
 	private void setSituation() {
 		setSituation("state.param.stiffness", new JsonValue(stiffnessDuration));
 		setSituation("state.param.immune", new JsonValue(immuneDuration));
-		setSituation("state.param.orientation", new JsonValue(orientation));
+		setSituation("state.orientation", new JsonValue(orientation));
 	}
 	
 	@Override

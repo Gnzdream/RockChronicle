@@ -111,5 +111,22 @@ public abstract class AbstractModule {
 	public void receiveEvent(CharacterEvent event) {
 		
 	}
+	
+	/* **********
+	 *   其它   *
+	 ********** */
+	
+	public String description() {
+		return null;
+	}
+	
+	@Override
+	public String toString() {
+		String desc = description();
+		if (desc != null) {
+			return String.format("{M:%s-%s}", name(), desc);
+		}
+		return String.format("{M:%s}", name());
+	}
 
 }

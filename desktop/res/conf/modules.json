@@ -28,6 +28,13 @@
 			"class":"zdream.rockchronicle.core.module.action.ClimbModule"
 		}
 	],
+	"control":
+	[
+		{
+			"name":"simple",
+			"class":"zdream.rockchronicle.core.module.control.SimpleControlModule"
+		}
+	],
 	"jump":
 	[
 		{
@@ -80,6 +87,13 @@
 		{
 			"name":"base",
 			"class":"zdream.rockchronicle.core.module.state.BaseStateModule"
+		}
+	],
+	"weapon":
+	[
+		{
+			"name":"base",
+			"class":"zdream.rockchronicle.core.module.weapon.BaseWeaponModule"
 		}
 	],
 	"buff":
