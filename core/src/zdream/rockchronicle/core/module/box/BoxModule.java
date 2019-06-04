@@ -18,7 +18,8 @@ import zdream.rockchronicle.platform.world.LevelWorld;
  * @author Zdream
  * @since v0.0.1
  * @date
- *   2019-05-13 (create)
+ *   2019-05-13 (created)
+ *   2019-06-04 (last modified)
  */
 public abstract class BoxModule extends AbstractModule {
 	
@@ -56,13 +57,17 @@ public abstract class BoxModule extends AbstractModule {
 
 	protected abstract void createBody();
 	protected abstract void destroyBody();
-	protected abstract JsonValue getBoxJson();
 	
 	/**
 	 * 如果本角色只有一个碰撞盒子, 则调用该方法来获取其碰撞盒子
 	 * @return
 	 */
 	public abstract Box getBox();
+	
+	/**
+	 * 获取角色的所有的碰撞盒子, 以列表的形式返回.
+	 */
+	public abstract Box[] getAllBoxes();
 	
 	/**
 	 * 设置下一步的形态是什么

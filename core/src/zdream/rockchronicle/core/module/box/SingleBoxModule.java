@@ -2,7 +2,6 @@ package zdream.rockchronicle.core.module.box;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.JsonValue.ValueType;
 import com.badlogic.gdx.utils.ObjectMap;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
@@ -28,6 +27,11 @@ public class SingleBoxModule extends BoxModule {
 	public final Box box;
 	
 	/**
+	 * 盒子列表
+	 */
+	public final Box[] boxes;
+	
+	/**
 	 * 所有的形态的集合
 	 */
 	public final ObjectMap<String, BoxPattern> patterns = new ObjectMap<>(10);
@@ -45,6 +49,7 @@ public class SingleBoxModule extends BoxModule {
 	public SingleBoxModule(CharacterEntry ch) {
 		super(ch);
 		box = new Box(ch.id);
+		boxes = new Box[] {box};
 	}
 	
 	@Override
@@ -167,41 +172,15 @@ public class SingleBoxModule extends BoxModule {
 	/* **********
 	 * 资源事件 *
 	 ********** */
-	/*
-	 * 允许获取与修改:
-	 * motion.orientation
-	 */
-	public JsonValue getBoxJson() {
-		JsonValue v = new JsonValue(ValueType.object);
-		
-		v.addChild("inTerrain", new JsonValue(box.inTerrain));
-		
-		JsonValue orect = new JsonValue(ValueType.object);
-		v.addChild("rect", orect);
-		// TODO 暂时不考虑 def
-		orect.addChild("width", new JsonValue(box.box.width));
-		orect.addChild("height", new JsonValue(box.box.height));
-		orect.addChild("x", new JsonValue(box.box.x));
-		orect.addChild("y", new JsonValue(box.box.y));
-		
-		// 初始锚点位置
-		JsonValue oanchor = new JsonValue(ValueType.object);
-		v.addChild("anchor", oanchor);
-		oanchor.addChild("x", new JsonValue(box.anchor.x));
-		oanchor.addChild("y", new JsonValue(box.anchor.y));
-
-		// 初始速度
-		JsonValue ovelocity = new JsonValue(ValueType.object);
-		v.addChild("velocity", ovelocity);
-		ovelocity.addChild("x", new JsonValue(box.velocity.x));
-		ovelocity.addChild("y", new JsonValue(box.velocity.y));
-		
-		return v;
-	}
 	
 	@Override
 	public Box getBox() {
 		return box;
+	}
+	
+	@Override
+	public Box[] getAllBoxes() {
+		return boxes;
 	}
 
 	@Override
