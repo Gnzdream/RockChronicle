@@ -10,7 +10,8 @@
 		"collision":"bullet",
 		"health":"base",
 		"motion":"linear",
-		"destroy":"outside"
+		"destroy":"outside",
+		"leader":"base"
 	},
 	"box":
 	{
@@ -55,5 +56,15 @@
 		{
 			"x":-8
 		}
+	},
+	"leader":
+	{
+		"followers":
+		[
+			{
+				"offsetX":0,
+				"offsetY":-0.2
+			}
+		]
 	}
 }

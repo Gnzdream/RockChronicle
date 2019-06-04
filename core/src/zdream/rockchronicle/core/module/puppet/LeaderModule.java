@@ -1,5 +1,6 @@
 package zdream.rockchronicle.core.module.puppet;
 
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
 
@@ -10,6 +11,7 @@ import zdream.rockchronicle.core.move.IMovable;
 /**
  * <p>领队模块.
  * <p>为跟随者的主人, 所有其跟随者接受其管理.
+ * 该类将在初始化时就生成它的跟随者.
  * <p>主人很大可能携带 {@link LeaderModule} 模块来管理它的跟随方,
  * 而跟随方很大可能携带 {@link FollowerModule} 模块来跟随主人.
  * <p>为了做到跟随方随着主人行动, 跟随方会将 {@link IMovable} 添加到主人的行动列表中,
@@ -69,6 +71,17 @@ public class LeaderModule extends AbstractModule {
 		 * 目标角色 id. 该参数只能在角色创建之后才有
 		 */
 		int id;
+	}
+	
+	@Override
+	public void init(FileHandle file, JsonValue value) {
+		super.init(file, value);
+		
+		// 其它参数
+		
+		
+		
+		
 	}
 
 }
