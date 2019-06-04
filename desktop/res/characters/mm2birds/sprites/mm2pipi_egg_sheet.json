@@ -1,0 +1,26 @@
+{
+	"image":"mm2birds.gif",
+	"default":"normal",
+	"select":
+	[
+		{
+			"state":"normal",
+			"sequence":
+			[
+				"normal"
+			]
+		}
+	],
+	"textures":
+	[
+		{
+			"name":"normal",
+			"x":189,
+			"y":6,
+			"w":20,
+			"h":14,
+			"offx":-10,
+			"offy":-7
+		}
+	]
+}

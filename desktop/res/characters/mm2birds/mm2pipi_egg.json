@@ -1,5 +1,5 @@
 {
-	"name":"mm2bird",
+	"name":"mm2pipi_egg",
 	"class":"zdream.rockchronicle.sprite.foes.base.BaseFoe",
 	"type":"foe",
 	"modules":
@@ -7,21 +7,19 @@
 		"box":"single",
 		"camp":"base",
 		"sprite":"base",
-		"collision":"bullet",
 		"health":"base",
-		"motion":"linear",
 		"destroy":"outside",
-		"leader":"base"
+		"follower":"base"
 	},
 	"box":
 	{
 		"inTerrain":false,
 		"rect":
 		{
-			"width":0.958334,
-			"height":0.8,
-			"x":-0.458334,
-			"y":0
+			"width":0.75,
+			"height":0.5,
+			"x":-0.375,
+			"y":-0.25
 		}
 	},
 	"camp":
@@ -32,39 +30,21 @@
 	{
 		"stroke":"#FFFF2222"
 	},
-	"collision":
-	{
-		"level":1,
-		"damage":3
-	},
 	"health":
 	{
 		"hpMax":1
 	},
 	"textures":
 	[
-		"sprites/mm2birds_sheet.json"
+		"sprites/mm2pipi_egg_sheet.json"
 	],
 	"destroyParam":
 	{
 		"outsideTrialPeriod":1,
 		"outsideDuration":0.1
 	},
-	"motion":
+	"follower":
 	{
-		"velocity":
-		{
-			"x":-8
-		}
-	},
-	"leader":
-	{
-		"followers":
-		[
-			{
-				"offsetX":0,
-				"offsetY":-0.291667
-			}
-		]
+		
 	}
 }
