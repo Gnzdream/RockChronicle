@@ -21,7 +21,7 @@ public class LinearMovement implements IMovable {
 	public boolean enable = true;
 
 	@Override
-	public void move(LevelWorld world, Box box, CharacterEntry entry) {
+	public void action(LevelWorld world, Box box, CharacterEntry entry) {
 		if (enable) {
 			if (vx != 0) {
 				box.setVelocityX(box.velocity.x + vx);

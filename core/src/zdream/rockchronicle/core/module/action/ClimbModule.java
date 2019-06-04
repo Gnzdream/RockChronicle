@@ -230,7 +230,7 @@ public class ClimbModule extends AbstractModule implements IMovable {
 	}
 	
 	@Override
-	public void move(LevelWorld world, Box box, CharacterEntry entry) {
+	public void action(LevelWorld world, Box box, CharacterEntry entry) {
 		int ix = (int) box.anchor.x;
 		
 		if (climbing == 0) {

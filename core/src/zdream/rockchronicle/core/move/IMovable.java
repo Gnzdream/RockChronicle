@@ -19,6 +19,6 @@ public interface IMovable {
 	/**
 	 * 为 box 执行相应的移动计划
 	 */
-	public void move(LevelWorld world, Box box, CharacterEntry entry);
+	public void action(LevelWorld world, Box box, CharacterEntry entry);
 
 }

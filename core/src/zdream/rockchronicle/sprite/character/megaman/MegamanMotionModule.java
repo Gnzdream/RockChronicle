@@ -116,7 +116,7 @@ public class MegamanMotionModule extends TerrainMotionModule implements IMovable
 		
 		// 添加事件监听
 		parent.addSubscribe("ctrl_axis", this);
-		parent.getBoxModule().addMovable(this, 0);
+		parent.getBoxModule().addMovable(this, 1);
 	}
 	
 	@Override
@@ -148,7 +148,7 @@ public class MegamanMotionModule extends TerrainMotionModule implements IMovable
 	}
 
 	@Override
-	public void move(LevelWorld world, Box box, CharacterEntry entry) {
+	public void action(LevelWorld world, Box box, CharacterEntry entry) {
 		boolean climbing = getBoolean("climb.climbing", false);
 		if (climbing) { // 1. 如果在攀爬状态, 所有的速度修改都不需要了
 			return;

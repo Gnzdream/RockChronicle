@@ -26,6 +26,11 @@ public abstract class BoxModule extends AbstractModule {
 	public static final String NAME = "Box";
 
 	protected LevelWorld world;
+	
+	/**
+	 * 本次的行动是否已经完成了
+	 */
+	public boolean actionFinished;
 
 	public BoxModule(CharacterEntry parent) {
 		super(parent);
@@ -125,6 +130,12 @@ public abstract class BoxModule extends AbstractModule {
 	 * @param world
 	 *   关卡世界实体
 	 */
-	public abstract void move(LevelWorld world);
+	public abstract void action(LevelWorld world);
+	
+	@Override
+	public void stepPassed() {
+		super.stepPassed();
+		this.actionFinished = false;
+	}
 
 }

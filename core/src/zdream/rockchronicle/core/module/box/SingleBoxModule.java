@@ -5,6 +5,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
+import zdream.rockchronicle.core.move.IMovable;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
@@ -57,6 +58,8 @@ public class SingleBoxModule extends BoxModule {
 		super.init(file, value);
 		
 		initBox(value.get("box"));
+		addMovable(m0, 100);
+		addMovable(m1, 0);
 	}
 
 	public void initBox(JsonValue object) {
@@ -143,31 +146,48 @@ public class SingleBoxModule extends BoxModule {
 	}
 	
 	@Override
-	public void move(LevelWorld world) {
-		box.lastAnchorX = box.anchor.x;
-		box.lastAnchorY = box.anchor.y;
-		
-		// 处理变换形态
-		if (nextPattern != null) {
-			BoxPattern pattern = patterns.get(nextPattern);
-			box.box.width = pattern.width;
-			box.box.height = pattern.height;
-			box.box.x = pattern.x;
-			box.box.y = pattern.y;
-			nextPattern = null;
-		}
-		
+	public void action(LevelWorld world) {
 		// 执行移动实例
 		for (int i = 0; i < movables.size; i++) {
-			movables.get(i).movable.move(world, box, parent);
+			movables.get(i).movable.action(world, box, parent);
 		}
 		
-		// 处理移动位置
-		world.execVerticalMotion(box);
-		world.execHorizontalMotion(box);
-		box.velocity.x = 0;
-		box.velocity.y = 0;
+		actionFinished = true;
 	}
+	
+	/**
+	 * 处理变换形态
+	 */
+	IMovable m0 = new IMovable() {
+		@Override
+		public void action(LevelWorld world, Box box, CharacterEntry entry) {
+			box.lastAnchorX = box.anchor.x;
+			box.lastAnchorY = box.anchor.y;
+			
+			// 处理变换形态
+			if (nextPattern != null) {
+				BoxPattern pattern = patterns.get(nextPattern);
+				box.box.width = pattern.width;
+				box.box.height = pattern.height;
+				box.box.x = pattern.x;
+				box.box.y = pattern.y;
+				nextPattern = null;
+			}
+		}
+	};
+	
+	/**
+	 * 处理移动位置
+	 */
+	IMovable m1 = new IMovable() {
+		@Override
+		public void action(LevelWorld world, Box box, CharacterEntry entry) {
+			world.execVerticalMotion(box);
+			world.execHorizontalMotion(box);
+			box.velocity.x = 0;
+			box.velocity.y = 0;
+		}
+	};
 	
 	/* **********
 	 * 资源事件 *

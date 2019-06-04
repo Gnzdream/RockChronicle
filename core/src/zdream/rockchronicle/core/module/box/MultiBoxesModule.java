@@ -87,7 +87,7 @@ public class MultiBoxesModule extends BoxModule {
 	}
 
 	@Override
-	public void move(LevelWorld world) {
+	public void action(LevelWorld world) {
 		// TODO Auto-generated method stub
 
 	}

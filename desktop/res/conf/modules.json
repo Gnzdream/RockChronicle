@@ -19,6 +19,10 @@
 		{
 			"name":"single",
 			"class":"zdream.rockchronicle.core.module.box.SingleBoxModule"
+		},
+		{
+			"name":"multi",
+			"class":"zdream.rockchronicle.core.module.box.MultiBoxesModule"
 		}
 	],
 	"climb":

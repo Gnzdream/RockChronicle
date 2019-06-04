@@ -197,7 +197,7 @@ public class BaseJumpModule extends JumpModule implements IMovable {
 	}
 	
 	@Override
-	public void move(LevelWorld world, Box box, CharacterEntry entry) {
+	public void action(LevelWorld world, Box box, CharacterEntry entry) {
 		boolean climbing = getBoolean("climb.climbing", false);
 		if (climbing) {
 			lastvy = 0;

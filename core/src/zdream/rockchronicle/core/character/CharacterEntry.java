@@ -270,7 +270,7 @@ public abstract class CharacterEntry {
 	 *   本帧是否还会再调用
 	 */
 	public void step(LevelWorld world, int index, boolean hasNext) {
-		getBoxModule().move(world);
+		getBoxModule().action(world);
 	}
 
 	public void onStepFinished(LevelWorld world, boolean isPause) {

@@ -28,7 +28,7 @@ public class ParabolaMovement implements IMovable {
 	public boolean enable = true;
 
 	@Override
-	public void move(LevelWorld world, Box box, CharacterEntry entry) {
+	public void action(LevelWorld world, Box box, CharacterEntry entry) {
 		if (enable) {
 			vx += ax;
 			vy += ay;
