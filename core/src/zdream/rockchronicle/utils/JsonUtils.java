@@ -136,5 +136,32 @@ public class JsonUtils {
 		}
 		delete(map.get(keys[offset]), keys, offset + 1);
 	}
+	
+	public static boolean isNotNullValue(JsonValue v) {
+		switch (v.type()) {
+		case stringValue:
+		case doubleValue:
+		case longValue:
+		case booleanValue:
+			return true;
+		default:
+			return false;
+		}
+	}
+	
+	public static boolean getBoolean(JsonValue v, String name, boolean defaultValue) {
+		JsonValue child = v.get(name);
+		return (child == null || !isNotNullValue(child)) ? defaultValue : child.asBoolean();
+	}
+	
+	public static int getInt(JsonValue v, String name, int defaultValue) {
+		JsonValue child = v.get(name);
+		return (child == null || !isNotNullValue(child)) ? defaultValue : child.asInt();
+	}
+	
+	public static float getFloat(JsonValue v, String name, float defaultValue) {
+		JsonValue child = v.get(name);
+		return (child == null || !isNotNullValue(child)) ? defaultValue : child.asFloat();
+	}
 
 }

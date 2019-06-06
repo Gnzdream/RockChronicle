@@ -11,7 +11,8 @@
 		"health":"base",
 		"motion":"linear",
 		"destroy":"outside",
-		"leader":"base"
+		"leader":"base",
+		"scout":"enemySearching"
 	},
 	"box":
 	{
@@ -71,5 +72,13 @@
 				}
 			}
 		]
+	},
+	"scout":
+	{
+		"enemySearching":
+		{
+			"range":10,
+			"execute":"once"
+		}
 	}
 }

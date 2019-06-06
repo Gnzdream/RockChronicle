@@ -13,7 +13,7 @@
 	},
 	"box":
 	{
-		"inTerrain":false,
+		"inTerrain":true,
 		"rect":
 		{
 			"width":0.75,

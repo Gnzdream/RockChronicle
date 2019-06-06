@@ -205,7 +205,7 @@ public class GameRuntime {
 	}
 	
 	/**
-	 * 除了控制端以外的, 所有子弹、怪物的集合
+	 * 所有子弹、怪物的集合
 	 */
 	public final Array<CharacterEntry> entries = new Array<>();
 	private final Array<CharacterEntry> entriesWaitingForAdd = new Array<>();

@@ -53,7 +53,7 @@ public class LeaderModule extends AbstractModule {
 	 * 如果是出场时自动添加上去的, 那在该模块 init 方法执行时,
 	 * 创建跟随方的实体.
 	 */
-	Array<FollowerParam> boxParams = new Array<>(8);
+	Array<FollowerParam> followers = new Array<>(8);
 	
 	@Override
 	public void init(FileHandle file, JsonValue value) {
@@ -80,7 +80,7 @@ public class LeaderModule extends AbstractModule {
 				p.name = ofollower.getString("name");
 				p.param = ofollower.get("param");
 				
-				boxParams.add(p);
+				followers.add(p);
 			}
 		}
 	}
@@ -105,8 +105,8 @@ public class LeaderModule extends AbstractModule {
 		JsonValue ocamp = v.get("camp");
 		int camp = (ocamp == null) ? 0 : ocamp.getInt("camp", 0);
 
-		for (int i = 0; i < boxParams.size; i++) {
-			FollowerParam item = this.boxParams.get(i);
+		for (int i = 0; i < followers.size; i++) {
+			FollowerParam item = this.followers.get(i);
 			float xx = x + item.offx;
 			float yy = y + item.offy;
 			
@@ -124,10 +124,37 @@ public class LeaderModule extends AbstractModule {
 			AbstractModule af = c.getModule(FollowerModule.NAME);
 			if (af != null && af instanceof FollowerModule) {
 				FollowerModule f = (FollowerModule) af;
+				item.movable = f;
+				
 				f.setFollowerParam(item);
 				parent.getBoxModule().addMovable(f, -20);
 			}
 		}
+	}
+	
+	/**
+	 * (主动) 释放跟随者
+	 */
+	public void releaseFollower(int id) {
+		for (int i = 0; i < followers.size; i++) {
+			FollowerParam param = followers.get(i);
+			
+			if (param.followerId == id) {
+				// 执行脱钩
+				
+				parent.getBoxModule().removeMovable(param.movable);
+				// TODO
+				
+			}
+			
+		}
+	}
+	
+	/**
+	 * (被动) 释放跟随者
+	 */
+	public void detachFollower(int id) {
+		
 	}
 
 }

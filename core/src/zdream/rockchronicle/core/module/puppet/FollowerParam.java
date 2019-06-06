@@ -2,6 +2,8 @@ package zdream.rockchronicle.core.module.puppet;
 
 import com.badlogic.gdx.utils.JsonValue;
 
+import zdream.rockchronicle.core.move.IMovable;
+
 /**
  * 跟随方的参数
  * 
@@ -37,4 +39,9 @@ class FollowerParam {
 	 * 领队 / 主人 id
 	 */
 	int leaderId;
+	
+	/**
+	 * 行动接口
+	 */
+	IMovable movable;
 }

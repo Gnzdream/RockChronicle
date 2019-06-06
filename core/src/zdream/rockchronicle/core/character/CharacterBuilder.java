@@ -185,14 +185,26 @@ public class CharacterBuilder {
 			JsonValue data = JsonUtils.mergeJson(jreader.parse(def.data), customData);
 			
 			// 添加 modules
-			{
-				JsonValue modules = data.get("modules");
-				if (modules != null) {
-					for (JsonValue item = modules.child; item != null; item = item.next) {
-						AbstractModule m = createModule(entry, item.name, item.asString());
-						if (m != null) {
-							entry.addModule(m);
+			JsonValue modules = data.get("modules");
+			if (modules != null) {
+				for (JsonValue item = modules.child; item != null; item = item.next) {
+					if (item.isNull()) {
+						continue;
+					}
+					
+					if (item.isArray()) {
+						for (JsonValue item0 = item.child; item0 != null; item0 = item0.next) {
+							AbstractModule m = createModule(entry, item.name, item.asString());
+							if (m != null) {
+								entry.addModule(m);
+							}
 						}
+						continue;
+					}
+					
+					AbstractModule m = createModule(entry, item.name, item.asString());
+					if (m != null) {
+						entry.addModule(m);
 					}
 				}
 			}
