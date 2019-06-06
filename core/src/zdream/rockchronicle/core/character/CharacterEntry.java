@@ -289,7 +289,39 @@ public abstract class CharacterEntry {
 			((SpriteModule) m).draw(batch, camera);
 		}
 	}
-
+	
+	/* **********
+	 * 角色补充 *
+	 ********** */
+	
+	/**
+	 * 产生一个新的角色, 并交给 runtime 管理.
+	 * 但是该角色不会马上添加进世界中.
+	 * @param name
+	 * @param param
+	 * @return
+	 */
+	public CharacterEntry createEntry(String name, JsonValue param) {
+		CharacterEntry entry = RockChronicle.INSTANCE.runtime.characterBuilder
+				.create(name, param);
+		entry.setSituation("parent", new JsonValue(id));
+		RockChronicle.INSTANCE.runtime.addEntry(entry);
+		return entry;
+	}
+	
+	/**
+	 * 查询角色
+	 * @param id
+	 * @return
+	 */
+	public CharacterEntry findEntry(int id) {
+		CharacterEntry entry = RockChronicle.INSTANCE.runtime.findEntry(id);
+		if (entry == null) {
+			entry = RockChronicle.INSTANCE.runtime.findEntryWaitingForAdd(id);
+		}
+		return entry;
+	}
+	
 	/* **********
 	 * 资源事件 *
 	 ********** */

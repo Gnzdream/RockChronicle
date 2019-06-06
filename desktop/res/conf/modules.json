@@ -124,5 +124,19 @@
 			"name":"outside",
 			"class":"zdream.rockchronicle.core.module.destroy.OutsideDestroyModule"
 		}
+	],
+	"leader":
+	[
+		{
+			"name":"base",
+			"class":"zdream.rockchronicle.core.module.puppet.LeaderModule"
+		}
+	],
+	"follower":
+	[
+		{
+			"name":"base",
+			"class":"zdream.rockchronicle.core.module.puppet.FollowerModule"
+		}
 	]
 }

@@ -4,7 +4,6 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
 
-import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.core.character.parameter.CharacterParameter;
@@ -19,7 +18,7 @@ import zdream.rockchronicle.utils.JsonUtils;
  * @since v0.0.1
  * @date
  *   2019-06-02 (created)
- *   2019-06-02 (last modified)
+ *   2019-06-06 (last modified)
  */
 public class BaseWeaponModule extends WeaponModule {
 	
@@ -137,15 +136,13 @@ public class BaseWeaponModule extends WeaponModule {
 		float x = (orientation) ? box.anchor.x + spawnx : box.anchor.x - spawnx;
 		float y = box.anchor.y + spawny;
 		
-		CharacterEntry bullet = RockChronicle.INSTANCE.runtime.characterBuilder.create(
-				"parabola_bullet",
+		parent.createEntry("parabola_bullet",
 				CharacterParameter.newInstance(JsonUtils.mergeJson(item.param, param))
 					.setBoxAnchor(x, y)
 					.setStateOrientation(orientation)
 					.setMotionFlipX(!orientation)
 					.setCamp(getInt("camp.camp", 0))
 					.get());
-		RockChronicle.INSTANCE.runtime.addEntry(bullet);
 		
 		parent.publish(new CharacterEvent("open_fire")); // 暂时没有附加信息
 	}

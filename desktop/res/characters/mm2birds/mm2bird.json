@@ -63,7 +63,12 @@
 		[
 			{
 				"offsetX":0,
-				"offsetY":-0.291667
+				"offsetY":-0.291667,
+				"name":"mm2pipi_egg",
+				"param":
+				{
+					
+				}
 			}
 		]
 	}

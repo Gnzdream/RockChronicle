@@ -75,7 +75,7 @@ public class MegamanWeaponModule extends WeaponModule {
 			}
 			
 			float x = (orientation) ? box.anchor.x + 1 : box.anchor.x - 1;
-			MMBuster buster = (MMBuster) RockChronicle.INSTANCE.runtime.characterBuilder.create("megaman_buster",
+			MMBuster buster = (MMBuster) parent.createEntry("megaman_buster",
 					CharacterParameter.newInstance()
 						.setBoxAnchor(x, box.anchor.y + 0.75f)
 						.setStateOrientation(orientation)
@@ -83,7 +83,6 @@ public class MegamanWeaponModule extends WeaponModule {
 						.setCamp(getInt("camp.camp", 0))
 						.get());
 			weaponEntryIds.add(buster.id);
-			RockChronicle.INSTANCE.runtime.addEntry(buster);
 			
 			parent.publish(new CharacterEvent("open_fire")); // 暂时没有附加信息
 		}

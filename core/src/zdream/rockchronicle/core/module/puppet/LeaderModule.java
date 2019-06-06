@@ -5,8 +5,10 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
+import zdream.rockchronicle.core.character.parameter.CharacterParameter;
 import zdream.rockchronicle.core.module.AbstractModule;
 import zdream.rockchronicle.core.move.IMovable;
+import zdream.rockchronicle.utils.JsonUtils;
 
 /**
  * <p>领队模块.
@@ -51,37 +53,81 @@ public class LeaderModule extends AbstractModule {
 	 * 如果是出场时自动添加上去的, 那在该模块 init 方法执行时,
 	 * 创建跟随方的实体.
 	 */
-	Array<BoxParam> boxParams = new Array<>();
-	
-	class BoxParam {
-		/**
-		 * = 跟随方锚点 - 目标锚点
-		 */
-		float offx, offy;
-		
-		/**
-		 * 目标角色名称
-		 */
-		String name;
-		/**
-		 * 目标角色参数
-		 */
-		JsonValue param;
-		/**
-		 * 目标角色 id. 该参数只能在角色创建之后才有
-		 */
-		int id;
-	}
+	Array<FollowerParam> boxParams = new Array<>(8);
 	
 	@Override
 	public void init(FileHandle file, JsonValue value) {
 		super.init(file, value);
 		
 		// 其它参数
+		JsonValue oleader = value.get("leader");
+		if (oleader != null) {
+			initLeaderParam(oleader);
+		}
 		
+		// 产生跟随的角色
+		createFollowers(value);
+	}
+	
+	private void initLeaderParam(JsonValue oleader) {
+		JsonValue afollowers = oleader.get("followers");
+		if (afollowers != null) {
+			for (JsonValue ofollower = afollowers.child; ofollower != null; ofollower = ofollower.next) {
+				FollowerParam p = new FollowerParam(parent.id);
+				
+				p.offx = ofollower.getFloat("offsetX", 0);
+				p.offy = ofollower.getFloat("offsetY", 0);
+				p.name = ofollower.getString("name");
+				p.param = ofollower.get("param");
+				
+				boxParams.add(p);
+			}
+		}
+	}
+	
+	/**
+	 * <p>产生跟随的角色
+	 * <p>注: 这里不能直接从 Box 里面取锚点位置因为现在还在初始化阶段
+	 * </p>
+	 */
+	private void createFollowers(JsonValue v) {
+		// 确定位置
+		JsonValue obox = v.get("box");
+		JsonValue oanchor = obox.get("anchor");
+		float x = oanchor.getFloat("x");
+		float y = oanchor.getFloat("y");
 		
+		// 确定朝向
+		JsonValue ostate = v.get("state");
+		boolean orientation = (ostate == null) ? true : ostate.getBoolean("orientation", true);
 		
-		
+		// 确定阵营
+		JsonValue ocamp = v.get("camp");
+		int camp = (ocamp == null) ? 0 : ocamp.getInt("camp", 0);
+
+		for (int i = 0; i < boxParams.size; i++) {
+			FollowerParam item = this.boxParams.get(i);
+			float xx = x + item.offx;
+			float yy = y + item.offy;
+			
+			CharacterEntry c = parent.createEntry(item.name,
+					CharacterParameter.newInstance(JsonUtils.clone(item.param))
+						.setBoxAnchor(xx, yy)
+						.setStateOrientation(orientation)
+						.setMotionFlipX(!orientation)
+						.setCamp(camp)
+						.get());
+			
+			item.followerId = c.id;
+			
+			// 将跟随者的 IMovable 放入领队的列表中
+			AbstractModule af = c.getModule(FollowerModule.NAME);
+			if (af != null && af instanceof FollowerModule) {
+				FollowerModule f = (FollowerModule) af;
+				f.setFollowerParam(item);
+				parent.getBoxModule().addMovable(f, -20);
+			}
+		}
 	}
 
 }

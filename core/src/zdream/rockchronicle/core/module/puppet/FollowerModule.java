@@ -2,6 +2,9 @@ package zdream.rockchronicle.core.module.puppet;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.module.AbstractModule;
+import zdream.rockchronicle.core.move.IMovable;
+import zdream.rockchronicle.platform.body.Box;
+import zdream.rockchronicle.platform.world.LevelWorld;
 
 /**
  * <p>跟随方模块.
@@ -17,7 +20,9 @@ import zdream.rockchronicle.core.module.AbstractModule;
  *   2019-06-04 (created)
  *   2019-06-04 (last modified)
  */
-public class FollowerModule extends AbstractModule {
+public class FollowerModule extends AbstractModule implements IMovable {
+	
+	public static final String NAME = "Follower";
 
 	public FollowerModule(CharacterEntry parent) {
 		super(parent);
@@ -25,7 +30,7 @@ public class FollowerModule extends AbstractModule {
 
 	@Override
 	public String name() {
-		return "Follower";
+		return NAME;
 	}
 	
 	@Override
@@ -36,6 +41,21 @@ public class FollowerModule extends AbstractModule {
 	@Override
 	public int priority() {
 		return -50;
+	}
+	
+	FollowerParam param;
+	
+	public void setFollowerParam(FollowerParam param) {
+		this.param = param;
+	}
+
+	@Override
+	public void action(LevelWorld world, Box leaderBox, CharacterEntry leader) {
+		// 该方法是由主人调用的, 用于同步主人和自己的位置.
+
+		// 现在只支持单一盒子的角色
+		Box box = parent.getBoxModule().getBox();
+		box.setAnchor(leaderBox.anchor.x + param.offx, leaderBox.anchor.y + param.offy);
 	}
 
 }
