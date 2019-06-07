@@ -99,6 +99,7 @@
 	},
 	"control":
 	{
+		"defaultSequence": "normal",
 		"sequences":
 		[
 			{

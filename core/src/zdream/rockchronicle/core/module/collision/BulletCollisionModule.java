@@ -91,7 +91,7 @@ public class BulletCollisionModule extends CollisionModule {
 			v.addChild("damage", new JsonValue(damage));
 			target.publishNow(event);
 			
-			// 结果比对部分
+			// 结果比对部分, 现在有 4 种可能, accepted, ignore, absorbed, blocked
 			String result = event.value.getString("result", "ignored");
 			if ("ignored".equals(result)) {
 				return true;

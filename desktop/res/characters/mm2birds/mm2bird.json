@@ -12,7 +12,8 @@
 		"motion":"linear",
 		"destroy":"outside",
 		"leader":"base",
-		"scout":"enemySearching"
+		"scout":"enemySearching",
+		"control":"simple"
 	},
 	"box":
 	{
@@ -80,5 +81,46 @@
 			"range":10,
 			"execute":"once"
 		}
+	},
+	"control":
+	{
+		"sequences":
+		[
+			{
+				"name":"releaseFollowers",
+				"sequence":
+				[
+					{
+						"stamp":0,
+						"action":"releaseFollowers"
+					}
+				]
+			}
+		],
+		"actions":
+		[
+			{
+				"name":"releaseFollowers",
+				"commands":
+				[
+					{
+						"operation":"publish_event",
+						"event":"release_follower",
+						"param":
+						{
+							"id":"all"
+						}
+					}
+				]
+			}
+		],
+		"triggers":
+		[
+			{
+				"when":"recieve_event",
+				"eventName":"find_enemy",
+				"sequence":"releaseFollowers"
+			}
+		]
 	}
 }

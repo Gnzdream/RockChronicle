@@ -5,6 +5,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
+import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.core.character.parameter.CharacterParameter;
 import zdream.rockchronicle.core.module.AbstractModule;
 import zdream.rockchronicle.core.move.IMovable;
@@ -67,6 +68,9 @@ public class LeaderModule extends AbstractModule {
 		
 		// 产生跟随的角色
 		createFollowers(value);
+		
+		// 监听
+		parent.addSubscribe("release_follower", this);
 	}
 	
 	private void initLeaderParam(JsonValue oleader) {
@@ -155,6 +159,20 @@ public class LeaderModule extends AbstractModule {
 	 */
 	public void detachFollower(int id) {
 		
+	}
+	
+	@Override
+	public void receiveEvent(CharacterEvent event) {
+		if ("release_follower".equals(event.name)) {
+			System.out.println("LeaderModule: 释放跟随者 " + event.value.get("id"));
+			
+			// target 可能是: "all", "random", 和 id (integer), [id, ...] (array)
+			JsonValue target = event.value.get("id");
+			
+			
+			
+		}
+		super.receiveEvent(event);
 	}
 
 }

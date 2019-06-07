@@ -1,6 +1,7 @@
 package zdream.rockchronicle.core.module.control;
 
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
@@ -43,6 +44,22 @@ public class SimpleControlModule extends ControlModule {
 		JsonValue param;
 		ActionItem next; // 链表形式
 	}
+	
+	/**
+	 * 收到消息的触发器
+	 */
+	class RecieveEventTrigger {
+		/**
+		 * 消息名称
+		 */
+		String eventName;
+		/**
+		 * 转入的 sequence
+		 */
+		String sequence;
+	}
+	
+	Array<RecieveEventTrigger> recvEventTs = null;
 
 	public SimpleControlModule(CharacterEntry ch) {
 		super(ch);
@@ -67,17 +84,23 @@ public class SimpleControlModule extends ControlModule {
 		
 		JsonValue aactions = ocontrol.get("actions");
 		initActions(aactions);
+		
+		// defaultSequence
+		String defaultSequence = ocontrol.getString("defaultSequence", null);
+		if (defaultSequence != null) {
+			curSeq = seqs.get(defaultSequence);
+		}
+		
+		// triggers
+		JsonValue atriggers = ocontrol.get("triggers");
+		if (atriggers != null && atriggers.isArray()) {
+			initTriggers(atriggers);
+		}
 	}
-	
+
 	private void initSequences(JsonValue asequences) {
 		for (JsonValue entry = asequences.child; entry != null; entry = entry.next) {
 			initSequence(entry);
-		}
-		
-		if (this.seqs.size == 1) {
-			curSeq = seqs.iterator().next().value;
-		} else {
-			// 需要配置默认的 seq TODO
 		}
 	}
 	
@@ -143,6 +166,34 @@ public class SimpleControlModule extends ControlModule {
 		actions.put(name, first);
 	}
 	
+	private void initTriggers(JsonValue atriggers) {
+		for (JsonValue entry = atriggers.child; entry != null; entry = entry.next) {
+			String when = entry.getString("when");
+			switch (when) {
+			case "recieve_event":
+				initRecvEventTrigger(entry);
+				break;
+
+			default:
+				break;
+			}
+		}
+		
+	}
+	
+	private void initRecvEventTrigger(JsonValue otrigger) {
+		RecieveEventTrigger t = new RecieveEventTrigger();
+		t.eventName = otrigger.getString("eventName");
+		t.sequence = otrigger.getString("sequence");
+		
+		if (recvEventTs == null) {
+			recvEventTs = new Array<>(4);
+		}
+		recvEventTs.add(t);
+		
+		parent.addSubscribe(t.eventName, this);
+	}
+	
 	/* **********
 	 *   执行   *
 	 ********** */
@@ -159,6 +210,10 @@ public class SimpleControlModule extends ControlModule {
 	@Override
 	public void determine(LevelWorld world, int index, boolean hasNext) {
 		super.determine(world, index, hasNext);
+		
+		if (curSeq == null) {
+			return;
+		}
 		
 		SequenceItem item = curSeq.seq.get(step);
 		for (; item != null; item = item.next) {
@@ -216,6 +271,45 @@ public class SimpleControlModule extends ControlModule {
 		 */
 		
 		parent.publish(event);
+	}
+	
+	@Override
+	public void receiveEvent(CharacterEvent event) {
+		String name = event.name;
+		
+		if (this.recvEventTs != null) {
+			for (int i = 0; i < recvEventTs.size; i++) {
+				RecieveEventTrigger t = recvEventTs.get(i);
+				if (t.eventName.equals(name)) {
+					switchSequence(t.sequence);
+					return;
+				}
+			}
+		}
+		
+		super.receiveEvent(event);
+	}
+	
+	/**
+	 * 切换现在的序列
+	 * @param name
+	 */
+	private void switchSequence(String name) {
+		this.curSeq = seqs.get(name);
+		this.step = 0;
+	}
+	
+	/* **********
+	 *   回收   *
+	 ********** */
+	
+	@Override
+	public void willDestroy() {
+		super.willDestroy();
+		
+		if (recvEventTs != null) {
+			parent.removeSubscribe(this);
+		}
 	}
 	
 }

@@ -12,6 +12,7 @@ import zdream.rockchronicle.platform.world.LevelWorld;
  * 而且会跟着它行动而做出反应, 该角色就为跟随方, 而跟随的角色称为主人.
  * <p>主人很大可能携带 {@link LeaderModule} 模块来管理它的跟随方,
  * 而跟随方很大可能携带 {@link FollowerModule} 模块来跟随主人.
+ * 当跟随方某一帧发现主人已经消失或者死亡, 则立即自毁 (默认情况下).
  * </p>
  * 
  * @author Zdream
@@ -47,6 +48,18 @@ public class FollowerModule extends AbstractModule implements IMovable {
 	
 	public void setFollowerParam(FollowerParam param) {
 		this.param = param;
+	}
+	
+	@Override
+	public void determine(LevelWorld world, int index, boolean hasNext) {
+		super.determine(world, index, hasNext);
+		
+		// 当发现主人已经消失或者死亡, 则立即自毁
+		int leaderId = param.leaderId;
+		CharacterEntry entry = parent.findEntry(leaderId);
+		if (entry == null || !entry.isExists()) {
+			parent.willDestroy();
+		}
 	}
 
 	@Override

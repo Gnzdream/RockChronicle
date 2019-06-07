@@ -3,9 +3,11 @@ package zdream.rockchronicle.core.module.scout;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.JsonValue.ValueType;
 
 import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.character.CharacterEntry;
+import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.core.module.AbstractModule;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
@@ -122,6 +124,12 @@ public class EnemySearchingScoutModule extends AbstractModule {
 			
 			if (c0 != null) {
 				// 发布
+				CharacterEvent event = new CharacterEvent("find_enemy");
+				JsonValue v = new JsonValue(ValueType.object);
+				v.addChild("id", new JsonValue(c0.id));
+				event.value = v;
+				parent.publish(event);
+				
 				System.out.println("EnemySearchingScoutModule  find_enemy: " + c0);
 				
 				if ("once".equals(executeType)) {

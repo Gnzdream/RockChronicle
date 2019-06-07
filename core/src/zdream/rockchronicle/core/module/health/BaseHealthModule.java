@@ -15,7 +15,7 @@ import zdream.rockchronicle.core.character.event.CharacterEvent;
  * @since v0.0.1
  * @date
  *   2019-05-10 (create)
- *   2019-05-10 (last modified)
+ *   2019-06-07 (last modified)
  */
 public class BaseHealthModule extends HealthModule {
 	
@@ -55,7 +55,7 @@ public class BaseHealthModule extends HealthModule {
 		boolean immune = getBoolean("state.immune", false);
 		
 		if (immune) {
-			event.value.addChild("result", new JsonValue("ignored"));
+			event.value.addChild("result", new JsonValue("absorbed"));
 		} else {
 			JsonValue v = event.value;
 			int damage = v.getInt("damage");
