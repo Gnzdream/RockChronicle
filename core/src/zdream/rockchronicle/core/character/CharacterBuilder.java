@@ -241,6 +241,16 @@ public class CharacterBuilder {
 		return null;
 	}
 	
+	public AbstractModule createModule(CharacterEntry parent,
+			String species,
+			String name,
+			JsonValue param) {
+		AbstractModule m = createModule(parent, species, name);
+		m.init(null, param);
+		
+		return m;
+	}
+	
 	private AbstractModule createModule(CharacterEntry parent, ModuleDef def)
 			throws Exception {
 		Class<?> c = Class.forName(def.className);

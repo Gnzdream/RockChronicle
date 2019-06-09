@@ -1,5 +1,6 @@
 package zdream.rockchronicle.core.character;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Objects;
 
@@ -24,7 +25,7 @@ import zdream.rockchronicle.platform.world.LevelWorld;
  * @author Zdream
  * @since v0.0.1
  * @date
- *   2019-05-26 (last modified)
+ *   2019-06-09 (last modified)
  */
 public abstract class CharacterEntry {
 	
@@ -32,10 +33,6 @@ public abstract class CharacterEntry {
 	 * 是否存在. 如果该角色已被删除, 该值设为 false
 	 */
 	private boolean exists = true;
-	/**
-	 * 是否完成初始化
-	 */
-	private boolean inited = false;
 	
 	public final int id;
 	public final String name;
@@ -90,19 +87,12 @@ public abstract class CharacterEntry {
 	 * 所有的角色在该方法中执行所有模块的 init 方法
 	 */
 	protected void init(FileHandle file, JsonValue value) {
-		if (inited) {
-			return;
-		}
-		
 		this.type = value.getString("type");
 		sortModules();
 		
-		AbstractModule[] ms = modules.toArray(AbstractModule.class);
-		for (int i = 0; i < ms.length; i++) {
-			modules.get(i).init(file, value);
+		for (int i = 0; i < modules.length; i++) {
+			modules[i].init(file, value);
 		}
-		
-		inited = true;
 	}
 	
 	/**
@@ -169,13 +159,17 @@ public abstract class CharacterEntry {
 	 * 等等
 	 */
 	protected final Array<AbstractModule> moduleArray = new Array<>(false, 16, AbstractModule.class);
-	private Array<AbstractModule> modules;
+	private AbstractModule[] modules;
+	
+	public void addModule(String module, String name, JsonValue param) {
+		AbstractModule m = RockChronicle.INSTANCE.runtime.characterBuilder
+				.createModule(this, module, name, param);
+		this.addModule(m);
+	}
 	
 	public void addModule(AbstractModule module) {
 		moduleArray.add(module);
-		if (inited) {
-			sortModules();
-		}
+		this.modules = null;
 	}
 	
 	/**
@@ -189,9 +183,7 @@ public abstract class CharacterEntry {
 		this.removeSubscribe(module);
 //		this.unbindResource(module);
 		
-		if (inited) {
-			sortModules();
-		}
+		this.modules = null;
 	}
 	
 	public AbstractModule getModule(String name) {
@@ -214,10 +206,13 @@ public abstract class CharacterEntry {
 		return null;
 	}
 	
+	/**
+	 * 根据模块的优先度, 重新生成 {@link #modules} 列表, 并排序
+	 */
 	private void sortModules() {
-		modules = new Array<>(moduleArray);
+		modules = moduleArray.toArray();
 		
-		modules.sort((a, b) -> {
+		Arrays.sort(modules, (a, b) -> {
 			return b.priority() - a.priority();
 		});
 	}
@@ -246,16 +241,26 @@ public abstract class CharacterEntry {
 	 *   本帧是否还会再调用
 	 */
 	public void determine(LevelWorld world, int index, boolean hasNext) {
+		if (modules == null) {
+			sortModules();
+		}
+		AbstractModule[] ms = modules;
+		
 		// 清理上次的数据
-		for (int i = 0; i < modules.size; i++) {
-			modules.get(i).stepPassed();
+		for (int i = 0; i < ms.length; i++) {
+			ms[i].stepPassed();
 		}
 		recent.clear();
 		recent.putAll(states);
 		states.clear();
 		
+		// 可能有删除的模块, 所以需要判断一下
+		if (modules == null) {
+			sortModules();
+			ms = modules;
+		}
+		
 		// 开始现在的操作流程
-		AbstractModule[] ms = modules.toArray(AbstractModule.class);
 		for (int i = 0; i < ms.length; i++) {
 			ms[i].determine(world, index, hasNext);
 			
@@ -289,8 +294,12 @@ public abstract class CharacterEntry {
 	}
 
 	public void onStepFinished(LevelWorld world, boolean isPause) {
-		for (int i = 0; i < modules.size; i++) {
-			modules.get(i).onStepFinished(world, isPause);
+		if (modules == null) {
+			sortModules();
+		}
+		
+		for (int i = 0; i < modules.length; i++) {
+			modules[i].onStepFinished(world, isPause);
 		}
 	}
 	

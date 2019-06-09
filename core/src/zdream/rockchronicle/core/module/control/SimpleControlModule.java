@@ -237,6 +237,9 @@ public class SimpleControlModule extends ControlModule {
 			case "motion_select":
 				executeMotionSelect(item.param);
 				break;
+			case "create_module":
+				executeCreateModule(item.param);
+				break;
 
 			default:
 				break;
@@ -270,6 +273,17 @@ public class SimpleControlModule extends ControlModule {
 		 */
 		
 		parent.publish(event);
+	}
+	
+	/**
+	 * 创建新的模块
+	 * @param param
+	 */
+	private void executeCreateModule(JsonValue param) {
+		String smodule = param.getString("module");
+		String sname = param.getString("name");
+		
+		parent.addModule(smodule, sname, param.get("param"));
 	}
 	
 	@Override
