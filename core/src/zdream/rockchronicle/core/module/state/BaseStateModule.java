@@ -20,7 +20,7 @@ import zdream.rockchronicle.platform.world.LevelWorld;
 public class BaseStateModule extends StateModule {
 
 	public BaseStateModule(CharacterEntry ch) {
-		super(ch);
+		super(ch, "base");
 	}
 	
 	/**

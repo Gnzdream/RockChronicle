@@ -29,17 +29,16 @@ public class DestroyModule extends AbstractModule {
 	 */
 	public int age = 0;
 	
-	public static final String NAME = "Destroy";
+	public static final String NAME = "destroy";
+
+	protected DestroyModule(CharacterEntry parent, String desc) {
+		super(parent, NAME, desc);
+	}
 
 	public DestroyModule(CharacterEntry parent) {
-		super(parent);
+		this(parent, "base");
 	}
 
-	@Override
-	public String name() {
-		return NAME;
-	}
-	
 	@Override
 	public int priority() {
 		return -500;

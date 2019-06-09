@@ -19,10 +19,10 @@ import zdream.rockchronicle.core.module.AbstractModule;
  */
 public abstract class HealthModule extends AbstractModule {
 	
-	public static final String NAME = "Health";
+	public static final String NAME = "health";
 
-	public HealthModule(CharacterEntry ch) {
-		super(ch);
+	public HealthModule(CharacterEntry ch, String desc) {
+		super(ch, NAME, desc);
 	}
 	
 	@Override
@@ -42,11 +42,6 @@ public abstract class HealthModule extends AbstractModule {
 	}
 	
 	protected abstract void initHealthArguments(JsonValue root);
-	
-	@Override
-	public String name() {
-		return NAME;
-	}
 	
 	@Override
 	public int priority() {

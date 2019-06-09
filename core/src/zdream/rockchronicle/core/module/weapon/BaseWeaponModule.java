@@ -49,7 +49,7 @@ public class BaseWeaponModule extends WeaponModule {
 	}
 
 	public BaseWeaponModule(CharacterEntry ch) {
-		super(ch);
+		super(ch, "base");
 	}
 	
 	@Override
@@ -101,11 +101,6 @@ public class BaseWeaponModule extends WeaponModule {
 	@Override
 	public int priority() {
 		return 6;
-	}
-	
-	@Override
-	public String description() {
-		return "base";
 	}
 	
 	@Override

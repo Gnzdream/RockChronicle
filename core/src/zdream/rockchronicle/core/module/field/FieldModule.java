@@ -24,10 +24,10 @@ public abstract class FieldModule extends AbstractModule {
 	 */
 	public boolean needTrigger = true;
 	
-	public static final String NAME = "Field";
+	public static final String NAME = "field";
 
-	public FieldModule(CharacterEntry parent) {
-		super(parent);
+	public FieldModule(CharacterEntry parent, String desc) {
+		super(parent, NAME, desc);
 	}
 	
 	@Override
@@ -41,11 +41,6 @@ public abstract class FieldModule extends AbstractModule {
 		}
 	}
 
-	@Override
-	public String name() {
-		return NAME;
-	}
-	
 	@Override
 	public int priority() {
 		return 5;

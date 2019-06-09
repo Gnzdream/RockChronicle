@@ -12,17 +12,12 @@ import zdream.rockchronicle.core.module.AbstractModule;
  */
 public abstract class JumpModule extends AbstractModule {
 	
-	public static final String NAME = "Jump";
+	public static final String NAME = "jump";
 
-	public JumpModule(CharacterEntry ch) {
-		super(ch);
+	public JumpModule(CharacterEntry ch, String description) {
+		super(ch, NAME, description);
 	}
 
-	@Override
-	public String name() {
-		return NAME;
-	}
-	
 	@Override
 	public int priority() {
 		return 0x80;

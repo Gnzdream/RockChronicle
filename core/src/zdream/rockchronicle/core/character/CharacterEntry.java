@@ -132,13 +132,13 @@ public abstract class CharacterEntry {
 		}
 		
 		RockChronicle.INSTANCE.runtime.removeEntry(this);
-		moduleMap.forEach(p -> {
+		for (int i = 0; i < moduleArray.size; i++) {
 			try {
-				p.value.willDestroy();
+				moduleArray.items[i].willDestroy();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		});
+		}
 		
 		destroyBody();
 		exists = false;
@@ -148,13 +148,13 @@ public abstract class CharacterEntry {
 	 * 回收. 该方法由系统 (GameRuntime) 调用, 自己不能调用
 	 */
 	public void dispose() {
-		moduleMap.forEach(p -> {
+		for (int i = 0; i < moduleArray.size; i++) {
 			try {
-				p.value.dispose();
+				moduleArray.items[i].dispose();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		});
+		}
 	}
 
 	/* **********
@@ -168,11 +168,11 @@ public abstract class CharacterEntry {
 	 * 控制模块, 让 AI 或者用户的键盘或手柄控制它
 	 * 等等
 	 */
-	protected final ObjectMap<String, AbstractModule> moduleMap = new ObjectMap<>(16);
+	protected final Array<AbstractModule> moduleArray = new Array<>(false, 16, AbstractModule.class);
 	private Array<AbstractModule> modules;
 	
 	public void addModule(AbstractModule module) {
-		moduleMap.put(module.name(), module);
+		moduleArray.add(module);
 		if (inited) {
 			sortModules();
 		}
@@ -183,7 +183,7 @@ public abstract class CharacterEntry {
 	 * @param module
 	 */
 	public void removeModule(AbstractModule module) {
-		moduleMap.remove(module.name());
+		moduleArray.removeValue(module, true);
 		
 		// 清理工作
 		this.removeSubscribe(module);
@@ -195,12 +195,27 @@ public abstract class CharacterEntry {
 	}
 	
 	public AbstractModule getModule(String name) {
-		return moduleMap.get(name);
+		for (int i = 0; i < moduleArray.size; i++) {
+			AbstractModule m = moduleArray.items[i];
+			if (m.name.equals(name)) {
+				return m;
+			}
+		}
+		return null;
+	}
+	
+	public AbstractModule getModule(String name, String desc) {
+		for (int i = 0; i < moduleArray.size; i++) {
+			AbstractModule m = moduleArray.items[i];
+			if (m.name.equals(name) && (m.description == null || m.description.equals(desc))) {
+				return m;
+			}
+		}
+		return null;
 	}
 	
 	private void sortModules() {
-		modules = new Array<>(moduleMap.size);
-		moduleMap.values().forEach(m -> modules.add(m));
+		modules = new Array<>(moduleArray);
 		
 		modules.sort((a, b) -> {
 			return b.priority() - a.priority();

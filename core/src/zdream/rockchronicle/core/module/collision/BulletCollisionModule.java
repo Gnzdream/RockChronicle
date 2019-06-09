@@ -10,10 +10,18 @@ import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
+/**
+ * 子弹的碰撞模块
+ * 
+ * @author Zdream
+ * @since v0.0.1
+ * @date
+ *   2019-06-09 (last modified)
+ */
 public class BulletCollisionModule extends CollisionModule {
 
 	public BulletCollisionModule(CharacterEntry parent) {
-		super(parent);
+		super(parent, "bullet");
 		
 	}
 	
@@ -104,7 +112,7 @@ public class BulletCollisionModule extends CollisionModule {
 		
 		if ("once".equals(this.executeType)) {
 			isFunctioned = false;
-			willDelete = true;
+			parentWillDelete = true;
 		}
 		return isFunctioned;
 	}

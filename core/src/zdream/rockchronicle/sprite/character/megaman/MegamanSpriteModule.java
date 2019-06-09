@@ -8,7 +8,7 @@ public class MegamanSpriteModule extends BaseSpriteModule {
 	MegamanInLevel parent;
 
 	public MegamanSpriteModule(MegamanInLevel parent) {
-		super(parent);
+		super(parent, "megaman");
 		this.parent = parent;
 	}
 	

@@ -23,7 +23,7 @@ import zdream.rockchronicle.platform.world.LevelWorld;
  */
 public abstract class BoxModule extends AbstractModule {
 	
-	public static final String NAME = "Box";
+	public static final String NAME = "box";
 
 	protected LevelWorld world;
 	
@@ -32,8 +32,8 @@ public abstract class BoxModule extends AbstractModule {
 	 */
 	public boolean actionFinished;
 
-	public BoxModule(CharacterEntry parent) {
-		super(parent);
+	public BoxModule(CharacterEntry parent, String desc) {
+		super(parent, NAME, desc);
 	}
 	
 	@Override
@@ -41,11 +41,6 @@ public abstract class BoxModule extends AbstractModule {
 		super.init(file, value);
 	}
 
-	@Override
-	public String name() {
-		return NAME;
-	}
-	
 	@Override
 	public int priority() {
 		return -100;
@@ -134,8 +129,8 @@ public abstract class BoxModule extends AbstractModule {
 	
 	@Override
 	public void stepPassed() {
-		super.stepPassed();
 		this.actionFinished = false;
+		super.stepPassed();
 	}
 
 }

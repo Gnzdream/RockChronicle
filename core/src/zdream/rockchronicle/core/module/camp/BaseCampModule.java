@@ -13,7 +13,7 @@ import zdream.rockchronicle.core.character.CharacterEntry;
 public class BaseCampModule extends CampModule {
 
 	public BaseCampModule(CharacterEntry ch) {
-		super(ch);
+		super(ch, "base");
 	}
 	
 	public static final int[][] defaultAcceptedTable = {

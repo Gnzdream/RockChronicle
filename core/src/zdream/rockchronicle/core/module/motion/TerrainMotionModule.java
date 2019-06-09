@@ -5,6 +5,8 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
+import zdream.rockchronicle.core.character.event.CharacterEvent;
+import zdream.rockchronicle.core.move.IMovable;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
@@ -16,17 +18,23 @@ import zdream.rockchronicle.platform.world.LevelWorld;
  * @since v0.0.1
  * @date
  *   2019-05-06 (created)
- *   2019-05-13 (last modified)
+ *   2019-06-09 (last modified)
  */
 public class TerrainMotionModule extends MotionModule {
 	
 	public TerrainMotionModule(CharacterEntry ch) {
-		super(ch);
+		this(ch, "terrain");
+	}
+	
+	protected TerrainMotionModule(CharacterEntry ch, String desc) {
+		super(ch, desc);
 	}
 	
 	@Override
 	public void init(FileHandle file, JsonValue value) {
 		super.init(file, value);
+		
+		parent.getBoxModule().addMovable(glitchMb, -25);
 	}
 
 	@Override
@@ -43,10 +51,10 @@ public class TerrainMotionModule extends MotionModule {
 				world.rightStop(box);
 				
 				// 位置重合修正
-				boolean glitch = world.correctOverlapBox(box);
-				if (!glitch) { // 已经卡在墙中了
-					Gdx.app.error("SingleBoxMotionModule", String.format("%s 被卡在墙里了, 而且无法修正", parent));
-				}
+//				boolean glitch = world.correctOverlapBox(box);
+//				if (!glitch) { // 已经卡在墙中了
+//					Gdx.app.error("SingleBoxMotionModule", String.format("%s 被卡在墙里了, 而且无法修正", parent));
+//				}
 			}
 		}
 		
@@ -64,5 +72,28 @@ public class TerrainMotionModule extends MotionModule {
 		setState("motion.leftStop", new JsonValue(box.leftStop));
 		setState("motion.rightStop", new JsonValue(box.rightStop));
 	}
+
+	/* **********
+	 * 位置矫正 *
+	 ********** */
+	
+	/**
+	 * 用于位置重合修正. 如果位置无法矫正, 将发出 glitch_found 信息
+	 * @author Zdream
+	 */
+	class TerrainMotionMovable implements IMovable {
+
+		@Override
+		public void action(LevelWorld world, Box box, CharacterEntry entry) {
+			boolean glitch = world.correctOverlapBox(box);
+			if (!glitch) { // 已经卡在墙中了
+				Gdx.app.error("SingleBoxMotionModule", String.format("%s 被卡在墙里了, 而且无法修正", parent));
+				CharacterEvent event = new CharacterEvent("glitch_found");
+				parent.publishNow(event);
+			}
+		}
+		
+	}
+	TerrainMotionMovable glitchMb = new TerrainMotionMovable();
 
 }

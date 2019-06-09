@@ -36,16 +36,15 @@ public class MultiBoxesModule extends BoxModule {
 	private Box[] boxArray;
 
 	public MultiBoxesModule(CharacterEntry parent) {
-		super(parent);
+		this(parent, "multi");
+	}
+
+	public MultiBoxesModule(CharacterEntry parent, String desc) {
+		super(parent, desc);
 		
 		mainBox = new Box(parent.id);
 	}
 	
-	@Override
-	public String description() {
-		return "multi";
-	}
-
 	@Override
 	public Box getBox() {
 		return mainBox;

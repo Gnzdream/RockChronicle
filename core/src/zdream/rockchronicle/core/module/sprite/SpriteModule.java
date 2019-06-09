@@ -18,12 +18,11 @@ import zdream.rockchronicle.textures.Textures;
 
 public abstract class SpriteModule extends AbstractModule {
 	
-	public static final String NAME = "Sprite";
+	public static final String NAME = "sprite";
 
-	public SpriteModule(CharacterEntry ch) {
-		super(ch);
+	protected SpriteModule(CharacterEntry ch, String desc) {
+		super(ch, NAME, desc);
 		texturePaths = new Array<>();
-		
 	}
 	
 	@Override
@@ -34,11 +33,6 @@ public abstract class SpriteModule extends AbstractModule {
 		}
 	}
 
-	@Override
-	public String name() {
-		return NAME;
-	}
-	
 	Sprite sprite;
 	TextureSheet textures;
 	

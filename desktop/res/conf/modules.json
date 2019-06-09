@@ -103,7 +103,7 @@
 	"buff":
 	[
 		{
-			"name":"gradual-recovery",
+			"name":"gradualRecovery",
 			"class":"zdream.rockchronicle.core.module.buff.GradualRecoveryBuffModule"
 		}
 	],

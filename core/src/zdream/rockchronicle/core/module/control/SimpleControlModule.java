@@ -62,12 +62,11 @@ public class SimpleControlModule extends ControlModule {
 	Array<RecieveEventTrigger> recvEventTs = null;
 
 	public SimpleControlModule(CharacterEntry ch) {
-		super(ch);
+		this(ch, "simple");
 	}
-	
-	@Override
-	public String description() {
-		return "simple";
+
+	protected SimpleControlModule(CharacterEntry ch, String desc) {
+		super(ch, desc);
 	}
 	
 	/* **********

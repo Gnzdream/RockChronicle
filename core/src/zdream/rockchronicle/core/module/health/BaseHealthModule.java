@@ -34,7 +34,7 @@ public class BaseHealthModule extends HealthModule {
 	public int hpMax;
 
 	public BaseHealthModule(CharacterEntry ch) {
-		super(ch);
+		super(ch, "base");
 	}
 	
 	protected void initHealthArguments(JsonValue root) {

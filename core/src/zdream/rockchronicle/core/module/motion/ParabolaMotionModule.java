@@ -35,7 +35,7 @@ public class ParabolaMotionModule extends MotionModule {
 	ParabolaMovement movement;
 
 	public ParabolaMotionModule(CharacterEntry ch) {
-		super(ch);
+		super(ch, "parabola");
 	}
 	
 	@Override

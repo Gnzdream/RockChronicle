@@ -48,7 +48,11 @@ public class SingleBoxModule extends BoxModule {
 	public String nextPattern;
 
 	public SingleBoxModule(CharacterEntry ch) {
-		super(ch);
+		this(ch, "single");
+	}
+
+	public SingleBoxModule(CharacterEntry ch, String desc) {
+		super(ch, desc);
 		box = new Box(ch.id);
 		boxes = new Box[] {box};
 	}
@@ -130,11 +134,6 @@ public class SingleBoxModule extends BoxModule {
 		}
 	}
 	
-	@Override
-	public String description() {
-		return "single";
-	}
-
 	@Override
 	public void createBody() {
 		world.addBox(box);

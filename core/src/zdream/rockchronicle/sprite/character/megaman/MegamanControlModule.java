@@ -18,7 +18,7 @@ public class MegamanControlModule extends InputControlModule {
 	boolean lastJump, lastAttack, lastSlide;
 	
 	public MegamanControlModule(MegamanInLevel ch) {
-		super(ch);
+		super(ch, "megaman");
 		this.parent = ch;
 		creator = new CharacterEventCreator();
 	}

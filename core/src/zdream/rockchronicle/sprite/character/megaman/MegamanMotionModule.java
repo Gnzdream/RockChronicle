@@ -285,9 +285,9 @@ public class MegamanMotionModule extends TerrainMotionModule implements IMovable
 	
 	@Override
 	public void stepPassed() {
-		super.stepPassed();
-		
 		resetParam();
+		
+		super.stepPassed();
 	}
 	
 	private void recvCtrlAxis(CharacterEvent event) {

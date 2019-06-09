@@ -13,7 +13,7 @@ import zdream.rockchronicle.platform.body.Box;
  */
 public abstract class MotionModule extends AbstractModule {
 	
-	public static final String NAME = "Motion";
+	public static final String NAME = "motion";
 	
 	/*
 	 * 定义的运动:
@@ -25,15 +25,10 @@ public abstract class MotionModule extends AbstractModule {
 	 * move right
 	 */
 	
-	public MotionModule(CharacterEntry ch) {
-		super(ch);
+	protected MotionModule(CharacterEntry ch, String desc) {
+		super(ch, NAME, desc);
 	}
 
-	@Override
-	public String name() {
-		return NAME;
-	}
-	
 	@Override
 	public void init(FileHandle file, JsonValue value) {
 		super.init(file, value);

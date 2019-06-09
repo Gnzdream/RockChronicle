@@ -28,19 +28,9 @@ import zdream.rockchronicle.platform.world.LevelWorld;
 public class EnemySearchingScoutModule extends AbstractModule {
 
 	public EnemySearchingScoutModule(CharacterEntry parent) {
-		super(parent);
+		super(parent, "scout", "enemySearching");
 	}
 
-	@Override
-	public String name() {
-		return "Scout";
-	}
-	
-	@Override
-	public String description() {
-		return "EnemySearching";
-	}
-	
 	@Override
 	public int priority() {
 		return -30;

@@ -36,7 +36,7 @@ public class OutsideDestroyModule extends DestroyModule {
 	public int outsideDuration;
 	
 	public OutsideDestroyModule(CharacterEntry parent) {
-		super(parent);
+		super(parent, "outside");
 	}
 	
 	@Override

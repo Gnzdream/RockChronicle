@@ -9,7 +9,8 @@
 		"sprite":"base",
 		"health":"base",
 		"destroy":"outside",
-		"follower":"base"
+		"follower":"base",
+		"control":"simple"
 	},
 	"box":
 	{
@@ -46,5 +47,53 @@
 	"follower":
 	{
 		
+	},
+	"control":
+	{
+		"sequences":
+		[
+			{
+				"name":"onDetach",
+				"sequence":
+				[
+					{
+						"stamp":0,
+						"action":"dropBegin"
+					}
+				]
+			}
+		],
+		"actions":
+		[
+			{
+				"name":"dropBegin",
+				"commands":
+				[
+					{
+						"operation":"create_module",
+						"module":"motion",
+						"name":"parabola",
+						"param":
+						{
+							"motion":
+							{
+								"acceleration":
+								{
+									"y":-67
+								}
+							}
+						}
+					}
+				]
+			}
+		],
+		"triggers":
+		[
+			{
+				"when":"recieve_event",
+				"eventName":"detach_leader",
+				"sequence":"onDetach"
+			}
+		]
 	}
 }

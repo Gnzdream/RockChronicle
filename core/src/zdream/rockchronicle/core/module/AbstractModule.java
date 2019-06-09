@@ -7,14 +7,30 @@ import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.platform.world.LevelWorld;
 
+/**
+ * 抽象模块父类
+ * 
+ * @author Zdream
+ * @since v0.0.1
+ * @date
+ *   2019-06-08 (last modified)
+ */
 public abstract class AbstractModule {
 	
-	public abstract String name();
+	public final String name;
+	public final String description;
 	
 	public final CharacterEntry parent;
 	
-	public AbstractModule(CharacterEntry parent) {
+	/**
+	 * 如果父类发现该模块需要删除, 将其设置为 true
+	 */
+	protected boolean willDelete;
+	
+	public AbstractModule(CharacterEntry parent, String name, String description) {
 		this.parent = parent;
+		this.name = name;
+		this.description = description;
 	}
 	
 	public void init(FileHandle file, JsonValue value) {
@@ -35,14 +51,19 @@ public abstract class AbstractModule {
 	}
 	
 	/**
-	 * 用于每一步结束时的工作，包括重置临时参数、删除模块
+	 * <p>用于每一步结束时的工作，包括重置临时参数、删除模块.
+	 * <p>子类需要扩展的, 在方法的最后添加 super.stepPassed()
+	 * </p>
 	 */
 	public void stepPassed() {
-		
+		if (willDelete) {
+			willDestroy();
+			parent.removeModule(this);
+		}
 	}
 
 	/**
-	 * 子类如果要继承, 请在方法最后加上 super.onStepFinished
+	 * 子类如果要继承, 请在方法最后加上 super.onStepFinished()
 	 * @param world
 	 * @param isPause
 	 */
@@ -116,17 +137,12 @@ public abstract class AbstractModule {
 	 *   其它   *
 	 ********** */
 	
-	public String description() {
-		return null;
-	}
-	
 	@Override
 	public String toString() {
-		String desc = description();
-		if (desc != null) {
-			return String.format("{M:%s-%s}", name(), desc);
+		if (description != null) {
+			return String.format("{M:%s-%s}", name, description);
 		}
-		return String.format("{M:%s}", name());
+		return String.format("{M:%s}", name);
 	}
 
 }

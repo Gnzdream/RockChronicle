@@ -14,15 +14,10 @@ import zdream.rockchronicle.core.module.AbstractModule;
  */
 public class WeaponModule extends AbstractModule {
 	
-	public static final String NAME = "Weapon";
+	public static final String NAME = "weapon";
 
-	public WeaponModule(CharacterEntry ch) {
-		super(ch);
-	}
-
-	@Override
-	public String name() {
-		return NAME;
+	public WeaponModule(CharacterEntry ch, String desc) {
+		super(ch, NAME, desc);
 	}
 
 }

@@ -47,7 +47,7 @@ public class BaseJumpModule extends JumpModule implements IMovable {
 	public int duration;
 	
 	public BaseJumpModule(CharacterEntry ch) {
-		super(ch);
+		super(ch, "base");
 	}
 
 	@Override

@@ -51,7 +51,7 @@ public class ClimbModule extends AbstractModule implements IMovable {
 	int climbing;
 	
 	/**
-	 * 由于在攀爬状态下攻击将有 0.5 秒时间不能上下移动, 这里记录剩余的恢复速度
+	 * 由于在攀爬状态下攻击将有 0.25 秒时间不能上下移动, 这里记录剩余的恢复速度
 	 */
 	int haltRemain;
 	
@@ -69,7 +69,7 @@ public class ClimbModule extends AbstractModule implements IMovable {
 	boolean adhere;
 	
 	public ClimbModule(CharacterEntry parent) {
-		super(parent);
+		super(parent, "climb", "base");
 	}
 	
 	@Override
@@ -89,23 +89,20 @@ public class ClimbModule extends AbstractModule implements IMovable {
 	}
 
 	@Override
-	public String name() {
-		return "Climb";
-	}
-	
-	@Override
 	public int priority() {
 		return 0x81;
 	}
 	
 	/**
-	 * 临时参数部分
+	 * 设置临时参数
 	 */
 	public void setClimbState() {
 		setState("climb.climbing", new JsonValue(climbing));
-		if (climbing > 0)
-			setState("climb.upOrDown", new JsonValue(upOrDown));
-		setState("climb.haltRemain", new JsonValue(haltRemain));
+		if (climbing > 0) {
+			setState("climb.haltRemain", new JsonValue(haltRemain));
+			if (haltRemain == 0)
+				setState("climb.upOrDown", new JsonValue(upOrDown));
+		}
 	}
 	
 	@Override
@@ -348,6 +345,7 @@ public class ClimbModule extends AbstractModule implements IMovable {
 		lowerX = 0;
 		lowerY = 0;
 		adhere = false;
+		super.stepPassed();
 	}
 	
 	@Override
@@ -394,7 +392,7 @@ public class ClimbModule extends AbstractModule implements IMovable {
 	
 	private void recvOpenFire(CharacterEvent event) {
 		if (climbing != 0) {
-			haltRemain = LevelWorld.STEPS_PER_SECOND / 2;
+			haltRemain = LevelWorld.STEPS_PER_SECOND / 4;
 		}
 	}
 

@@ -24,7 +24,11 @@ public class BaseSpriteModule extends SpriteModule {
 	protected TextureSelect select = new TextureSelect();
 
 	public BaseSpriteModule(CharacterEntry ch) {
-		super(ch);
+		super(ch, "base");
+	}
+
+	protected BaseSpriteModule(CharacterEntry ch, String desc) {
+		super(ch, desc);
 	}
 	
 	@Override

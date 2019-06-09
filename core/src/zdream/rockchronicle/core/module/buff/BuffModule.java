@@ -14,16 +14,11 @@ import zdream.rockchronicle.core.module.AbstractModule;
  */
 public class BuffModule extends AbstractModule {
 	
-	public static final String NAME = "Buff";
+	public static final String NAME = "buff";
 
-	public BuffModule(CharacterEntry ch) {
-		super(ch);
+	public BuffModule(CharacterEntry ch, String desc) {
+		super(ch, NAME, desc);
 		// TODO Auto-generated constructor stub
-	}
-
-	@Override
-	public String name() {
-		return NAME;
 	}
 
 }

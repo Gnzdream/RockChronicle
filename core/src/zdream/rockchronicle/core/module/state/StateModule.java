@@ -18,17 +18,12 @@ import zdream.rockchronicle.core.module.AbstractModule;
  */
 public abstract class StateModule extends AbstractModule {
 	
-	public static final String NAME = "State";
+	public static final String NAME = "state";
 
-	public StateModule(CharacterEntry ch) {
-		super(ch);
+	public StateModule(CharacterEntry ch, String desc) {
+		super(ch, "state", desc);
 	}
 
-	@Override
-	public String name() {
-		return NAME;
-	}
-	
 	@Override
 	public int priority() {
 		return 1000;

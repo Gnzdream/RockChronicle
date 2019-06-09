@@ -18,21 +18,17 @@ import zdream.rockchronicle.platform.world.LevelWorld;
  * @since v0.0.1
  * @date
  *   2019-05-08 (create)
+ *   2019-06-08 (last modified)
  */
 public abstract class CollisionModule extends AbstractModule {
 	
-	public static final String NAME = "Collision";
+	public static final String NAME = "collision";
 
-	public CollisionModule(CharacterEntry parent) {
-		super(parent);
+	public CollisionModule(CharacterEntry parent, String desc) {
+		super(parent, NAME, desc);
 		
 	}
 
-	@Override
-	public String name() {
-		return NAME;
-	}
-	
 	@Override
 	public int priority() {
 		return -0x80;
@@ -61,15 +57,6 @@ public abstract class CollisionModule extends AbstractModule {
 		this.searchOverlapsBox(getSingleBox(), world);
 	}
 	
-	@Override
-	public void stepPassed() {
-		super.stepPassed();
-		
-		if (willDelete) {
-			parent.willDestroy();
-		}
-	}
-	
 	/* **********
 	 * 基本参数 *
 	 ********** */
@@ -77,19 +64,28 @@ public abstract class CollisionModule extends AbstractModule {
 	 * 执行方式
 	 */
 	public String executeType;
+	/**
+	 * 角色是否需要删除
+	 */
+	public boolean parentWillDelete;
 	
 	/*
 	 * 状态
 	 */
 	
 	/**
-	 * 本帧结束时是否删除该帧
-	 */
-	public boolean willDelete;
-	/**
 	 * 是否能发挥效果
 	 */
 	public boolean isFunctioned = true;
+	
+	@Override
+	public void stepPassed() {
+		if (parentWillDelete) {
+			parent.willDestroy();
+		} else {
+			super.stepPassed();
+		}
+	}
 
 	/* **********
 	 * 工具方法 *

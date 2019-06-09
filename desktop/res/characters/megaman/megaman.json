@@ -10,7 +10,7 @@
 		"jump":"base",
 		"climb":"base",
 		"health":"reference",
-		"buff":"gradual-recovery"
+		"buff":"gradualRecovery"
 	},
 	"box":
 	{

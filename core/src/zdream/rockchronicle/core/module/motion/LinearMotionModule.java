@@ -32,7 +32,7 @@ public class LinearMotionModule extends MotionModule {
 	LinearMovement movement;
 
 	public LinearMotionModule(CharacterEntry ch) {
-		super(ch);
+		super(ch, "linear");
 	}
 	
 	@Override

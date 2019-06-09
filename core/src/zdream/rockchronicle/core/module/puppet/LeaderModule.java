@@ -30,19 +30,13 @@ import zdream.rockchronicle.utils.JsonUtils;
 public class LeaderModule extends AbstractModule {
 
 	public LeaderModule(CharacterEntry parent) {
-		super(parent);
+		this(parent, "base");
 	}
 
-	@Override
-	public String name() {
-		return "Leader";
+	protected LeaderModule(CharacterEntry parent, String desc) {
+		super(parent, "leader", desc);
 	}
-	
-	@Override
-	public String description() {
-		return "base";
-	}
-	
+
 	@Override
 	public int priority() {
 		return -50;
@@ -140,36 +134,51 @@ public class LeaderModule extends AbstractModule {
 	 * (主动) 释放跟随者
 	 */
 	public void releaseFollower(int id) {
-		for (int i = 0; i < followers.size; i++) {
-			FollowerParam param = followers.get(i);
+		FollowerParam[] params = followers.toArray(FollowerParam.class);
+		for (int i = 0; i < params.length; i++) {
+			FollowerParam param = params[i];
 			
 			if (param.followerId == id) {
 				// 执行脱钩
-				
-				parent.getBoxModule().removeMovable(param.movable);
-				// TODO
-				
+				releaseFollower(param);
+				followers.removeValue(param, true);
 			}
-			
 		}
 	}
 	
-	/**
-	 * (被动) 释放跟随者
-	 */
-	public void detachFollower(int id) {
+	private void releaseFollower(FollowerParam param) {
+		parent.getBoxModule().removeMovable(param.movable);
 		
+		CharacterEntry follower = parent.findEntry(param.followerId);
+		if (follower != null) {
+			CharacterEvent event = new CharacterEvent("detach_leader");
+			follower.publishNow(event);
+		}
 	}
 	
 	@Override
 	public void receiveEvent(CharacterEvent event) {
 		if ("release_follower".equals(event.name)) {
-			System.out.println("LeaderModule: 释放跟随者 " + event.value.get("id"));
-			
 			// target 可能是: "all", "random", 和 id (integer), [id, ...] (array)
 			JsonValue target = event.value.get("id");
 			
-			
+			if (target.isNumber()) {
+				int id = target.asInt();
+				releaseFollower(id);
+			} else if (target.isString()) {
+				String text = target.asString();
+				if ("all".equals(text)) {
+					FollowerParam[] params = followers.toArray(FollowerParam.class);
+					for (int i = 0; i < params.length; i++) {
+						releaseFollower(params[i]);
+					}
+					followers.clear();
+				} else {
+					// TODO
+				}
+			} else if (target.isArray()) {
+				// TODO
+			}
 			
 		}
 		super.receiveEvent(event);

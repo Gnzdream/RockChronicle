@@ -16,8 +16,8 @@ import zdream.rockchronicle.core.input.PlayerInput;
  */
 public abstract class InputControlModule extends ControlModule implements IControlListener {
 
-	public InputControlModule(CharacterEntry ch) {
-		super(ch);
+	public InputControlModule(CharacterEntry ch, String desc) {
+		super(ch, desc);
 	}
 	
 	protected PlayerInput in;

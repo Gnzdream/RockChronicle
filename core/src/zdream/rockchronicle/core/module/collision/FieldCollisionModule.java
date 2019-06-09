@@ -27,7 +27,7 @@ public class FieldCollisionModule extends CollisionModule {
 	protected int[] targetCamps;
 
 	public FieldCollisionModule(CharacterEntry parent) {
-		super(parent);
+		super(parent, "field");
 	}
 	
 	@Override

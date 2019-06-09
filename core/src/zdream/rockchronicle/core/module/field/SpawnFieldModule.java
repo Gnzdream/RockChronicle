@@ -45,7 +45,7 @@ public class SpawnFieldModule extends FieldModule {
 	public JsonValue spawnFoesParam;
 
 	public SpawnFieldModule(CharacterEntry parent) {
-		super(parent);
+		super(parent, "spawn");
 	}
 	
 	@Override

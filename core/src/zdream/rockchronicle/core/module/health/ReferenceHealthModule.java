@@ -34,7 +34,7 @@ public class ReferenceHealthModule extends HealthModule {
 	Megaman hpRef;
 
 	public ReferenceHealthModule(CharacterEntry ch) {
-		super(ch);
+		super(ch, "reference");
 	}
 
 	@Override

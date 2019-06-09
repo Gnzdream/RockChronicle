@@ -5,17 +5,12 @@ import zdream.rockchronicle.core.module.AbstractModule;
 
 public abstract class ControlModule extends AbstractModule {
 	
-	public static final String NAME = "Control";
+	public static final String NAME = "control";
 	
-	public ControlModule(CharacterEntry ch) {
-		super(ch);
+	public ControlModule(CharacterEntry ch, String desc) {
+		super(ch, NAME, desc);
 	}
 
-	@Override
-	public String name() {
-		return NAME;
-	}
-	
 	@Override
 	public int priority() {
 		return 999;

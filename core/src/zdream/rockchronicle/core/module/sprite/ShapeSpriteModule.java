@@ -28,7 +28,7 @@ public class ShapeSpriteModule extends SpriteModule {
 	private Color color;
 
 	public ShapeSpriteModule(CharacterEntry ch) {
-		super(ch);
+		super(ch, "shape");
 		renderer = new ShapeRenderer();
 	}
 	

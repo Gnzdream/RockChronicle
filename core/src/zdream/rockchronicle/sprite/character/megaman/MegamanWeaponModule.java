@@ -29,7 +29,7 @@ public class MegamanWeaponModule extends WeaponModule {
 	public IntArray weaponEntryIds = new IntArray(8);
 
 	public MegamanWeaponModule(MegamanInLevel parent) {
-		super(parent);
+		super(parent, "megaman");
 		this.parent = parent;
 	}
 	
@@ -90,8 +90,6 @@ public class MegamanWeaponModule extends WeaponModule {
 	
 	@Override
 	public void stepPassed() {
-		super.stepPassed();
-		
 		// 重置参数
 		this.attackBegin = false;
 		
@@ -111,6 +109,8 @@ public class MegamanWeaponModule extends WeaponModule {
 				}
 			}
 		}
+		
+		super.stepPassed();
 	}
 	
 	/**

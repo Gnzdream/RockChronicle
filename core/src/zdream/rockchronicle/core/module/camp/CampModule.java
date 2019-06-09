@@ -21,9 +21,9 @@ import zdream.rockchronicle.core.module.AbstractModule;
  * @since v0.0.1
  * @date 2019-05-06 (create)
  */
-public class CampModule extends AbstractModule {
+public abstract class CampModule extends AbstractModule {
 	
-	public static final String NAME = "Camp";
+	public static final String NAME = "camp";
 	
 	/**
 	 * 自己属于哪个阵营
@@ -45,13 +45,8 @@ public class CampModule extends AbstractModule {
 	 */
 	public IntIntMap defenseTable = new IntIntMap(8);
 	
-	public CampModule(CharacterEntry ch) {
-		super(ch);
-	}
-	
-	@Override
-	public String name() {
-		return NAME;
+	public CampModule(CharacterEntry ch, String desc) {
+		super(ch, NAME, desc);
 	}
 	
 	@Override
