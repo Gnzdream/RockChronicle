@@ -6,7 +6,9 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.core.character.CharacterEntry;
+import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.core.move.LinearMovement;
+import zdream.rockchronicle.platform.body.Box;
 
 /**
  * <p>线性移动的角色的行动模块
@@ -57,5 +59,74 @@ public class LinearMotionModule extends MotionModule {
 		movement.vy = flipY ? -vy : vy;
 		
 		parent.getBoxModule().addMovable(movement, 0);
+		parent.addSubscribe("motion_aim_to", this);
 	}
+	
+	@Override
+	public void receiveEvent(CharacterEvent event) {
+		if ("motion_aim_to".equals(event.name)) {
+			// 计算现在这里到目标的方向
+			// 现在的位置
+			Box box = parent.getBoxModule().getBox();
+			float startX = box.anchor.x;
+			float startY = box.anchor.y;
+			
+			// 目标位置
+			float targetX = event.value.getFloat("x");
+			float targetY = event.value.getFloat("y");
+			float speed = event.value.getFloat("speed") * TIME_STEP;
+			
+			if (speed == 0 || startX == targetX && startY == targetY) {
+				// 不改变方向
+				return;
+			}
+			if (startX == targetX) {
+				movement.vy = speed;
+				return;
+			}
+			if (startY == targetY) {
+				movement.vx = speed;
+				return;
+			}
+			
+			String formula = event.value.getString("formula", "simple");
+			if ("pythagorean".equals(formula)) {
+				aimToUsePythagorean(startX, startY, targetX, targetY, speed);
+			} else {
+				aimToUseSimple(startX, startY, targetX, targetY, speed);
+			}
+		} else {
+			super.receiveEvent(event);
+		}
+	}
+	
+	public void aimToUseSimple(float startX,
+			float startY,
+			float targetX,
+			float targetY,
+			float speed) {
+		// 默认采用两坐标相加法, 而非勾股定理方法
+		
+		float distance = Math.abs(targetX - startX) + Math.abs(targetY - startY);
+		movement.vx = (targetX - startX) / distance * speed;
+		movement.vy = (targetY - startY) / distance * speed;
+	}
+	
+	/**
+	 * 使用勾股定理的距离公式
+	 */
+	public void aimToUsePythagorean(float startX,
+			float startY,
+			float targetX,
+			float targetY,
+			float speed) {
+		
+		float deltaX = targetX - startX;
+		float deltaY = targetY - startY;
+		float distance = (float) Math.pow(deltaX * deltaX + deltaY * deltaY, 0.5);
+		
+		movement.vx = deltaX / distance * speed;
+		movement.vy = deltaY / distance * speed;
+	}
+	
 }

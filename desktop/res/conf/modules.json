@@ -144,6 +144,14 @@
 		{
 			"name":"enemySearching",
 			"class":"zdream.rockchronicle.core.module.scout.EnemySearchingScoutModule"
+		},
+		{
+			"name":"enemyPerception",
+			"class":"zdream.rockchronicle.core.module.scout.EnemyPerceptionScoutModule"
+		},
+		{
+			"name":"blockImpact",
+			"class":"zdream.rockchronicle.core.module.scout.BlockImpactScoutModule"
 		}
 	]
 }

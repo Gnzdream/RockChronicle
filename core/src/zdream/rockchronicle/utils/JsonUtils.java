@@ -137,6 +137,30 @@ public class JsonUtils {
 		delete(map.get(keys[offset]), keys, offset + 1);
 	}
 	
+	/**
+	 * @param map
+	 * @param path
+	 *   像 a.b.c 这种
+	 * @return
+	 */
+	public static JsonValue find(JsonValue map, String path) {
+		Objects.requireNonNull(path);
+		String[] keys = path.split("\\.");
+		return find(map, keys, 0);
+	}
+	
+	public static JsonValue find(JsonValue map, String[] keys) {
+		Objects.requireNonNull(keys);
+		return find(map, keys, 0);
+	}
+	
+	private static JsonValue find(JsonValue map, String[] keys, int offset) {
+		if (keys.length == offset + 1) {
+			return map.get(keys[offset]);
+		}
+		return find(map.get(keys[offset]), keys, offset + 1);
+	}
+	
 	public static boolean isNotNullValue(JsonValue v) {
 		switch (v.type()) {
 		case stringValue:

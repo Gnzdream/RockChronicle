@@ -183,6 +183,8 @@ public class SingleBoxModule extends BoxModule {
 		public void action(LevelWorld world, Box box, CharacterEntry entry) {
 			world.execVerticalMotion(box);
 			world.execHorizontalMotion(box);
+			box.lastVelocityX = box.velocity.x;
+			box.lastVelocityY = box.velocity.y;
 			box.velocity.x = 0;
 			box.velocity.y = 0;
 		}

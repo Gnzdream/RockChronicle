@@ -12,6 +12,8 @@ import zdream.rockchronicle.platform.world.LevelWorld;
 
 /**
  * <p>在地形的约束中的角色的行动模块
+ * <p>每步判断盒子的四面碰壁的情况;
+ *   在行动阶段的后半程进行矫正, 处理盒子在墙壁内的情况.
  * </p>
  * 
  * @author Zdream
@@ -49,16 +51,17 @@ public class TerrainMotionModule extends MotionModule {
 				world.topStop(box);
 				world.leftStop(box);
 				world.rightStop(box);
-				
-				// 位置重合修正
-//				boolean glitch = world.correctOverlapBox(box);
-//				if (!glitch) { // 已经卡在墙中了
-//					Gdx.app.error("SingleBoxMotionModule", String.format("%s 被卡在墙里了, 而且无法修正", parent));
-//				}
 			}
 		}
 		
 		setMotionState();
+	}
+	
+	@Override
+	public void willDestroy() {
+		parent.getBoxModule().removeMovable(glitchMb);
+		
+		super.willDestroy();
 	}
 
 	/* **********

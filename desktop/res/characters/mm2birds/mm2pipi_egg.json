@@ -10,7 +10,8 @@
 		"health":"base",
 		"destroy":"outside",
 		"follower":"base",
-		"control":"simple"
+		"control":"simple",
+		"weapon":"base"
 	},
 	"box":
 	{
@@ -48,6 +49,132 @@
 	{
 		
 	},
+	"weapon":
+	{
+		"weapons":
+		[
+			{
+				"name":"A",
+				"model":"mm2pipi_chicks",
+				"param":
+				{
+					"motion":
+					{
+						"velocity":
+						{
+							"x":-4,
+							"y":0
+						}
+					}
+				}
+			},
+			{
+				"name":"B",
+				"model":"mm2pipi_chicks",
+				"param":
+				{
+					"motion":
+					{
+						"velocity":
+						{
+							"x":-3.603875,
+							"y":1.735535
+						}
+					}
+				}
+			},
+			{
+				"name":"C",
+				"model":"mm2pipi_chicks",
+				"param":
+				{
+					"motion":
+					{
+						"velocity":
+						{
+							"x":-2.493959,
+							"y":3.127326
+						}
+					}
+				}
+			},
+			{
+				"name":"D",
+				"model":"mm2pipi_chicks",
+				"param":
+				{
+					"motion":
+					{
+						"velocity":
+						{
+							"x":-0.890084,
+							"y":3.899712
+						}
+					}
+				}
+			},
+			{
+				"name":"E",
+				"model":"mm2pipi_chicks",
+				"param":
+				{
+					"motion":
+					{
+						"velocity":
+						{
+							"x":4,
+							"y":0
+						}
+					}
+				}
+			},
+			{
+				"name":"F",
+				"model":"mm2pipi_chicks",
+				"param":
+				{
+					"motion":
+					{
+						"velocity":
+						{
+							"x":3.603875,
+							"y":1.735535
+						}
+					}
+				}
+			},
+			{
+				"name":"G",
+				"model":"mm2pipi_chicks",
+				"param":
+				{
+					"motion":
+					{
+						"velocity":
+						{
+							"x":2.493959,
+							"y":3.127326
+						}
+					}
+				}
+			},
+			{
+				"name":"H",
+				"model":"mm2pipi_chicks",
+				"param":
+				{
+					"motion":
+					{
+						"velocity":
+						{
+							"x":0.890084,
+							"y":3.899712
+						}
+					}
+				}
+			}
+		]
+	},
 	"control":
 	{
 		"sequences":
@@ -59,6 +186,16 @@
 					{
 						"stamp":0,
 						"action":"dropBegin"
+					}
+				]
+			},
+			{
+				"name":"onLanded",
+				"sequence":
+				[
+					{
+						"stamp":0,
+						"action":"dropEnd"
 					}
 				]
 			}
@@ -77,12 +214,106 @@
 						{
 							"motion":
 							{
+								"velocity":
+								{
+									"y":5
+								},
 								"acceleration":
 								{
 									"y":-67
+								},
+								"range":
+								{
+									"maxY":28,
+									"minY":-28
 								}
 							}
 						}
+					},
+					{
+						"operation":"create_module",
+						"module":"motion",
+						"name":"terrain",
+						"param":null
+					},
+					{
+						"operation":"create_module",
+						"module":"scout",
+						"name":"blockImpact",
+						"param":null
+					}
+				]
+			},
+			{
+				"name":"dropEnd",
+				"commands":
+				[
+					{
+						"operation":"publish_event",
+						"event":"attack_attempt",
+						"param":
+						{
+							"weapon":"A"
+						}
+					},
+					{
+						"operation":"publish_event",
+						"event":"attack_attempt",
+						"param":
+						{
+							"weapon":"B"
+						}
+					},
+					{
+						"operation":"publish_event",
+						"event":"attack_attempt",
+						"param":
+						{
+							"weapon":"C"
+						}
+					},
+					{
+						"operation":"publish_event",
+						"event":"attack_attempt",
+						"param":
+						{
+							"weapon":"D"
+						}
+					},
+					{
+						"operation":"publish_event",
+						"event":"attack_attempt",
+						"param":
+						{
+							"weapon":"E"
+						}
+					},
+					{
+						"operation":"publish_event",
+						"event":"attack_attempt",
+						"param":
+						{
+							"weapon":"F"
+						}
+					},
+					{
+						"operation":"publish_event",
+						"event":"attack_attempt",
+						"param":
+						{
+							"weapon":"G"
+						}
+					},
+					{
+						"operation":"publish_event",
+						"event":"attack_attempt",
+						"param":
+						{
+							"weapon":"H"
+						}
+					},
+					{
+						"operation":"will_delete"
 					}
 				]
 			}
@@ -93,6 +324,16 @@
 				"when":"recieve_event",
 				"eventName":"detach_leader",
 				"sequence":"onDetach"
+			},
+			{
+				"when":"recieve_event",
+				"eventName":"block_impact",
+				"sequence":"onLanded"
+			},
+			{
+				"when":"recieve_event",
+				"eventName":"glitch_found",
+				"sequence":"onLanded"
 			}
 		]
 	}

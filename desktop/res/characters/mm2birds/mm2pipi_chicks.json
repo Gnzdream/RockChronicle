@@ -1,5 +1,5 @@
 {
-	"name":"mm2bird",
+	"name":"mm2pipi_chicks",
 	"class":"zdream.rockchronicle.sprite.foes.base.BaseFoe",
 	"type":"foe",
 	"modules":
@@ -11,8 +11,7 @@
 		"health":"base",
 		"motion":"linear",
 		"destroy":"outside",
-		"leader":"base",
-		"scout":"enemyPerception",
+		"scout":"enemySearching",
 		"control":"simple"
 	},
 	"box":
@@ -20,10 +19,10 @@
 		"inTerrain":false,
 		"rect":
 		{
-			"width":0.958334,
-			"height":0.8,
-			"x":-0.458334,
-			"y":0
+			"width":0.583334,
+			"height":0.5,
+			"x":-0.291667,
+			"y":-0.25
 		}
 	},
 	"camp":
@@ -45,7 +44,7 @@
 	},
 	"textures":
 	[
-		"sprites/mm2birds_sheet.json"
+		"sprites/mm2pipi_chicks_sheet.json"
 	],
 	"destroyParam":
 	{
@@ -59,40 +58,26 @@
 			"x":-8
 		}
 	},
-	"leader":
-	{
-		"followers":
-		[
-			{
-				"offsetX":0,
-				"offsetY":-0.291667,
-				"name":"mm2pipi_egg",
-				"param":
-				{
-					
-				}
-			}
-		]
-	},
 	"scout":
 	{
-		"enemyPerception":
+		"enemySearching":
 		{
-			"range":10,
+			"enable":false,
 			"execute":"once"
 		}
 	},
 	"control":
 	{
+		"defaultSequence": "normal",
 		"sequences":
 		[
 			{
-				"name":"releaseFollowers",
+				"name":"normal",
 				"sequence":
 				[
 					{
-						"stamp":0,
-						"action":"releaseFollowers"
+						"stamp":0.5,
+						"action":"turn"
 					}
 				]
 			}
@@ -100,15 +85,32 @@
 		"actions":
 		[
 			{
-				"name":"releaseFollowers",
+				"name":"turn",
+				"commands":
+				[
+					{
+						"operation":"set_situation",
+						"key":"scout.enemySearching.active",
+						"value":true
+					}
+				]
+			},
+			{
+				"name":"aim",
 				"commands":
 				[
 					{
 						"operation":"publish_event",
-						"event":"release_follower",
+						"event":"motion_aim_to",
 						"param":
 						{
-							"id":"all"
+							"speed":4,
+							"formula":"pythagorean"
+						},
+						"param_expression":
+						{
+							"x":"event:x",
+							"y":"event:y"
 						}
 					}
 				]
@@ -119,7 +121,7 @@
 			{
 				"when":"recieve_event",
 				"eventName":"find_enemy",
-				"sequence":"releaseFollowers"
+				"actions":"aim"
 			}
 		]
 	}

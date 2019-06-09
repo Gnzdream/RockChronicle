@@ -26,12 +26,32 @@ public class ParabolaMovement implements IMovable {
 	 */
 	public float ax, ay;
 	public boolean enable = true;
+	
+	/**
+	 * 速度范围
+	 */
+	public float maxX = Float.MAX_VALUE, minX = Float.MIN_VALUE,
+			maxY = Float.MAX_VALUE, minY = Float.MIN_VALUE;
 
 	@Override
 	public void action(LevelWorld world, Box box, CharacterEntry entry) {
 		if (enable) {
 			vx += ax;
 			vy += ay;
+			
+			// 范围限制
+			if (vx > maxX) {
+				vx = maxX;
+			} else if (vx < minX) {
+				vx = minX;
+			}
+			if (vy > maxY) {
+				vy = maxY;
+			} else if (vy < minY) {
+				vy = minY;
+			}
+			
+			// 改写速度
 			if (vx != 0) {
 				box.setVelocityX(box.velocity.x + vx);
 			}

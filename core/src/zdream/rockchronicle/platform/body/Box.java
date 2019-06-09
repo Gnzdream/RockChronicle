@@ -185,6 +185,11 @@ public class Box {
 	public final Vector2 velocity = new Vector2();
 	
 	/**
+	 * 上一步的速度
+	 */
+	public float lastVelocityX, lastVelocityY;
+	
+	/**
 	 * 设置速度. 一秒大概 120 步, 在 {@link LevelWorld#TIME_STEP} 定义
 	 * @param vx
 	 *   单位 : 格子 / 步

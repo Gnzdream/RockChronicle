@@ -68,6 +68,30 @@ public class ParabolaMotionModule extends MotionModule {
 		movement.ax = (flipX) ? -ax : ax;
 		movement.ay = (flipY) ? -ay : ay;
 		
+		JsonValue orange = omotion.get("range");
+		if (orange != null) {
+			for (JsonValue entry = orange.child; entry != null; entry = entry.next) {
+				switch (entry.name) {
+				case "maxX":
+					movement.maxX = (flipX) ? -entry.asFloat() * TIME_STEP :
+						entry.asFloat() * TIME_STEP;
+					break;
+				case "minX":
+					movement.minX = (flipX) ? -entry.asFloat() * TIME_STEP :
+						entry.asFloat() * TIME_STEP;
+					break;
+				case "maxY":
+					movement.maxY = (flipY) ? -entry.asFloat() * TIME_STEP :
+						entry.asFloat() * TIME_STEP;
+					break;
+				case "minY":
+					movement.minY = (flipY) ? -entry.asFloat() * TIME_STEP :
+						entry.asFloat() * TIME_STEP;
+					break;
+				}
+			}
+		}
+		
 		parent.getBoxModule().addMovable(movement, 0);
 	}
 

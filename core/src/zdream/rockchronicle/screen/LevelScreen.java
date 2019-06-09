@@ -84,7 +84,7 @@ public class LevelScreen implements Screen {
 					.get()));
 			
 			runtime.addEntry(app.runtime.characterBuilder.create("mm2bird",
-					CharacterParameter.newInstance().setBoxAnchor(8.5f, 4)
+					CharacterParameter.newInstance().setBoxAnchor(20, 7)
 					.get()));
 		}
 		

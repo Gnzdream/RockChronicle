@@ -131,7 +131,7 @@ public class BaseWeaponModule extends WeaponModule {
 		float x = (orientation) ? box.anchor.x + spawnx : box.anchor.x - spawnx;
 		float y = box.anchor.y + spawny;
 		
-		parent.createEntry("parabola_bullet",
+		parent.createEntry(item.model,
 				CharacterParameter.newInstance(JsonUtils.mergeJson(item.param, param))
 					.setBoxAnchor(x, y)
 					.setStateOrientation(orientation)

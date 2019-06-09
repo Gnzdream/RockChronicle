@@ -28,6 +28,11 @@ public class SimpleControlModule extends ControlModule {
 	ObjectMap<String, Sequence> seqs = new ObjectMap<>(8);
 	ObjectMap<String, ActionItem> actions = new ObjectMap<>(8);
 	
+	/**
+	 * 是否删除角色
+	 */
+	boolean parentWillDelete = false;
+	
 	class Sequence {
 		String name;
 		int length; // 单位是步
@@ -54,9 +59,13 @@ public class SimpleControlModule extends ControlModule {
 		 */
 		String eventName;
 		/**
-		 * 转入的 sequence
+		 * 转入的 sequencem, 可能为 null
 		 */
 		String sequence;
+		/**
+		 * 刚触发时执行的 action
+		 */
+		String[] actions;
 	}
 	
 	Array<RecieveEventTrigger> recvEventTs = null;
@@ -183,7 +192,15 @@ public class SimpleControlModule extends ControlModule {
 	private void initRecvEventTrigger(JsonValue otrigger) {
 		RecieveEventTrigger t = new RecieveEventTrigger();
 		t.eventName = otrigger.getString("eventName");
-		t.sequence = otrigger.getString("sequence");
+		t.sequence = otrigger.getString("sequence", null);
+		JsonValue actions = otrigger.get("actions");
+		if (actions != null) {
+			if (actions.isArray()) {
+				t.actions = actions.asStringArray();
+			} else {
+				t.actions = new String[] {actions.asString()};
+			}
+		}
 		
 		if (recvEventTs == null) {
 			recvEventTs = new Array<>(4);
@@ -191,6 +208,11 @@ public class SimpleControlModule extends ControlModule {
 		recvEventTs.add(t);
 		
 		parent.addSubscribe(t.eventName, this);
+	}
+	
+	@Override
+	public int priority() {
+		return -12;
 	}
 	
 	/* **********
@@ -232,13 +254,47 @@ public class SimpleControlModule extends ControlModule {
 			String operation = item.operation;
 			switch (operation) {
 			case "publish_event":
-				executePublish(item.param);
+				executePublish(item.param, null);
 				break;
 			case "motion_select":
 				executeMotionSelect(item.param);
 				break;
 			case "create_module":
 				executeCreateModule(item.param);
+				break;
+			case "will_delete":
+				executeWillDelete();
+				break;
+			case "set_situation":
+				executeSetSituation(item.param);
+				break;
+
+			default:
+				break;
+			}
+		}
+	}
+	
+	private void execute(String action, CharacterEvent event) {
+		ActionItem item = actions.get(action);
+		
+		for (; item != null; item = item.next) {
+			String operation = item.operation;
+			switch (operation) {
+			case "publish_event":
+				executePublish(item.param, event);
+				break;
+			case "motion_select":
+				executeMotionSelect(item.param);
+				break;
+			case "create_module":
+				executeCreateModule(item.param);
+				break;
+			case "will_delete":
+				executeWillDelete();
+				break;
+			case "set_situation":
+				executeSetSituation(item.param);
 				break;
 
 			default:
@@ -251,9 +307,17 @@ public class SimpleControlModule extends ControlModule {
 	 * 发布信息
 	 * @param param
 	 */
-	private void executePublish(JsonValue param) {
+	private void executePublish(JsonValue param, CharacterEvent event0) {
 		CharacterEvent event = new CharacterEvent(param.getString("event"));
-		event.value = JsonUtils.clone(param.get("param"));
+		JsonValue value = param.get("param");
+		if (value != null) {
+			event.value = JsonUtils.clone(value);
+		}
+		
+		if (param.has("param_expression")) {
+			event.value = JsonUtils.mergeJson(event.value,
+					handleExpression(param.get("param_expression"), event0));
+		}
 		
 		parent.publish(event);
 	}
@@ -285,15 +349,93 @@ public class SimpleControlModule extends ControlModule {
 		
 		parent.addModule(smodule, sname, param.get("param"));
 	}
+
+	/**
+	 * 删除角色. 删除角色将延迟到这步时间结束后执行
+	 */
+	private void executeWillDelete() {
+		parentWillDelete = true;
+	}
+
+	/**
+	 * 设置参数至 situation 中
+	 * @param param
+	 */
+	private void executeSetSituation(JsonValue param) {
+		String key = param.getString("key");
+		JsonValue value = JsonUtils.clone(param.get("value"));
+		
+		setSituation(key, value);
+	}
+	
+	/**
+	 * 用表达式合成 Json 数据
+	 * @param raw
+	 * @param event
+	 * @return
+	 */
+	private JsonValue handleExpression(JsonValue raw, CharacterEvent event) {
+		JsonValue v;
+		
+		if (raw.isObject()) {
+			v = handleExpressionObject(raw, event);
+		} else if (raw.isArray()) {
+			v = handleExpressionArray(raw, event);
+		} else {
+			v = handleExpressionValue(raw.asString(), event);
+		}
+		
+		return v;
+	}
+	
+	private JsonValue handleExpressionValue(String exp, CharacterEvent event) {
+		if (exp.startsWith("event:")) {
+			String path = exp.substring(6);
+			return JsonUtils.clone(JsonUtils.find(event.value, path));
+		}
+		return null;
+	}
+	
+	private JsonValue handleExpressionObject(JsonValue oraw,
+			CharacterEvent event) {
+		JsonValue v = new JsonValue(ValueType.object);
+		for (JsonValue entry = oraw.child; entry != null; entry = entry.next) {
+			v.addChild(entry.name, handleExpression(entry, event));
+		}
+		return v;
+	}
+	
+	private JsonValue handleExpressionArray(JsonValue oraw,
+			CharacterEvent event) {
+		JsonValue v = new JsonValue(ValueType.array);
+		for (JsonValue entry = oraw.child; entry != null; entry = entry.next) {
+			v.addChild(handleExpression(entry, event));
+		}
+		return v;
+	}
+	
+	@Override
+	public void stepPassed() {
+		if (parentWillDelete) {
+			parent.willDestroy();
+		}
+		super.stepPassed();
+	}
 	
 	@Override
 	public void receiveEvent(CharacterEvent event) {
 		String name = event.name;
 		
-		if (this.recvEventTs != null) {
+		if (this.recvEventTs != null && !this.parentWillDelete) {
 			for (int i = 0; i < recvEventTs.size; i++) {
 				RecieveEventTrigger t = recvEventTs.get(i);
 				if (t.eventName.equals(name)) {
+					if (t.actions != null) {
+						for (int j = 0; j < t.actions.length; j++) {
+							execute(t.actions[j], event);
+						}
+					}
+					
 					switchSequence(t.sequence);
 					return;
 				}
@@ -308,7 +450,11 @@ public class SimpleControlModule extends ControlModule {
 	 * @param name
 	 */
 	private void switchSequence(String name) {
-		this.curSeq = seqs.get(name);
+		if (name != null) {
+			this.curSeq = seqs.get(name);
+		} else {
+			this.curSeq = null;
+		}
 		this.step = 0;
 	}
 	
