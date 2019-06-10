@@ -115,7 +115,7 @@ public class BaseWeaponModule extends WeaponModule {
 	public void handleAttack(String weapon, JsonValue param) {
 		WeaponItem item = weapons.get(weapon);
 		
-		boolean orientation = getBoolean("state.orientation", true); // true : 向右
+		boolean orientation = parent.getBoxModule().getBox().orientation; // true : 向右
 		float spawnx;
 		float spawny;
 		if (item.spawnPosReset) {
@@ -130,6 +130,7 @@ public class BaseWeaponModule extends WeaponModule {
 		
 		float x = (orientation) ? box.anchor.x + spawnx : box.anchor.x - spawnx;
 		float y = box.anchor.y + spawny;
+		setState("weapon.attacking", new JsonValue(true));
 		
 		parent.createEntry(item.model,
 				CharacterParameter.newInstance(JsonUtils.mergeJson(item.param, param))

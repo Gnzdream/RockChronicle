@@ -30,8 +30,8 @@ public class ParabolaMovement implements IMovable {
 	/**
 	 * 速度范围
 	 */
-	public float maxX = Float.MAX_VALUE, minX = Float.MIN_VALUE,
-			maxY = Float.MAX_VALUE, minY = Float.MIN_VALUE;
+	public float maxX = Float.MAX_VALUE, minX = -Float.MAX_VALUE,
+			maxY = Float.MAX_VALUE, minY = -Float.MAX_VALUE;
 
 	@Override
 	public void action(LevelWorld world, Box box, CharacterEntry entry) {

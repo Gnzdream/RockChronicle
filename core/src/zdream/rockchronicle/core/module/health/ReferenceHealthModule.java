@@ -39,6 +39,7 @@ public class ReferenceHealthModule extends HealthModule {
 
 	@Override
 	protected void initHealthArguments(JsonValue root) {
+		super.initHealthArguments(root);
 		JsonValue v = root.get("health");
 	
 		this.ref = v.getString("ref");
@@ -56,7 +57,7 @@ public class ReferenceHealthModule extends HealthModule {
 
 	@Override
 	protected void executeOuterDamage(CharacterEvent event) {
-		boolean immune = getBoolean("state.immune", false);
+		boolean immune = getBoolean("health.immune", false);
 		
 		if (immune) {
 			event.value.addChild("result", new JsonValue("absorbed"));
@@ -77,6 +78,8 @@ public class ReferenceHealthModule extends HealthModule {
 				parent.willDestroy();
 			}
 			v.addChild("result", new JsonValue("accepted"));
+			
+			super.executeOuterDamage(event);
 		}
 	}
 	
@@ -90,6 +93,7 @@ public class ReferenceHealthModule extends HealthModule {
 			hpRef.hp += value;
 		}
 		setSituation("health.hp", new JsonValue(hpRef.hp));
+		super.executeInnerRecovery(event);
 	}
 
 }

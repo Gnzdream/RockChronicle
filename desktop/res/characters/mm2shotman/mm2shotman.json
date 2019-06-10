@@ -6,7 +6,6 @@
 	{
 		"box":"single",
 		"camp":"base",
-		"state":"base",
 		"sprite":"base",
 		"collision":"bullet",
 		"health":"base",

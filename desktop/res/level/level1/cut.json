@@ -27,7 +27,7 @@
 			"param":
 			{
 				"name" : "mm2shotman",
-				"state" :
+				"box" :
 				{
 					"orientation" : false
 				}

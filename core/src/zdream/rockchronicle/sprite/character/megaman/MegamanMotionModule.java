@@ -128,14 +128,14 @@ public class MegamanMotionModule extends TerrainMotionModule implements IMovable
 		boolean onTheGround = onTheGround(world, box, box.bottomStop, box.topStop);
 		setSituation("state.onTheGround", new JsonValue(onTheGround));
 		
-		boolean stiffness = getBoolean("state.stiffness", false);
+		boolean stiffness = getBoolean("health.stiffness", false);
 		if (stiffness) { // 受伤时不转向
 			return;
 		} else {
 			if (left) {
-				setSituation("state.orientation", new JsonValue(false));
+				box.orientation = false;
 			} else if (right) {
-				setSituation("state.orientation", new JsonValue(true));
+				box.orientation = true;
 			}
 		}
 		
@@ -155,7 +155,7 @@ public class MegamanMotionModule extends TerrainMotionModule implements IMovable
 		}
 		
 		// 2. 修改速度
-		boolean stiffness = getBoolean("state.stiffness", false);
+		boolean stiffness = getBoolean("health.stiffness", false);
 		Vector2 vel = box.velocity; // 速度
 		float vx = vel.x;
 		
@@ -165,7 +165,7 @@ public class MegamanMotionModule extends TerrainMotionModule implements IMovable
 		// 最终速度 Y, 需要等待 jump 来改
 		
 		// 4. 执行左右移动
-		boolean orientation = getBoolean("state.orientation", true);
+		boolean orientation = box.orientation;
 		if (stiffness) {
 			// 在击退 / 硬直状态下
 			if (stopSlide) {

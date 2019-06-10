@@ -55,14 +55,14 @@ public class MegamanWeaponModule extends WeaponModule {
 	private void handleAttack(LevelWorld world, int index, boolean hasNext) {
 		Box box = getSingleBox();
 		
-		boolean stiffness = getBoolean("state.stiffness", false);
+		boolean stiffness = getBoolean("health.stiffness", false);
 		
 		// 其它 : 是否攻击
 		if (weaponEntryIds.size < 3 && attackBegin && !stiffness) {
 			boolean climbing = getBoolean("climb.climbing", false);
 			
 			// 计算朝向
-			boolean orientation = getBoolean("state.orientation", true); // true : 向右
+			boolean orientation = box.orientation; // true : 向右
 			if (climbing) {
 				boolean left = parent.ctrl.lastLeft;
 				boolean right = parent.ctrl.lastRight;
@@ -70,7 +70,7 @@ public class MegamanWeaponModule extends WeaponModule {
 				if (orientation && left || !orientation && right) {
 					// 转向
 					orientation = right;
-					setState("state.orientation", new JsonValue(right));
+					box.orientation = right;
 				}
 			}
 			

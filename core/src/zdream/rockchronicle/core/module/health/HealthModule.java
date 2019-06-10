@@ -6,6 +6,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.core.module.AbstractModule;
+import zdream.rockchronicle.platform.world.LevelWorld;
 
 /**
  * <p>健康与生命管理的模块
@@ -15,7 +16,7 @@ import zdream.rockchronicle.core.module.AbstractModule;
  * @since v0.0.1
  * @date
  *   2019-05-06 (create)
- *   2019-05-10 (last modified)
+ *   2019-06-10 (last modified)
  */
 public abstract class HealthModule extends AbstractModule {
 	
@@ -37,15 +38,44 @@ public abstract class HealthModule extends AbstractModule {
 	@Override
 	public void willDestroy() {
 		super.willDestroy();
-		parent.removeSubscribe("outside_collision", this);
-		parent.removeSubscribe("inside_recovery", this);
+		parent.removeSubscribe(this);
 	}
 	
-	protected abstract void initHealthArguments(JsonValue root);
+	protected void initHealthArguments(JsonValue root) {
+		JsonValue ohealth = root.get("health");
+		
+		int stiffnessDuration = (int) (ohealth.getFloat("stiffness", 0)
+				* LevelWorld.STEPS_PER_SECOND);
+		
+		int immuneDuration = 6;
+		float fImmune = ohealth.getFloat("immune", -1);
+		if (fImmune >= 0) {
+			immuneDuration = (int) (fImmune * LevelWorld.STEPS_PER_SECOND);
+		}
+		
+		setSituation("health.param.stiffness", new JsonValue(stiffnessDuration));
+		setSituation("health.param.immune", new JsonValue(immuneDuration));
+	}
 	
 	@Override
 	public int priority() {
 		return -0xE0;
+	}
+	
+	@Override
+	public void determine(LevelWorld world, int index, boolean hasNext) {
+		super.determine(world, index, hasNext);
+		
+		int stiffnessRemain = getInt("health.stiffness", 0);
+		if (stiffnessRemain > 0) {
+			stiffnessRemain--;
+			setSituation("health.stiffness", new JsonValue(stiffnessRemain));
+		}
+		int immuneRemain = getInt("health.immune", 0);
+		if (immuneRemain > 0) {
+			immuneRemain--;
+			setSituation("health.immune", new JsonValue(immuneRemain));
+		}
 	}
 	
 	@Override
@@ -89,8 +119,23 @@ public abstract class HealthModule extends AbstractModule {
 		// TODO 后置处理
 	}
 	
-	protected abstract void executeOuterDamage(CharacterEvent event);
+	protected void executeOuterDamage(CharacterEvent event) {
+		if ("accepted".equals(event.value.getString("result"))) {
+			int damage = event.value.getInt("damage");
+			
+			int stiffnessDuration = getInt("health.param.stiffness", 0);
+			if (stiffnessDuration > 0 && damage > 0) {
+				setSituation("health.stiffness", new JsonValue(stiffnessDuration));
+			}
+			int immuneDuration = getInt("health.param.immune", 0);
+			if (immuneDuration > 0) {
+				setSituation("health.immune", new JsonValue(immuneDuration));
+			}
+		}
+	}
 	
-	protected abstract void executeInnerRecovery(CharacterEvent event);
+	protected void executeInnerRecovery(CharacterEvent event) {
+		
+	}
 
 }

@@ -68,6 +68,7 @@ public class SingleBoxModule extends BoxModule {
 
 	public void initBox(JsonValue object) {
 		box.inTerrain = object.getBoolean("inTerrain", true);
+		box.orientation = object.getBoolean("orientation", true);
 		
 		// 初始锚点位置
 		JsonValue oanchor = object.get("anchor");

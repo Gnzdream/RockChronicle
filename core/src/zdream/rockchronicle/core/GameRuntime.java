@@ -171,8 +171,8 @@ public class GameRuntime {
 			}
 		}
 		
-		public void onStepFinished(LevelWorld world, boolean isPause) {
-			GameRuntime.this.onStepFinished(isPause);
+		public void stepPaused(LevelWorld world) {
+			GameRuntime.this.stepPaused();
 		};
 	};
 	
@@ -293,14 +293,12 @@ public class GameRuntime {
 	}
 
 	/**
-	 * 类似于 {@link IPhysicsStep#onStepFinished(LevelWorld, boolean)}
-	 * @param isPause
-	 *   本帧是否在暂停状态
+	 * 类似于 {@link IPhysicsStep#stepPaused(LevelWorld, boolean)}
 	 */
-	public void onStepFinished(boolean isPause) {
+	public void stepPaused() {
 		for (int i = 0; i < entries.size; i++) {
 			try {
-				entries.get(i).onStepFinished(levelWorld, isPause);
+				entries.get(i).stepPaused(levelWorld);
 			} catch (RuntimeException e) {
 				e.printStackTrace();
 			}

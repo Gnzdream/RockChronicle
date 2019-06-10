@@ -86,13 +86,6 @@
 			"class":"zdream.rockchronicle.core.module.health.ReferenceHealthModule"
 		}
 	],
-	"state":
-	[
-		{
-			"name":"base",
-			"class":"zdream.rockchronicle.core.module.state.BaseStateModule"
-		}
-	],
 	"weapon":
 	[
 		{

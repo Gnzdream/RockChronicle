@@ -118,7 +118,7 @@ public class ClimbModule extends AbstractModule implements IMovable {
 		// 2. 判断角色是否将附到梯子上. 如果是, 将在 move 方法中修改 climbing, 该方法不作修改
 		
 		// 被攻击硬直时, 后面的判断都不用继续了
-		boolean stiffness = getBoolean("state.stiffness", false);
+		boolean stiffness = getBoolean("health.stiffness", false);
 		if (stiffness) { // 被攻击硬直时, 后面的判断都不用继续了
 			climbing = 0;
 			parent.getBoxModule().setNextPattern("normal");

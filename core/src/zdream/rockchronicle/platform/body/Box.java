@@ -236,6 +236,10 @@ public class Box {
 	 */
 	public boolean gravityDown;
 	/**
+	 * 左右朝向. true 为右
+	 */
+	public boolean orientation;
+	/**
 	 * 是否受地形的影响
 	 */
 	public boolean inTerrain = true;

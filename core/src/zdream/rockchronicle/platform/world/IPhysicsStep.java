@@ -20,13 +20,13 @@ public interface IPhysicsStep {
 	public void step(LevelWorld world, int index, boolean hasNext);
 	
 	/**
-	 * 物理世界行动完成时, 每帧的最后会调用一次该函数
+	 * <p>在世界暂停 (形式暂停) 的时候, 每一步时间的触发事件.
+	 * <p>一般只是处理玩家的按键输入、画面动作等
+	 * </p>
 	 * @param world
 	 *   物理世界实例
-	 * @param isPause
-	 *   是否在暂停中
 	 */
-	default public void onStepFinished(LevelWorld world, boolean isPause) {
+	default public void stepPaused(LevelWorld world) {
 		// do nothing
 	}
 	

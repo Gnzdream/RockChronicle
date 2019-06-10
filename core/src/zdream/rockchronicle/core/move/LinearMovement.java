@@ -25,6 +25,11 @@ public class LinearMovement implements IMovable {
 		if (enable) {
 			if (vx != 0) {
 				box.setVelocityX(box.velocity.x + vx);
+				if (vx > 0) {
+					box.orientation = true;
+				} else {
+					box.orientation = false;
+				}
 			}
 			if (vy != 0) {
 				box.setVelocityY(box.velocity.y + vy);

@@ -77,7 +77,7 @@ public abstract class SpriteModule extends AbstractModule {
 	 *   是否向右
 	 */
 	public boolean getOrientation() {
-		return getBoolean("state.orientation", true);
+		return parent.getBoxModule().getBox().orientation;
 	}
 	
 	public void draw(SpriteBatch batch, OrthographicCamera camera) {
@@ -102,7 +102,7 @@ public abstract class SpriteModule extends AbstractModule {
 			x = getX() - entry.offsetx / (float) Config.INSTANCE.blockWidth - fw;
 		}
 		
-		int immune = getInt("state.immune", 0);
+		int immune = getInt("health.immune", 0);
 		
 		// 绘画
 		batch.begin();

@@ -36,6 +36,7 @@ public abstract class CharacterEntry {
 	
 	public final int id;
 	public final String name;
+	public LevelWorld world;
 	/**
 	 * 角色类型. 包括但不限于:
 	 * 
@@ -100,6 +101,7 @@ public abstract class CharacterEntry {
 	 * @return
 	 */
 	public void createBody(LevelWorld world) {
+		this.world = world;
 		getBoxModule().doCreateBody(world);
 	}
 	
@@ -293,13 +295,11 @@ public abstract class CharacterEntry {
 		getBoxModule().action(world);
 	}
 
-	public void onStepFinished(LevelWorld world, boolean isPause) {
-		if (modules == null) {
-			sortModules();
-		}
+	public void stepPaused(LevelWorld world) {
+		if (modules == null) sortModules();
 		
 		for (int i = 0; i < modules.length; i++) {
-			modules[i].onStepFinished(world, isPause);
+			modules[i].stepPaused(world);
 		}
 	}
 	

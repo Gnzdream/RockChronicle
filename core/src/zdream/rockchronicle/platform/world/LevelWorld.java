@@ -29,29 +29,42 @@ public class LevelWorld implements ITerrainStatic {
 	
 	public void doCreate() {
 		// 世界重力向下
-		this.pause = true;
+		this.pause = 2;
 	}
 	
 	/**
-	 * 暂停
+	 * 强暂停
 	 */
 	public void doPause() {
-		this.pause = true;
+		this.pause = 2;
+	}
+	
+	/**
+	 * 形式暂停
+	 */
+	public void doWait() {
+		this.pause = 1;
 	}
 	
 	/**
 	 * 从暂停中恢复
 	 */
 	public void doResume() {
-		this.pause = false;
+		if (this.pause == 0) return;
+		this.pause = 0;
 		this.frameTime = 0;
 		this.accumulator = 0;
 	}
 	
 	/**
-	 * 是否在暂停中
+	 * <p>是否在暂停中.
+	 * <p>进行中为 0, 形式暂停为 1, 强暂停为 2.
+	 * 其中, 形式暂停指切换房间时世界的暂停, 以及其它重要的事件触发时.
+	 * 此时画面不能完全暂停;
+	 * 强暂停时世界里的所有的动作全部暂停
+	 * </p>
 	 */
-	public boolean pause;
+	public byte pause;
 	
 	/**
 	 * 该帧距离上一帧时, 过去的物理世界的时间. 单位秒<br>
@@ -63,6 +76,11 @@ public class LevelWorld implements ITerrainStatic {
 	 * 该值用于在动态帧率时, 调整世界的更新频率.
 	 */
 	private float accumulator = 0;
+	
+	/**
+	 * 现在的步数
+	 */
+	public int step;
 
 	/**
 	 * 世界的更新频率为每秒 120 步
@@ -117,25 +135,21 @@ public class LevelWorld implements ITerrainStatic {
 	 *   该帧距离上一帧的时间. 单位秒
 	 */
 	public void doPhysicsStep(float deltaTime) {
-		if (this.pause) {
-			this.frameTime = 0;
-			if (stepCallBack != null) {
-				stepCallBack.onStepFinished(this, true);
-			}
-			return;
-		}
-		
 		this.frameTime = deltaTime = Math.min(deltaTime, 0.1f);
-		
 	    accumulator += deltaTime;
 	    int index = 0;
 	    while (accumulator >= TIME_STEP) {
 	        accumulator -= TIME_STEP;
-	        if (stepCallBack != null) {
-	        	stepCallBack.step(this, index++, accumulator >= TIME_STEP);
+	        
+	        if (this.pause == 0) {
+	        	step++;
+		        if (stepCallBack != null) {
+		        	stepCallBack.step(this, index++, accumulator >= TIME_STEP);
+		        }
+	        } else if (this.pause == 1) {
+	        	stepCallBack.stepPaused(this);
 	        }
 	    }
-		stepCallBack.onStepFinished(this, false);
 	}
 	
 	public void setCurrentRoom(Room currentRoom) {

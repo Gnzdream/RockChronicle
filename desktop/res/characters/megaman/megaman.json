@@ -6,7 +6,6 @@
 	{
 		"box":"single",
 		"camp":"base",
-		"state":"base",
 		"jump":"base",
 		"climb":"base",
 		"health":"reference",
@@ -63,16 +62,10 @@
 	{
 		"velocity":5
 	},
-	"state":
-	{
-		"param":
-		{
-			"stiffness":0.45,
-			"immune":1.5
-		}
-	},
 	"health":
 	{
-		"ref":"megaman"
+		"ref":"megaman",
+		"stiffness":0.45,
+		"immune":1.5
 	}
 }

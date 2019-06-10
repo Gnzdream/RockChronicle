@@ -36,7 +36,7 @@ public class MegamanSpriteModule extends BaseSpriteModule {
 		}
 		
 		// 是否硬直
-		boolean stiffness = getBoolean("state.stiffness", false);
+		boolean stiffness = getBoolean("health.stiffness", false);
 		if (stiffness) {
 			motion = "stiffness";
 			setState("stiffness");
@@ -45,7 +45,7 @@ public class MegamanSpriteModule extends BaseSpriteModule {
 		}
 		
 		// 攻击判定
-		boolean attacking = getBoolean("state.attacking", false);
+		boolean attacking = getBoolean("weapon.attacking", false);
 		if (attacking) {
 			attackRemain = LevelWorld.STEPS_PER_SECOND / 2;
 		}

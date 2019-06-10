@@ -142,7 +142,7 @@ public class BaseJumpModule extends JumpModule implements IMovable {
 			return;
 		}
 		
-		boolean stiffness = getBoolean("state.stiffness", false);
+		boolean stiffness = getBoolean("health.stiffness", false);
 		
 		float vy = lastvy;
 		float gravityScale = box.gravityScale;

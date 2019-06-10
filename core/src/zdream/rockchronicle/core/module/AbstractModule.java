@@ -65,9 +65,8 @@ public abstract class AbstractModule {
 	/**
 	 * 子类如果要继承, 请在方法最后加上 super.onStepFinished()
 	 * @param world
-	 * @param isPause
 	 */
-	public void onStepFinished(LevelWorld world, boolean isPause) {
+	public void stepPaused(LevelWorld world) {
 		
 	}
 
