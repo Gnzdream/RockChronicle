@@ -1,15 +1,13 @@
 package zdream.rockchronicle.core.module.field;
 
+import static zdream.rockchronicle.platform.world.LevelWorld.STEPS_PER_SECOND;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
 
-import zdream.rockchronicle.RockChronicle;
-import zdream.rockchronicle.core.GameRuntime;
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.platform.world.LevelWorld;
-
-import static zdream.rockchronicle.platform.world.LevelWorld.STEPS_PER_SECOND;
 
 /**
  * <p>生怪场的状态记录的模块
@@ -92,10 +90,9 @@ public class SpawnFieldModule extends FieldModule {
 	public void spawn(LevelWorld world) {
 		Gdx.app.log("SpawnFieldModule", "spawn");
 		
-		GameRuntime runtime = RockChronicle.INSTANCE.runtime;
-		CharacterEntry entry = runtime.characterBuilder.create(
+		CharacterEntry entry = parent.world.createEntry(
 				spawnFoesName, spawnFoesParam);
-		runtime.addEntry(entry);
+		parent.world.addEntry(entry);
 	}
 
 }

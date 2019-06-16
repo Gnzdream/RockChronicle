@@ -66,7 +66,7 @@ public class RoomShiftHandler {
 		param.gate = g;
 		
 		GameRuntime runtime = RockChronicle.INSTANCE.runtime;
-		param.entries.add(runtime.getPlayer1());
+		param.entries.add(runtime.levelWorld.getPlayer1());
 		param.entriesPos = new Vector2[param.entries.size];
 		param.phase2EntryWidth = new float[param.entries.size];
 		
@@ -361,13 +361,16 @@ public class RoomShiftHandler {
 		
 		// 清空 entry
 		IntSet set = new IntSet(param.entries.size);
+		
 		param.entries.forEach(ch -> set.add(ch.id));
-		runtime.entries.forEach(ch -> {
+		runtime.levelWorld.entries.begin();
+		for (int i = 0; i < runtime.levelWorld.entries.size; i++) {
+			CharacterEntry ch = runtime.levelWorld.entries.items[i];
 			if (!set.contains(ch.id)) {
 				ch.willDestroy();
 			}
-		});
-		runtime.handleAddAndRemove();
+		}
+		runtime.levelWorld.entries.end();
 		
 		Room srcRoom = param.gate.srcRoom;
 		Room destRoom = param.gate.destRoom;

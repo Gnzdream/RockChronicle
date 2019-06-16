@@ -6,12 +6,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.DelayedRemovalArray;
 
-import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.cast.CastList;
-import zdream.rockchronicle.core.character.CharacterBuilder;
 import zdream.rockchronicle.core.character.CharacterEntry;
-import zdream.rockchronicle.core.input.IInputBindable;
 import zdream.rockchronicle.platform.region.ConnectionProperties;
 import zdream.rockchronicle.platform.region.FieldDef;
 import zdream.rockchronicle.platform.region.FoeDef;
@@ -28,16 +26,6 @@ import zdream.rockchronicle.platform.world.SceneDesigner;
 public class GameRuntime {
 	
 	/**
-	 * 现在正在显示的关卡 {@link Region}
-	 */
-	public Region curRegion;
-	
-	/**
-	 * 现在显示的 {@link Room} 编号
-	 */
-	public int room;
-	
-	/**
 	 * 如果在关卡中, 关卡世界的参数
 	 */
 	public LevelWorld levelWorld;
@@ -50,17 +38,15 @@ public class GameRuntime {
 	 *   正在显示的 {@link Room}
 	 */
 	public Room getCurrentRoom() {
-		return curRegion.rooms[room];
+		return levelWorld.currentRoom;
 	}
 	
 	// 共用工具
 	public final CastList cast = new CastList();
 	public final RegionBuilder regionBuilder = new RegionBuilder();
-	public final CharacterBuilder characterBuilder = new CharacterBuilder();
 	public final CharacterPaintComparator pcomp = new CharacterPaintComparator(this);
 
 	public void init() {
-		characterBuilder.init();
 		regionBuilder.init();
 		scene.init();
 	}
@@ -89,13 +75,11 @@ public class GameRuntime {
 	 * @param room
 	 */
 	public void setRoom(Room room) {
-		this.room = room.index;
-		curRegion = room.region;
 		levelWorld.setCurrentRoom(room);
 		
 		// 如果该房间有连接到其它区域, 需要初始化相邻的区域
 		// 扫描点
-		Array<RegionPoint> ps = curRegion.points;
+		Array<RegionPoint> ps = room.region.points;
 		for (int i = 0; i < ps.size; i++) {
 			RegionPoint p = ps.get(i);
 			if (!room.contain(p.x, p.y)) {
@@ -116,23 +100,22 @@ public class GameRuntime {
 			}
 		}
 		
-		Room r = curRegion.rooms[this.room];
 		// 将场放入世界
-		int length = r.fields.size;
+		int length = room.fields.size;
 		for (int i = 0; i < length; i++) {
-			FieldDef f = r.fields.get(i);
+			FieldDef f = room.fields.get(i);
 			
-			CharacterEntry entry = characterBuilder.create(f.name, f.param);
-			addEntry(entry);
+			CharacterEntry entry = levelWorld.createEntry(f.name, f.param);
+			levelWorld.addEntry(entry);
 		}
 		
 		// 将怪放入世界
-		length = r.foes.size;
+		length = room.foes.size;
 		for (int i = 0; i < length; i++) {
-			FoeDef f = r.foes.get(i);
+			FoeDef f = room.foes.get(i);
 			
-			CharacterEntry entry = characterBuilder.create(f.name, f.param);
-			addEntry(entry);
+			CharacterEntry entry = levelWorld.createEntry(f.name, f.param);
+			levelWorld.addEntry(entry);
 		}
 		
 		// 其它
@@ -141,9 +124,9 @@ public class GameRuntime {
 	
 	public void createWorld() {
 		levelWorld = new LevelWorld();
+		levelWorld.init();
 		shift = new RoomShiftHandler();
 		
-		levelWorld.doCreate();
 		levelWorld.setStepCallBack(step);
 		levelWorld.doResume();
 	}
@@ -181,79 +164,6 @@ public class GameRuntime {
 	 ********** */
 	
 	/**
-	 * 玩家所控制的角色 ID
-	 */
-	public int player1;
-	
-	public CharacterEntry getPlayer1() {
-		return findEntry(player1);
-	}
-	
-	public void putPlayer(int seq, CharacterEntry entry) {
-		switch (seq) {
-		case 1:
-			this.player1 = entry.id;
-			if (entry instanceof IInputBindable) {
-				((IInputBindable) entry).bindController(RockChronicle.INSTANCE.input.p1);
-			}
-			addEntry(entry);
-			break;
-
-		default:
-			throw new IllegalArgumentException(String.format("无法设置玩家 %d 的角色", seq));
-		}
-	}
-	
-	/**
-	 * 所有子弹、怪物的集合
-	 */
-	public final Array<CharacterEntry> entries = new Array<>();
-	private final Array<CharacterEntry> entriesWaitingForAdd = new Array<>();
-	private final Array<CharacterEntry> entriesWaitingForRemove = new Array<>();
-	
-	/**
-	 * 用 id 来寻找角色.
-	 * @param id
-	 * @return
-	 *   可能为 null
-	 */
-	public CharacterEntry findEntry(int id) {
-		for (int i = 0; i < entries.size; i++) {
-			CharacterEntry entry = entries.get(i);
-			if (entry.id == id) {
-				return entry;
-			}
-		}
-		
-		return null;
-	}
-	
-	/**
-	 * 用 id 来从等待添加列表中寻找角色.
-	 * @param id
-	 * @return
-	 *   可能为 null
-	 */
-	public CharacterEntry findEntryWaitingForAdd(int id) {
-		for (int i = 0; i < entriesWaitingForAdd.size; i++) {
-			CharacterEntry entry = entriesWaitingForAdd.get(i);
-			if (entry.id == id) {
-				return entry;
-			}
-		}
-		
-		return null;
-	}
-	
-	public void addEntry(CharacterEntry entry) {
-		entriesWaitingForAdd.add(entry);
-	}
-	
-	public void removeEntry(CharacterEntry entry) {
-		entriesWaitingForRemove.add(entry);
-	}
-	
-	/**
 	 * 每一帧更新一下. 包括角色
 	 * @param index
 	 *   本帧的第几次调用. 第一次为 0
@@ -261,41 +171,36 @@ public class GameRuntime {
 	 *   本帧是否还会再调用
 	 */
 	public void onWorldSteped(int index, boolean hasNext) {
+		DelayedRemovalArray<CharacterEntry> entries = levelWorld.entries;
 		
 		// 确定状态部分
+		entries.begin();
 		for (int i = 0; i < entries.size; i++) {
 			try {
-				entries.get(i).determine(levelWorld, index, hasNext);
+				entries.items[i].determine(levelWorld, index, hasNext);
 			} catch (RuntimeException e) {
 				e.printStackTrace();
 			}
 		}
-		
-		// 进行删增工作
-		handleAddAndRemove();
+		entries.end();
 		
 		// 移动部分
+		entries.begin();
 		for (int i = 0; i < entries.size; i++) {
 			try {
-				entries.get(i).step(levelWorld, index, hasNext);
+				entries.items[i].step(levelWorld, index, hasNext);
 			} catch (RuntimeException e) {
 				e.printStackTrace();
 			}
 		}
+		entries.end();
 	}
 	
-	public void handleAddAndRemove() {
-		entries.removeAll(entriesWaitingForRemove, true);
-		entriesWaitingForRemove.clear();
-		entries.addAll(entriesWaitingForAdd);
-		entriesWaitingForAdd.forEach(entry -> entry.createBody(levelWorld));
-		entriesWaitingForAdd.clear();
-	}
-
 	/**
 	 * 类似于 {@link IPhysicsStep#stepPaused(LevelWorld, boolean)}
 	 */
 	public void stepPaused() {
+		DelayedRemovalArray<CharacterEntry> entries = levelWorld.entries;
 		for (int i = 0; i < entries.size; i++) {
 			try {
 				entries.get(i).stepPaused(levelWorld);
@@ -306,6 +211,7 @@ public class GameRuntime {
 	}
 
 	public void drawEntries(SpriteBatch batch, OrthographicCamera camera) {
+		DelayedRemovalArray<CharacterEntry> entries = levelWorld.entries;
 		CharacterEntry[] es = entries.toArray(CharacterEntry.class);
 		Arrays.sort(es, this.pcomp);
 		
@@ -334,7 +240,7 @@ public class GameRuntime {
 	 * 比如控制角色走到房间的边缘, 需要启动切换房间的逻辑
 	 */
 	public boolean checkRoomShift() {
-		CharacterEntry c1 = getPlayer1();
+		CharacterEntry c1 = levelWorld.getPlayer1();
 		if (c1 == null) {
 			return false;
 		}

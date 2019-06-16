@@ -5,7 +5,6 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
 
-import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.core.module.AbstractModule;
@@ -82,7 +81,7 @@ public class EnemySearchingScoutModule extends AbstractModule {
 			float anchorX = box.anchor.x;
 			float anchorY = box.anchor.y;
 			
-			Array<CharacterEntry> entries = RockChronicle.INSTANCE.runtime.entries;
+			Array<CharacterEntry> entries = world.entries;
 			for (int i = 0; i < entries.size; i++) {
 				CharacterEntry c = entries.get(i);
 				

@@ -12,7 +12,6 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectMap.Entry;
 
-import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.core.module.AbstractModule;
 import zdream.rockchronicle.core.module.box.BoxModule;
@@ -101,7 +100,6 @@ public abstract class CharacterEntry {
 	 * @return
 	 */
 	public void createBody(LevelWorld world) {
-		this.world = world;
 		getBoxModule().doCreateBody(world);
 	}
 	
@@ -123,7 +121,7 @@ public abstract class CharacterEntry {
 			return;
 		}
 		
-		RockChronicle.INSTANCE.runtime.removeEntry(this);
+		world.removeEntry(this);
 		for (int i = 0; i < moduleArray.size; i++) {
 			try {
 				moduleArray.items[i].willDestroy();
@@ -164,7 +162,7 @@ public abstract class CharacterEntry {
 	private AbstractModule[] modules;
 	
 	public void addModule(String module, String name, JsonValue param) {
-		AbstractModule m = RockChronicle.INSTANCE.runtime.characterBuilder
+		AbstractModule m = world.characterBuilder
 				.createModule(this, module, name, param);
 		this.addModule(m);
 	}
@@ -326,10 +324,9 @@ public abstract class CharacterEntry {
 	 * @return
 	 */
 	public CharacterEntry createEntry(String name, JsonValue param) {
-		CharacterEntry entry = RockChronicle.INSTANCE.runtime.characterBuilder
-				.create(name, param);
+		CharacterEntry entry = world.createEntry(name, param);
 		entry.setSituation("parent", new JsonValue(id));
-		RockChronicle.INSTANCE.runtime.addEntry(entry);
+		world.addEntry(entry);
 		return entry;
 	}
 	
@@ -339,11 +336,7 @@ public abstract class CharacterEntry {
 	 * @return
 	 */
 	public CharacterEntry findEntry(int id) {
-		CharacterEntry entry = RockChronicle.INSTANCE.runtime.findEntry(id);
-		if (entry == null) {
-			entry = RockChronicle.INSTANCE.runtime.findEntryWaitingForAdd(id);
-		}
-		return entry;
+		return world.findEntry(id);
 	}
 	
 	/* **********

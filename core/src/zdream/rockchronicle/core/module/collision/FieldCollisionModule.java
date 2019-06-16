@@ -4,7 +4,6 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
 
-import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.platform.body.Box;
 
@@ -84,7 +83,7 @@ public class FieldCollisionModule extends CollisionModule {
 		// 阵营判断部分
 		int targetId = box.parentId;
 		
-		CharacterEntry target = RockChronicle.INSTANCE.runtime.findEntry(targetId);
+		CharacterEntry target = parent.world.findEntry(targetId);
 		int targetCamp = target.getInt("camp.camp", 0);
 		
 		boolean accepted = false;

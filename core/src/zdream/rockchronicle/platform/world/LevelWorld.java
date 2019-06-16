@@ -3,34 +3,84 @@ package zdream.rockchronicle.platform.world;
 import java.util.function.Predicate;
 
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.DelayedRemovalArray;
+import com.badlogic.gdx.utils.JsonValue;
 
+import zdream.rockchronicle.RockChronicle;
+import zdream.rockchronicle.core.character.CharacterBuilder;
+import zdream.rockchronicle.core.character.CharacterEntry;
+import zdream.rockchronicle.core.input.IInputBindable;
 import zdream.rockchronicle.platform.body.Box;
 import zdream.rockchronicle.platform.body.BoxOccupation;
 import zdream.rockchronicle.platform.body.TerrainParam;
 import zdream.rockchronicle.platform.region.Gate;
 import zdream.rockchronicle.platform.region.ITerrainStatic;
+import zdream.rockchronicle.platform.region.Region;
 import zdream.rockchronicle.platform.region.Room;
 import zdream.rockchronicle.platform.region.Terrains;
 
 /**
- * 关卡, 含物理世界
+ * <p>关卡物理世界
+ * <p>该类用于管理所有的角色与盒子, 并协调各个角色触发的顺序,
+ * 收集所有角色在关卡世界内的绘画方法 (但不参与实际绘画, 仅收集)
+ * </p>
+ * 
  * @author Zdream
+ * @date
+ *   2019-06-16 (last modified)
  */
 public class LevelWorld implements ITerrainStatic {
 
 	public LevelWorld() {
-		terrainCollisionFilter = new Filter();
-		terrainCollisionFilter.groupIndex = -1;
+		
 	}
 	
-	public Room currentRoom;
-	
-	public void doCreate() {
-		// 世界重力向下
-		this.pause = 2;
+	public void init() {
+		characterBuilder.init();
 	}
+	
+	/* **********
+	 * 基础数据 *
+	 ********** */
+	/*
+	 * 在关卡内只关注形式暂停或者不暂停. 如果整个关卡世界强暂停,
+	 * 需要调用者确定, 并不调用任何该类的执行方法即可.
+	 */
+	
+	/**
+	 * <p>是否在暂停中.
+	 * <p>进行中为 0, 形式暂停为 1, 强暂停为 2 (TODO 等待删除).
+	 * 其中, 形式暂停指切换房间时世界的暂停, 以及其它重要的事件触发时.
+	 * 此时画面不能完全暂停;
+	 * 强暂停时世界里的所有的动作全部暂停
+	 * </p>
+	 */
+	public byte pause;
+	
+	/**
+	 * 该帧距离上一帧时, 过去的物理世界的时间. 单位秒<br>
+	 * 外部不允许修改, 只允许访问
+	 */
+	public float frameTime; // readonly for outsider
+	
+	/**
+	 * 该值用于在动态帧率时, 调整世界的更新频率.
+	 */
+	private float accumulator = 0;
+	
+	/**
+	 * <p>现在的步数
+	 * <p>即关卡内部的时间计数器
+	 * </p>
+	 */
+	public int step;
+
+	/**
+	 * 世界的更新频率为每秒 120 步
+	 */
+	public static final int STEPS_PER_SECOND = 120;
+	public static final float TIME_STEP = 1.0f / STEPS_PER_SECOND;
 	
 	/**
 	 * 强暂停
@@ -55,39 +105,95 @@ public class LevelWorld implements ITerrainStatic {
 		this.frameTime = 0;
 		this.accumulator = 0;
 	}
-	
-	/**
-	 * <p>是否在暂停中.
-	 * <p>进行中为 0, 形式暂停为 1, 强暂停为 2.
-	 * 其中, 形式暂停指切换房间时世界的暂停, 以及其它重要的事件触发时.
-	 * 此时画面不能完全暂停;
-	 * 强暂停时世界里的所有的动作全部暂停
-	 * </p>
-	 */
-	public byte pause;
-	
-	/**
-	 * 该帧距离上一帧时, 过去的物理世界的时间. 单位秒<br>
-	 * 外部不允许修改, 只允许访问
-	 */
-	public float frameTime; // readonly for outsider
-	
-	/**
-	 * 该值用于在动态帧率时, 调整世界的更新频率.
-	 */
-	private float accumulator = 0;
-	
-	/**
-	 * 现在的步数
-	 */
-	public int step;
 
-	/**
-	 * 世界的更新频率为每秒 120 步
-	 */
-	public static final int STEPS_PER_SECOND = 120;
-	public static final float TIME_STEP = 1.0f / STEPS_PER_SECOND;
+	/* **********
+	 * 关卡数据 *
+	 ********** */
 	
+	/**
+	 * 现在正在显示的关卡 {@link Region}
+	 */
+	public Region curRegion;
+	public Room currentRoom;
+	
+	public void setCurrentRoom(Room currentRoom) {
+		this.currentRoom = currentRoom;
+		this.curRegion = currentRoom.region;
+	}
+	
+	/* **********
+	 * 角色数据 *
+	 ********** */
+	
+	/**
+	 * 所有子弹、怪物的集合
+	 */
+	public final DelayedRemovalArray<CharacterEntry> entries = new DelayedRemovalArray<>(
+			true, 32, CharacterEntry.class);
+	
+	/**
+	 * 玩家所控制的角色 ID
+	 */
+	public int player1;
+	
+	/**
+	 * 创建工具
+	 */
+	public final CharacterBuilder characterBuilder = new CharacterBuilder();
+	
+	public CharacterEntry getPlayer1() {
+		return findEntry(player1);
+	}
+	
+	public void putPlayer(int seq, CharacterEntry entry) {
+		switch (seq) {
+		case 1:
+			this.player1 = entry.id;
+			if (entry instanceof IInputBindable) {
+				((IInputBindable) entry).bindController(RockChronicle.INSTANCE.input.p1);
+			}
+			addEntry(entry);
+			break;
+
+		default:
+			throw new IllegalArgumentException(String.format("无法设置玩家 %d 的角色", seq));
+		}
+	}
+	
+	/**
+	 * 用 id 来寻找角色.
+	 * @param id
+	 * @return
+	 *   可能为 null
+	 */
+	public CharacterEntry findEntry(int id) {
+		for (int i = 0; i < entries.size; i++) {
+			CharacterEntry entry = entries.get(i);
+			if (entry.id == id) {
+				return entry;
+			}
+		}
+		
+		return null;
+	}
+	
+	public CharacterEntry createEntry(String name, JsonValue customData) {
+		return characterBuilder.create(name, customData, this);
+	}
+	
+	public void addEntry(CharacterEntry entry) {
+		entries.add(entry);
+		entry.createBody(this);
+	}
+	
+	public void removeEntry(CharacterEntry entry) {
+		entries.removeValue(entry, true);
+	}
+	
+	/* **********
+	 * 盒子数据 *
+	 ********** */
+
 	public final Array<Box> boxs = new Array<>();
 	
 	/**
@@ -106,6 +212,10 @@ public class LevelWorld implements ITerrainStatic {
 		boxs.removeValue(box, true);
 	}
 
+	/**
+	 * @return
+	 *   盒子数量
+	 */
 	public int count() {
 		return boxs.size;
 	}
@@ -113,7 +223,7 @@ public class LevelWorld implements ITerrainStatic {
 	/**
 	 * 清空世界中的物体
 	 */
-	public void clearBox() {
+	public void clearBoxes() {
 		boxs.clear();
 	}
 	
@@ -151,12 +261,10 @@ public class LevelWorld implements ITerrainStatic {
 	        }
 	    }
 	}
-	
-	public void setCurrentRoom(Room currentRoom) {
-		this.currentRoom = currentRoom;
-	}
-	
-	private Filter terrainCollisionFilter;
+
+	/* **********
+	 * 工具方法 *
+	 ********** */
 	
 	/**
 	 * 查看与指定的盒子发生碰撞的盒子, 并逐个进行判断.

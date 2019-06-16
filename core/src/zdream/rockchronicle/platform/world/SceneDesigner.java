@@ -93,7 +93,7 @@ public class SceneDesigner {
 	public void updateCamera() {
 		if (!runtime.shift.durationShift()) {
 			// 根据玩家位置改变镜头
-			CharacterEntry entry = runtime.getPlayer1();
+			CharacterEntry entry = runtime.levelWorld.getPlayer1();
 			if (entry != null) {
 				Rectangle rect = entry.getBoxModule().getBox().getPosition();
 				rect.getCenter(centerPoint);

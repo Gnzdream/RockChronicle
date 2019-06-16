@@ -4,8 +4,6 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.JsonValue;
 
-import zdream.rockchronicle.RockChronicle;
-import zdream.rockchronicle.core.GameRuntime;
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.core.character.parameter.CharacterParameter;
@@ -95,14 +93,11 @@ public class MegamanWeaponModule extends WeaponModule {
 		
 		// 子弹数重置
 		if (weaponEntryIds.size > 0) {
-			GameRuntime runtime = RockChronicle.INSTANCE.runtime;
 			for (int i = 0; i < weaponEntryIds.size; i++) { // weaponEntryIds.size 是变动的
 				int id = weaponEntryIds.get(i);
 				// 检查子弹是否存在. 后面还需要补充它是否弹开等描述子弹是否还有效的属性
 				
-				CharacterEntry entry = runtime.findEntry(id);
-				if (entry == null) entry = runtime.findEntryWaitingForAdd(id);
-				
+				CharacterEntry entry = parent.world.findEntry(id);
 				if (entry == null) {
 					weaponEntryIds.removeIndex(i);
 					i--;

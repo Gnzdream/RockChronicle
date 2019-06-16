@@ -10,6 +10,7 @@ import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.GameRuntime;
 import zdream.rockchronicle.core.character.parameter.CharacterParameter;
 import zdream.rockchronicle.platform.region.Region;
+import zdream.rockchronicle.platform.world.LevelWorld;
 import zdream.rockchronicle.sprite.character.megaman.MegamanInLevel;
 
 public class LevelScreen implements Screen {
@@ -27,7 +28,6 @@ public class LevelScreen implements Screen {
 	 */
 	OrthographicCamera symbolCamera;
 	
-	Region region;
 	
 	/*
 	 * 缓存人物
@@ -62,28 +62,28 @@ public class LevelScreen implements Screen {
 		// 人物设置必须晚于世界创建
 		runtime.createWorld();
 		runtime.setSpawnRegion("mm1cut");
-		region = runtime.curRegion;
+		Region region = runtime.levelWorld.curRegion;
+		LevelWorld world = runtime.levelWorld;
 		
-		
-		megaman = (MegamanInLevel) app.runtime.characterBuilder.create("megaman",
+		megaman = (MegamanInLevel) world.createEntry("megaman",
 				CharacterParameter.newInstance().setBoxAnchor(region.spawnx + 0.5f, region.spawny)
 				.setCamp(1)
 				.get());
 //		megaman.load(Gdx.files.local("res\\characters\\megaman\\megaman.json"));
-		runtime.putPlayer(1, megaman);
+		runtime.levelWorld.putPlayer(1, megaman);
 //		megaman.setBlockPos(region.spawnx, region.spawny);
 		
 		// 测试: 放进去小怪
 		{
-			runtime.addEntry(app.runtime.characterBuilder.create("testfoe",
+			runtime.levelWorld.addEntry(world.createEntry("testfoe",
 					CharacterParameter.newInstance().setBoxAnchor(region.spawnx + 3.5f, region.spawny)
 					.get()));
 
-			runtime.addEntry(app.runtime.characterBuilder.create("testfoe",
+			runtime.levelWorld.addEntry(world.createEntry("testfoe",
 					CharacterParameter.newInstance().setBoxAnchor(12, 8)
 					.get()));
 			
-			runtime.addEntry(app.runtime.characterBuilder.create("mm2bird",
+			runtime.levelWorld.addEntry(world.createEntry("mm2bird",
 					CharacterParameter.newInstance().setBoxAnchor(20, 7)
 					.get()));
 		}

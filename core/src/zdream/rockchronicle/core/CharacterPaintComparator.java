@@ -52,7 +52,7 @@ public class CharacterPaintComparator implements Comparator<CharacterEntry> {
 		
 		case "foe": return 250;
 		case "leader": {
-			if (c.id == runtime.player1) return 201;
+			if (c.id == runtime.levelWorld.player1) return 201;
 			// player2
 			return 210;
 		}

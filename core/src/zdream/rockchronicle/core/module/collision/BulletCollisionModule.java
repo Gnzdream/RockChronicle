@@ -4,7 +4,6 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
 
-import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.character.CharacterEntry;
 import zdream.rockchronicle.core.character.event.CharacterEvent;
 import zdream.rockchronicle.platform.body.Box;
@@ -75,7 +74,7 @@ public class BulletCollisionModule extends CollisionModule {
 		int targetId = box.parentId;
 		
 		try {
-			CharacterEntry target = RockChronicle.INSTANCE.runtime.findEntry(targetId);
+			CharacterEntry target = parent.world.findEntry(targetId);
 			int targetCamp = target.getInt("camp.camp", 0);
 			
 			JsonValue jattackAccepted = getJson("camp.attackAccepted");

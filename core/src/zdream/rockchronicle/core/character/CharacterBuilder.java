@@ -15,6 +15,7 @@ import com.badlogic.gdx.utils.ObjectMap;
 
 import zdream.rockchronicle.core.module.AbstractModule;
 import zdream.rockchronicle.core.module.ModuleDef;
+import zdream.rockchronicle.platform.world.LevelWorld;
 import zdream.rockchronicle.utils.JsonUtils;
 
 /**
@@ -160,7 +161,7 @@ public class CharacterBuilder {
 	 * @throws NullPointerException
 	 *   当 name 对应的人物数据不存在时
 	 */
-	public CharacterEntry create(String name, JsonValue customData) {
+	public CharacterEntry create(String name, JsonValue customData, LevelWorld world) {
 		CharacterDef def = defs.get(name);
 		
 		if (def == null) {
@@ -209,6 +210,7 @@ public class CharacterBuilder {
 				}
 			}
 			
+			entry.world = world;
 			entry.init(Gdx.files.local(def.path), data);
 			Objects.requireNonNull(entry.getBoxModule(), "角色数据的行动模块为 null");
 			Objects.requireNonNull(entry.type, "角色数据的类型为 null");
