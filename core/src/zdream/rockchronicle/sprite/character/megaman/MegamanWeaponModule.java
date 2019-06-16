@@ -81,6 +81,7 @@ public class MegamanWeaponModule extends WeaponModule {
 						.setCamp(getInt("camp.camp", 0))
 						.get());
 			weaponEntryIds.add(buster.id);
+			setState("weapon.attacking", new JsonValue(true));
 			
 			parent.publish(new CharacterEvent("open_fire")); // 暂时没有附加信息
 		}

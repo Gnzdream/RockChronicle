@@ -24,7 +24,7 @@ import zdream.rockchronicle.platform.world.LevelWorld;
  * @author Zdream
  * @since v0.0.1
  * @date
- *   2019-06-09 (last modified)
+ *   2019-06-16 (last modified)
  */
 public abstract class CharacterEntry {
 	
@@ -87,7 +87,6 @@ public abstract class CharacterEntry {
 	 * 所有的角色在该方法中执行所有模块的 init 方法
 	 */
 	protected void init(FileHandle file, JsonValue value) {
-		this.type = value.getString("type");
 		sortModules();
 		
 		for (int i = 0; i < modules.length; i++) {

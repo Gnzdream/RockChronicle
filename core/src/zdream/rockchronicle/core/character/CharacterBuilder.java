@@ -16,6 +16,7 @@ import com.badlogic.gdx.utils.ObjectMap;
 import zdream.rockchronicle.core.module.AbstractModule;
 import zdream.rockchronicle.core.module.ModuleDef;
 import zdream.rockchronicle.platform.world.LevelWorld;
+import zdream.rockchronicle.sprite.foes.base.BaseFoe;
 import zdream.rockchronicle.utils.JsonUtils;
 
 /**
@@ -79,8 +80,9 @@ public class CharacterBuilder {
 	 * <p>初始化人物创建工具, 加载所有的角色的初始化 json 文件
 	 * <p>所有的相关文件在文件夹 [dir] 中的文件的一级目录中
 	 * (满足 [dir]/?/?.json), 且 json 文件包含的说明有:
-	 * <li>name : (string, 必需) 说明人物名称
-	 * <li>class : (string, 必需) 说明人物创建的全类名
+	 * <li>name : (string, 必需) 说明角色名称
+	 * <li>type : (string, 必需) 说明角色类型
+	 * <li>class : (string, 非必需) 说明角色创建的全类名
 	 * <li>modules : (object{string : string}, 不必需)
 	 *     如果模块需要按照某些模板来创建的话, 则将 key=模块属性 (比如 "sprite", "control" 等)
 	 *     value=模块模板名称 放入 modules 中.
@@ -121,7 +123,20 @@ public class CharacterBuilder {
 					
 					CharacterDef def = new CharacterDef();
 					def.name = v.getString("name");
-					def.className = v.getString("class");
+					def.type = v.getString("type");
+					if (v.has("class")) {
+						def.className = v.getString("class");
+					} else {
+						switch (def.type) {
+						case "foe": case "bullet":
+							def.className = BaseFoe.class.getName();
+							break;
+						default:
+							throw new IllegalArgumentException(
+									"未指定怪物" + def.name + "的全类名");
+						}
+					}
+					
 					def.path = fjson.path();
 					def.data = v.toJson(OutputType.minimal);
 					
@@ -181,6 +196,7 @@ public class CharacterBuilder {
 			Constructor<? extends CharacterEntry> constractors = cc.getConstructor(int.class, String.class);
 			
 			CharacterEntry entry = constractors.newInstance(idCount++, name);
+			entry.type = def.type;
 			
 			// 合并 json
 			JsonValue data = JsonUtils.mergeJson(jreader.parse(def.data), customData);

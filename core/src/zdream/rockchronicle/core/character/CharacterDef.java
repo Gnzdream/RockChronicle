@@ -12,6 +12,7 @@ public class CharacterDef {
 	
 	public String name;
 	public String className;
+	public String type;
 	public final HashMap<String, String> map = new HashMap<>();
 	
 	public String data;
