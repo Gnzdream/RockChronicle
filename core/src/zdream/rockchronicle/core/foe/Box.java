@@ -151,10 +151,11 @@ public class Box {
 		return posY + posHeight / 2;
 	}
 	
-	public void flush() {
+	public Box flush() {
 		if (dirt) {
 			recalc();
-		} 
+		}
+		return this;
 	}
 	
 	private void recalc() {
@@ -252,7 +253,7 @@ public class Box {
 	 * 受到的重力及其它环境力的合力, 是重力的几倍;
 	 * 受到相当于一倍重力的合力影响, 方向同 gravityDown 时, 参数为 1; 不受合力影响时为 0
 	 */
-	public float gravityScale;
+	public float gravityScale = 1;
 	/**
 	 * 受到的重力是否向下, 这里不计其它力.
 	 * 比较实际的意义是判断角色的纹理是正放还是倒放

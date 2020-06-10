@@ -66,19 +66,24 @@ public class Megaman extends Foe implements IInputBindable {
 		if (pause) {
 			return;
 		}
+
+		// 清空数据
+		box.velocityX = 0;
+		box.velocityY = 0;
+		jumpEnd = false;
+		jumpStart = false;
 		
 		// 1. 从 state / props 中取数据 TODO
 		
 		// 2. 处理控制
 		if (input != null) {
-			handleInput();
+			recieveInput();
 		}
-//		System.out.println(String.format("%s,%s", left, right));
-		handleAxis();
 		
 		// 3. 查询洛克人状态, 含:
 		// box 初始化、在地形中的情形、是否受伤僵直、移动情况
 		runtime.world.freshBox(box, true);
+		handleMotion();
 		
 		// TODO 是否受伤僵直. 僵直时移动情况被自动设置
 		
@@ -115,11 +120,8 @@ public class Megaman extends Foe implements IInputBindable {
 	public void submit(boolean pause) {
 		resetParam();
 		
-		// 处理左右移动 TODO
-		box.addAnchorX(box.velocityX);
-		box.addAnchorY(box.velocityY);
-		box.velocityX = 0;
-		box.velocityY = 0;
+		// 处理左右移动
+		runtime.world.submitMotion(box, true);
 	}
 	
 	/* **********
@@ -222,7 +224,45 @@ public class Megaman extends Foe implements IInputBindable {
 	public boolean stopSlide;
 	
 	/*
-	 * 行动参数
+	 * 跳跃参数
+	 */
+	/**
+	 * 跳跃向上的初始速度, 配置值. 单位: p / 步.
+	 * 每秒 21 块, 换算后为 11469 p / 步.
+	 */
+	public int impulse = 11469;
+	/**
+	 * 跳跃向上速度在每一步时间之后的速度衰减值 (delta), 配置值. 单位: p / 步
+	 * 在水中会影响该衰减值导致跳跃变高.
+	 * 换算后为 -304 p / 步.
+	 */
+	public int decay = -304;
+	/**
+	 * 下落时每步最快速度 (负数方向向下), 配置值. 单位: p / 步
+	 * 在水中会影响该值导致向下速度变慢.
+	 * 每秒 28 块, 换算后为 -15292 p / 步.
+	 */
+	public int maxDropVelocity = -15292;
+	/**
+	 * 本帧是否起跳
+	 */
+	public boolean jumpStart;
+	/**
+	 * 本帧是否结束跳跃
+	 */
+	public boolean jumpEnd;
+	/**
+	 * 由跳跃 / 在空中产生的纵向速度改变值. 默认情况为 0
+	 */
+	public int jumpVel;
+	/**
+	 * 跳跃按下的时长. 按下的一瞬间为 0, 每步 +1. 到 9 后, 下 1 步为 -1.
+	 * 当 jumpPressDuration 为正数时, 都可以起跳, 来缓解跳不起来的情况.
+	 */
+	public byte jumpPressDuration = -1;
+	
+	/*
+	 * 行动状态参数
 	 */
 	/**
 	 * 是否在攀爬状态
@@ -267,17 +307,18 @@ public class Megaman extends Foe implements IInputBindable {
 		return velocity;
 	}
 	
-	private void handleAxis() {
+	private void handleMotion() {
 //		if (climbing) { // 1. 如果在攀爬状态, 所有的速度修改都不需要了
 //			return;
 //		}
 		
 		// 2. 修改速度. 单位: p
+		box.flush();
 		int vx = box.velocityX;
-//		int vy = box.velocityY;
 		
 		// 3. 是否在空中
 		boolean inAir = box.inAir;
+//		BoxOccupation occ = box.getOccupation();
 		
 		// 最终速度 Y, 需要等待 jump 来改
 		
@@ -346,6 +387,76 @@ public class Megaman extends Foe implements IInputBindable {
 		// 设置的最终速度 X
 		box.setVelocityX(vx);
 		lastvx = vx;
+		
+		// 竖直方向上的判断
+//		int vy = 0;
+		if (climbing) {
+			jumpVel = 0;
+		} else {
+			float gravityScale = box.gravityScale;
+			jumpStart = !lastJump && jump && !stiffness && !inAir;
+			jumpEnd = (lastJump && !jump) || stiffness && inAir;
+			
+			// 缓解跳不起来的情况
+			if (jumpPressDuration == 10) {
+				jumpPressDuration = -1;
+			}
+			if (jumpPressDuration >= 0) {
+				jumpPressDuration ++;
+			}
+			if (jump && !lastJump && !stiffness && inAir) {
+				jumpPressDuration = 0;
+				if (!jumpStart && inAir) {
+					System.out.println(String.format("%d:  inAir|%4.2f,%4.2f", runtime.ticker.count,
+							box.posX / 65536f, box.posY / 65536f));
+				}
+			}
+			if (jumpPressDuration > 0 && !inAir) {
+				jumpPressDuration = -1;
+				jumpStart = true;
+			}
+			// 后面不允许使用 jump 和 lastJump
+			
+			if (gravityScale > 0) {
+				// 下面判断落体运动
+				if (inAir) {
+					int delta = (int) (decay * gravityScale);
+					int maxDropVel = (int) (maxDropVelocity * gravityScale);
+					jumpVel += delta;
+					
+					if (box.gravityDown) {
+						// 是否磕脑袋
+						if ((box.topTouched || jumpEnd || !jump) && jumpVel > 0) {
+							if (jumpVel >= -4 * delta) {
+								jumpVel = -4 * delta;
+							}
+						}
+						if (jumpVel < maxDropVel) {
+							jumpVel = maxDropVel;
+						}
+					} else { // 重力方向向上
+						// 是否磕脑袋
+						if ((box.bottomTouched || jumpEnd || !jump) && jumpVel < 0) {
+							if (jumpVel <= -4 * delta) { // TODO 没测试过
+								jumpVel = -4 * delta;
+							}
+						}
+						if (jumpVel > maxDropVel) {
+							jumpVel = maxDropVel;
+						}
+					}
+				} else if (jumpStart) { // 刚起跳
+					System.out.println(String.format("%d:  jumpStart", runtime.ticker.count));
+					jumpVel = (box.gravityDown) ? impulse : -impulse;
+				} else {
+					jumpVel = 0;
+				}
+			} else {
+				System.err.println("gravityScale < 0, Megaman.handleInput()");
+			}
+		}
+		box.setVelocityY(jumpVel);
+		
 	}
 	
 	/* **********
@@ -365,6 +476,7 @@ public class Megaman extends Foe implements IInputBindable {
 	 * 上一步, 方向键是否按下
 	 */
 	boolean lastLeft, lastRight, lastUp, lastDown;
+	boolean jump, attack, slide;
 	/**
 	 * 上一步, 行动键位是否按下
 	 */
@@ -382,8 +494,12 @@ public class Megaman extends Foe implements IInputBindable {
 		this.input = null;
 	}
 	
-	private void handleInput() {
+	private void recieveInput() {
 		// 横向
+		lastLeft = left;
+		lastRight = right;
+		lastUp = up;
+		lastDown = down;
 		left = input.isMapKeyDown(InputCenter.MAP_LEFT);
 		right = input.isMapKeyDown(InputCenter.MAP_RIGHT);
 		up = input.isMapKeyDown(InputCenter.MAP_UP);
@@ -428,22 +544,18 @@ public class Megaman extends Foe implements IInputBindable {
 		}
 		if (left != lastLeft || right != lastRight || up != lastUp || down != lastDown) {
 			publish(axisInputEvent(left, right, up, down));
-			lastLeft = left;
-			lastRight = right;
-			lastUp = up;
-			lastDown = down;
 		}
 		
 		// 行动状态
-		boolean attack = input.isMapKeyDown(InputCenter.MAP_ATTACK),
-				jump = input.isMapKeyDown(InputCenter.MAP_JUMP),
-				slide = input.isMapKeyDown(InputCenter.MAP_RUSH);
+		lastAttack = attack;
+		lastJump = jump;
+		lastSlide = slide;
+		attack = input.isMapKeyDown(InputCenter.MAP_ATTACK);
+		jump = input.isMapKeyDown(InputCenter.MAP_JUMP);
+		slide = input.isMapKeyDown(InputCenter.MAP_RUSH);
 		if (attack != lastAttack || jump != lastJump || slide != lastSlide) {
 			publish(motionInputEvent(attack, attack != lastAttack,
 					jump, jump != lastJump, slide, slide != lastSlide));
-			lastAttack = attack;
-			lastJump = jump;
-			lastSlide = slide;
 		}
 	}
 	

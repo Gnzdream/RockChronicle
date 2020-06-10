@@ -1,6 +1,6 @@
 package zdream.rockchronicle.core.world;
 
-import static zdream.rockchronicle.core.foe.Box.blockRight;
+import static zdream.rockchronicle.core.foe.Box.*;
 
 import zdream.rockchronicle.core.GameRuntime;
 import zdream.rockchronicle.core.foe.Box;
@@ -180,6 +180,131 @@ public class LevelWorld implements ITerrainStatic {
 		box.inAir = !(box.bottomTouched && box.gravityDown || box.topTouched && !box.gravityDown);
 		
 		return box;
+	}
+	
+	/**
+	 * 处理 Foe 的移动, 按照盒子中的速度来更新盒子中的 anchor 位置.
+	 * @param box
+	 * @param inTerrain
+	 *   是否受地形影响.
+	 */
+	public void submitMotion(Box box, boolean inTerrain) {
+		box.flush();
+		
+		if (inTerrain) {
+			int vx = box.velocityX;
+			int vy = box.velocityY;
+			BoxOccupation occ = box.getOccupation();
+			
+			// 水平移动
+			if (vx < 0) {
+				int pxsLeft = box.posX; // src 单位：p
+				int bxsLeft = occ.xleft; // 单位：块
+				int pxdLeft = pxsLeft + vx; // dest 单位：p
+				int bxdLeft = blockRight(pxdLeft); // 单位：块
+				
+				if (bxsLeft != bxdLeft) { // 出现了跨格子 (只判断跨一个格子的情况)
+					int byTop = occ.ytop;
+					int byBottom = occ.ybottom;
+					
+					for (int y = byBottom; y <= byTop; y++) {
+						int terrain = getTerrain(bxdLeft, y);
+						if (terrain == TERRAIN_SOLID) { // TODO 其它实体块
+							// 最后向左移动的结果就是撞到该格子
+							vx = block2P(bxsLeft) - pxsLeft;
+							break;
+						}
+					}
+				} else { // 向左移的过程中, 没有跨格子
+//					box.addAnchorX(vx);
+				}
+				
+			} else if (vx > 0) {
+				int pxsRight = box.posX + box.posWidth; // src
+				int bxsRight = occ.xright;
+				int pxdRight = pxsRight + vx; // dest
+				int bxdRight = blockLeft(pxdRight);
+				
+				if (bxsRight != bxdRight) { // 出现了跨格子 (只判断跨一个格子的情况)
+					int byTop = occ.ytop;
+					int byBottom = occ.ybottom;
+					
+					for (int y = byBottom; y <= byTop; y++) {
+						int terrain = getTerrain(bxdRight, y);
+						
+						if (terrain == TERRAIN_SOLID) { // TODO 其它实体块
+							// 最后向左移动的结果就是撞到该格子
+							vx = block2P(bxdRight) - pxsRight;
+							break;
+						}
+					}
+				}
+				
+			} // 不处理 vx == 0 的情况
+			if (vx != 0) {
+				box.addAnchorX(vx);
+				box.flush();
+			}
+			
+			if (vy < 0) {
+				int pysBottom = box.posY; // src
+				int bysBottom = occ.ybottom;
+				int pydBottom = box.posY + vy; // dest
+				int bydBottom = blockRight(pydBottom);
+				
+				if (bysBottom != bydBottom) { // 跨格子
+					int bxLeft = Math.max(occ.xleft, 0);
+					int bxRight = Math.min(occ.xright, getCurrentRoom().width - 1);
+					
+					for (int x = bxLeft; x <= bxRight; x++) {
+						int terrain = getTerrain(x, bydBottom);
+						
+						if (terrain == TERRAIN_SOLID) { // TODO 其它实体块
+							// 最后向左移动的结果就是撞到该格子
+							vy = block2P(bysBottom) - pysBottom;
+							break;
+						}
+					}
+				}
+			} else if (vy > 0) {
+				int pysTop = box.posY + box.posHeight; // src
+				int bysTop = occ.ytop;
+				int pydTop = pysTop + vy; // dest
+				int bydTop = blockLeft(pydTop);
+				
+				if (bysTop != bydTop) { // 跨格子
+					int bxLeft = Math.max(occ.xleft, 0);
+					int bxRight = Math.min(occ.xright, getCurrentRoom().width - 1);
+					
+					for (int x = bxLeft; x <= bxRight; x++) {
+						int terrain = getTerrain(x, bydTop);
+						
+						if (terrain == TERRAIN_SOLID) { // TODO 其它实体块
+							// 最后向左移动的结果就是撞到该格子
+							vy = block2P(bydTop) - pysTop;
+							break;
+						}
+					}
+				}
+			} // 不处理 vy == 0 的情况
+			
+			if (vy != 0) {
+				box.addAnchorY(vy);
+				box.flush();
+			}
+			
+		} else {
+			box.addAnchorX(box.velocityX);
+			box.addAnchorY(box.velocityY);
+			box.flush();
+		}
+		
+		
+		// 看看是否 glitch - debug
+		
+		
+		
+		
 	}
 
 }
