@@ -122,6 +122,9 @@ public class Megaman extends Foe implements IInputBindable {
 		
 		// 处理左右移动
 		runtime.world.submitMotion(box, true);
+		
+		// 处理 glitch
+		runtime.world.glitchFix(box);
 	}
 	
 	/* **********
@@ -155,6 +158,7 @@ public class Megaman extends Foe implements IInputBindable {
 		patterns.put("climb_top_0", new int[] {-27313, 0, 54613, 62805});
 		patterns.put("climb_top_1", new int[] {-27313, 0, 54613, 46421});
 		// 滑铲
+		patterns.put("slide", new int[] {-38229, 0, 76458, 49152}); // 28 x 18
 		// TODO
 		
 		setCurrentPattern("normal");
@@ -221,7 +225,7 @@ public class Megaman extends Foe implements IInputBindable {
 	 * 当玩家下达停止命令时, 角色是否立即停止.
 	 * 在冰面上该参数为 false.
 	 */
-	public boolean stopSlide;
+	public boolean stopInstant;
 	
 	/*
 	 * 跳跃参数
@@ -262,6 +266,21 @@ public class Megaman extends Foe implements IInputBindable {
 	public byte jumpPressDuration = -1;
 	
 	/*
+	 * 滑铲参数
+	 */
+	/**
+	 * 滑铲速度是水平方向. 滑铲一旦触发, 如果不取消则默认持续 72 步时间.
+	 * 速度 8.33 格/秒, 换算后为 4552 p / 步.
+	 */
+	public int slideVelocity = 4552;
+	/**
+	 * 滑铲的时长.
+	 * 值域: [-1, 72]. -1 表示没有滑铲, 大于等于 0 表示滑铲中.
+	 * 滑铲第一步为 0, 每步 + 1, 到 72 时就不再加, 滑铲结束后为 -1.
+	 */
+	public byte slideDuration = -1;
+	
+	/*
 	 * 行动状态参数
 	 */
 	/**
@@ -288,7 +307,7 @@ public class Megaman extends Foe implements IInputBindable {
 		this.horizontalVelDelta = this.phorizontalVelDelta;
 		this.horizontalVelMax = this.phorizontalVelMax;
 		this.parryVel = this.pparryVel;
-		this.stopSlide = this.pstopSlide;
+		this.stopInstant = this.pstopSlide;
 	}
 	
 	private int calcVelocity(int velocity, int acceleration, int max) {
@@ -320,32 +339,73 @@ public class Megaman extends Foe implements IInputBindable {
 		boolean inAir = box.inAir;
 //		BoxOccupation occ = box.getOccupation();
 		
-		// 最终速度 Y, 需要等待 jump 来改
+		// 4. 跳跃 / 滑铲判定
+		boolean startSlide = (!lastSlide && slide && !inAir && slideDuration == -1);
+		if (jump && !lastJump && down) {
+			// 判断成滑铲
+			startSlide = true;
+		} else {
+			jumpStart = !lastJump && jump && !stiffness && !inAir;
+			jumpEnd = (lastJump && !jump) || stiffness && inAir;
+			// 缓解跳不起来的情况
+			if (jumpPressDuration == 10) {
+				jumpPressDuration = -1;
+			}
+			if (jumpPressDuration >= 0) {
+				jumpPressDuration ++;
+			}
+			if (jump && !lastJump && !stiffness && inAir) {
+				jumpPressDuration = 0;
+			}
+			if (jumpPressDuration > 0 && !inAir) {
+				jumpPressDuration = -1;
+				jumpStart = true;
+			}
+		}
 		
-		// 4. 执行左右移动
-		boolean orientation = box.orientation;
+		// 5. 执行左右移动
 		if (stiffness) {
 			// 在击退 / 硬直状态下
-			if (stopSlide) {
-				if (orientation) {
+			if (stopInstant) {
+				if (box.orientation) {
 					vx = -parryVel;
 				} else {
 					vx = parryVel;
 				}
 			} else {
-				if (orientation) {
+				if (box.orientation) {
 					vx = calcVelocity(vx, -horizontalVelDelta, -parryVel);
 				} else {
 					vx = calcVelocity(vx, horizontalVelDelta, parryVel);
 				}
 			}
-		} else if (!climbing) {
+		} else if (climbing) {
+			// 在爬梯子
+			// TODO
+		} else {
+			// 处理滑铲
+			if (startSlide) {
+				setCurrentPattern("slide");
+				this.slideDuration = 0;
+			} else if (this.slideDuration == 72 || inAir ||
+					((box.orientation && box.rightTouched || !box.orientation && box.leftTouched)) && this.slideDuration >= 24) {
+				// TODO 有什么情况阻止滑铲呢
+				
+				setCurrentPattern("normal");
+				this.slideDuration = -1;
+			} else if (this.slideDuration >= 0) {
+				this.slideDuration ++;
+			}
+			
 			// 正常情况下, 每秒增加 horizontalVelDelta 的水平速度, horizontalVelMax 为最值.
 			if (left) {
+				box.orientation = false;
 				if (inAir) { // 空中
 					vx = -horizontalVelMax;
+				} else if (slideDuration >= 0) {
+					vx = -slideVelocity;
 				} else { // 落地, 向左走
-					if (lastvx > 0 && stopSlide || box.leftTouched) {
+					if (lastvx > 0 && stopInstant || box.leftTouched) {
 						vx = 0;
 					} else {
 						vx = calcVelocity(lastvx, -horizontalVelDelta, -horizontalVelMax);
@@ -355,10 +415,13 @@ public class Megaman extends Foe implements IInputBindable {
 					}
 				}
 			} else if (right) {
+				box.orientation = true;
 				if (inAir) { // 空中
 					vx = horizontalVelMax;
+				} else if (slideDuration >= 0) {
+					vx = slideVelocity;
 				} else { // 落地, 向右走
-					if (lastvx < 0 && stopSlide || box.rightTouched) {
+					if (lastvx < 0 && stopInstant || box.rightTouched) {
 						vx = 0;
 					} else {
 						vx = calcVelocity(lastvx, horizontalVelDelta, horizontalVelMax);
@@ -368,7 +431,9 @@ public class Megaman extends Foe implements IInputBindable {
 					}
 				}
 			} else {
-				if (stopSlide) {
+				if (slideDuration >= 0) {
+					vx = (box.orientation) ? slideVelocity : -slideVelocity;
+				} else if (stopInstant) {
 					vx = 0; // 不在打滑状态下, 立即停住
 				} else {
 					if (lastvx > 0) {
@@ -380,8 +445,6 @@ public class Megaman extends Foe implements IInputBindable {
 					}
 				}
 			}
-		} else { // 在爬梯子
-			// TODO
 		}
 		
 		// 设置的最终速度 X
@@ -394,27 +457,6 @@ public class Megaman extends Foe implements IInputBindable {
 			jumpVel = 0;
 		} else {
 			float gravityScale = box.gravityScale;
-			jumpStart = !lastJump && jump && !stiffness && !inAir;
-			jumpEnd = (lastJump && !jump) || stiffness && inAir;
-			
-			// 缓解跳不起来的情况
-			if (jumpPressDuration == 10) {
-				jumpPressDuration = -1;
-			}
-			if (jumpPressDuration >= 0) {
-				jumpPressDuration ++;
-			}
-			if (jump && !lastJump && !stiffness && inAir) {
-				jumpPressDuration = 0;
-				if (!jumpStart && inAir) {
-					System.out.println(String.format("%d:  inAir|%4.2f,%4.2f", runtime.ticker.count,
-							box.posX / 65536f, box.posY / 65536f));
-				}
-			}
-			if (jumpPressDuration > 0 && !inAir) {
-				jumpPressDuration = -1;
-				jumpStart = true;
-			}
 			// 后面不允许使用 jump 和 lastJump
 			
 			if (gravityScale > 0) {
@@ -446,7 +488,7 @@ public class Megaman extends Foe implements IInputBindable {
 						}
 					}
 				} else if (jumpStart) { // 刚起跳
-					System.out.println(String.format("%d:  jumpStart", runtime.ticker.count));
+//					System.out.println(String.format("%d:  jumpStart", runtime.ticker.count));
 					jumpVel = (box.gravityDown) ? impulse : -impulse;
 				} else {
 					jumpVel = 0;
@@ -556,6 +598,10 @@ public class Megaman extends Foe implements IInputBindable {
 		if (attack != lastAttack || jump != lastJump || slide != lastSlide) {
 			publish(motionInputEvent(attack, attack != lastAttack,
 					jump, jump != lastJump, slide, slide != lastSlide));
+		}
+		
+		if (slide != lastSlide) {
+			System.out.println("slide: " + slide);
 		}
 	}
 	

@@ -2,6 +2,8 @@ package zdream.rockchronicle.core.world;
 
 import static zdream.rockchronicle.core.foe.Box.*;
 
+import com.badlogic.gdx.utils.Array;
+
 import zdream.rockchronicle.core.GameRuntime;
 import zdream.rockchronicle.core.foe.Box;
 import zdream.rockchronicle.core.foe.BoxOccupation;
@@ -298,13 +300,185 @@ public class LevelWorld implements ITerrainStatic {
 			box.addAnchorY(box.velocityY);
 			box.flush();
 		}
+	}
+	
+	/**
+	 * 判断是否重合
+	 * @return
+	 *   重合了返回 false
+	 */
+	private boolean isBoxOverlap(int pxStart, int pyStart, int pWidth, int pHeight) {
+		int pxEnd = pxStart + pWidth;
+		int pyEnd = pyStart + pHeight;
 		
+		int bxStart = blockRight(pxStart);
+		int bxEnd = blockRight(pxEnd);
+		int byStart = blockRight(pyStart);
+		int byEnd = blockRight(pyEnd);
 		
-		// 看看是否 glitch - debug
+		for (int x = bxStart; x < bxEnd; x++) {
+			for (int y = byStart; y < byEnd; y++) {
+				int terrain = getTerrain(x, y);
+				
+				if (terrain == TERRAIN_SOLID) { // TODO 其它实体块
+					// 最后向左移动的结果就是撞到该格子
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * <p>盒子的位置重合修正.
+	 * <p>由于一系列原因导致盒子与不能重合的物体重合了 (比如地形、不穿透刚体等).
+	 * 造成该类原因有些是陷阱、不穿透怪物等自身运动导致和其它物体重合,
+	 * 有些是浮点数的计算精度缺陷 (比如 16 计算成 15.999999)
+	 * <p>修正的方式是将该盒子移出重合区. 本函数将尝试向上下左右四个方向将物体移出重合区,
+	 * 但最大移动距离设置为 1 格 (以下). 如果盒子无法移出重合区, 将会返回 false,
+	 * 让盒子的持有者自行决定如何处理.
+	 * </p>
+	 * @return
+	 *   当出现无法修复的情况, 返回 false
+	 */
+	public boolean glitchFix(Box box) {
+		// 判断重合
+		BoxOccupation occ = box.getOccupation();
+		int bxstart = occ.xleft;
+		int bxend = occ.xright;
+		int bystart = occ.ybottom;
+		int byend = occ.ytop;
+		Array<TerrainParam> overlaps = new Array<>();
 		
+		for (int x = bxstart; x <= bxend; x++) {
+			for (int y = bystart; y <= byend; y++) {
+				byte terrain = getTerrain(x, y);
+				
+				if (terrain == TERRAIN_SOLID) { // TODO 其它实体块
+					// 最后向左移动的结果就是撞到该格子
+					overlaps.add(new TerrainParam(x, y, terrain));
+				}
+			}
+		}
 		
+		// TODO 除了地形以外的重合判定
+		if (overlaps.size == 0) {
+			return true;
+		}
 		
+		// 修正部分
+		// 如果采用左右上下移动, 将最少使用的偏移量. 下面四个参数是记录偏移量的. 单位: p
+		// 四个偏移量超过 1 就不允许
+		int plDelta, prDelta, puDelta, pdDelta;
+		int rightMax = Integer.MIN_VALUE, leftMin = Integer.MAX_VALUE,
+				topMax = Integer.MIN_VALUE, bottomMin = Integer.MAX_VALUE;
+		for (int i = 0; i < overlaps.size; i++) {
+			TerrainParam t = overlaps.get(i);
+			if (t.terrain == TERRAIN_SOLID) { // TODO 其它实体块
+				int ptLeft = block2P(t.bx);
+				int ptRight = block2P(t.bx + 1);
+				int ptTop = block2P(t.by + 1);
+				int ptBottom = block2P(t.by);
+				
+				rightMax = (ptRight > rightMax) ? ptRight : rightMax;
+				leftMin = (ptLeft < leftMin) ? ptLeft : leftMin;
+				topMax = (ptTop > topMax) ? ptTop : topMax;
+				bottomMin = (ptBottom < bottomMin) ? ptBottom : bottomMin;
+			}
+		}
 		
+		plDelta = Math.abs(box.posX + box.posWidth - leftMin); // 向左推
+		prDelta = Math.abs(box.posX - rightMax); // 向右推
+		puDelta = Math.abs(box.posY - topMax); // 向上推
+		pdDelta = Math.abs(box.posY + box.posHeight - bottomMin); // 向下推
+		// 按左右上下取最小值
+		boolean l = plDelta < P_PER_BLOCK, r = prDelta < P_PER_BLOCK,
+				u = puDelta < P_PER_BLOCK, d = pdDelta < P_PER_BLOCK;
+		int loopCount = l ? 1 : 0;
+		loopCount = r ? loopCount + 1 : loopCount;
+		loopCount = u ? loopCount + 1 : loopCount;
+		loopCount = d ? loopCount + 1 : loopCount;
+		
+		int delta ; // 记录移动的数量
+		// 尝试移动之后
+		int pxStart, pyStart;
+		for (int i = 0; i < loopCount; i++) {
+			int choose = 0; // 1:左, 2:右, 3:上, 4:下
+			delta = P_PER_BLOCK;
+			
+			if (l && plDelta < delta) {
+				choose = 1;
+				delta = plDelta;
+			}
+			if (r && prDelta < delta) {
+				choose = 2;
+				delta = prDelta;
+			}
+			if (u && puDelta < delta) {
+				choose = 3;
+				delta = puDelta;
+			}
+			if (d && pdDelta < delta) {
+				choose = 4;
+				delta = pdDelta;
+			}
+			
+			// 执行
+			pxStart = box.posX;
+			pyStart = box.posY;
+			switch (choose) {
+			case 1:
+				pxStart = box.posX - delta;
+				l = false;
+				break;
+			case 2:
+				pxStart = box.posX + delta;
+				r = false;
+				break;
+			case 3:
+				pyStart = box.posY + delta;
+				u = false;
+				break;
+			case 4:
+				pyStart = box.posY - delta;
+				d = false;
+				break;
+			default:
+				return false;
+			}
+			
+			if (isBoxOverlap(pxStart, pyStart, box.boxWidth, box.boxHeight)) {
+				continue;
+			}
+			
+			// 修正成功
+			switch (choose) {
+			case 1:
+				box.addAnchorX(-delta);
+				return true;
+			case 2:
+				box.addAnchorX(delta);
+				return true;
+			case 3:
+				box.addAnchorY(delta);
+				return true;
+			case 4:
+				box.addAnchorY(-delta);
+				return true;
+			}
+		}
+		
+		return true;
+	}
+	
+	class TerrainParam {
+		int bx, by;
+		byte terrain;
+		public TerrainParam(int bx, int by, byte terrain) {
+			this.bx = bx;
+			this.by = by;
+			this.terrain = terrain;
+		}
 	}
 
 }
