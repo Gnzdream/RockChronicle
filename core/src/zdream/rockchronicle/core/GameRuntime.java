@@ -6,15 +6,15 @@ import zdream.rockchronicle.core.foe.Box;
 import zdream.rockchronicle.core.foe.Foe;
 import zdream.rockchronicle.core.foe.IFoePainter;
 import zdream.rockchronicle.core.region.Region;
-import zdream.rockchronicle.core.region.RegionBuilder;
 import zdream.rockchronicle.core.region.Room;
+import zdream.rockchronicle.core.world.LevelWorld;
 import zdream.rockchronicle.core.world.SceneDesigner;
 import zdream.rockchronicle.core.world.Ticker;
 
 public class GameRuntime {
 	
 	public void init() {
-		regionBuilder.init();
+		world.init();
 		scene.init();
 		
 		ticker.setStepListener((pause) -> this.step(pause));
@@ -66,17 +66,7 @@ public class GameRuntime {
 	 *   地图   *
 	 ********** */
 	
-	/**
-	 * 现在正在显示的关卡 {@link Region}
-	 */
-	public Region curRegion;
-	
-	/**
-	 * 现在显示的 {@link Room} 编号
-	 */
-	public int room;
-	
-	public final RegionBuilder regionBuilder = new RegionBuilder();
+	public final LevelWorld world = new LevelWorld(this);
 
 	/**
 	 * 创建一个 {@link Region}, 设置为当前活动的地区, 并且当前房间为默认的初始房间
@@ -84,20 +74,19 @@ public class GameRuntime {
 	 *   这个初始的 {@link Region} 的名字
 	 */
 	public void setCurrentRegion(String name) {
-		this.curRegion = regionBuilder.build(name);
-		setCurrentRoom(curRegion.spawnRoom);
+		world.setCurrentRegion(name);
 	}
 
 	public Room getCurrentRoom() {
-		return curRegion.rooms[room];
+		return world.getCurrentRoom();
 	}
 	
 	/**
-	 * 当前房间发生替换
-	 * @param room
-	 */
+	* 当前房间发生替换
+	* @param room
+	*/
 	public void setCurrentRoom(int room) {
-		this.room = room;
+		world.setCurrentRoom(room);
 		this.scene.onRoomUpdated();
 	}
 	

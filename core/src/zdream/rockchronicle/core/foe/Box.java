@@ -257,19 +257,11 @@ public class Box {
 	 * 受到的重力是否向下, 这里不计其它力.
 	 * 比较实际的意义是判断角色的纹理是正放还是倒放
 	 */
-	public boolean gravityDown;
+	public boolean gravityDown = true;
 	/**
 	 * 左右朝向. true 为右
 	 */
 	public boolean orientation;
-	/**
-	 * 是否受地形的影响
-	 */
-	public boolean inTerrain = true;
-	/**
-	 * 特殊配置, 描述该角色是否能爬梯子
-	 */
-	public boolean climbable;
 	
 	/*
 	 * 状态参数
@@ -277,7 +269,12 @@ public class Box {
 	/**
 	 * 四面是否碰到边了
 	 */
-	public boolean leftStop, rightStop, topStop, bottomStop;
+	public boolean leftTouched, rightTouched, topTouched, bottomTouched;
+	
+	/**
+	 * 是否在空中, false 表示在地上 / 平台上
+	 */
+	public boolean inAir;
 	
 	/**
 	 * <p>将 p 为单位的数值转成块.

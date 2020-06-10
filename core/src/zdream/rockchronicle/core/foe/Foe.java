@@ -6,6 +6,8 @@ import java.util.function.Consumer;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.ObjectMap.Entries;
+import com.badlogic.gdx.utils.ObjectMap.Entry;
 
 import zdream.rockchronicle.core.GameRuntime;
 
@@ -117,7 +119,20 @@ public abstract class Foe {
 	 * @param pause
 	 *   世界是否暂停
 	 */
-	public abstract void step(boolean pause);
+	public void step(boolean pause) {
+		// 所有状态数值寿命减一
+		for (Entries<String, JsonValue> it = states.iterator(); it.hasNext;) {
+			Entry<String, JsonValue> a = it.next();
+			
+			JsonValue value = a.value;
+			JsonValue remain = value.get("_remain");
+			if (remain == null || remain.asInt() <= 1) {
+				it.remove();
+			} else {
+				remain.set(remain.asInt() - 1, null);
+			}
+		}
+	}
 	
 	/**
 	 * 状态确定.

@@ -53,10 +53,13 @@ public class LevelScreen implements Screen {
 	@Override
 	public void show() {
 		GameRuntime runtime = app.runtime;
-		Region region = runtime.curRegion;
+		Region region = runtime.world.curRegion;
 		
 		Megaman mm = new Megaman(region.spawnx + 0.5f, region.spawny);
 		runtime.addFoe(mm);
+		mm.getBoxes()[0].orientation = true;
+		
+		mm.bindController(RockChronicle.INSTANCE.input.p1);
 		
 		
 		// 设置 megaman 的初始位置, 到 room 所对应的 spawn 点

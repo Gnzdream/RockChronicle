@@ -50,7 +50,7 @@ public class ShapePainter implements IFoePainter {
 			renderer.line(xstart, yend, xstart, ystart);
 		}
 		
-		System.out.println(box);
+//		System.out.println(box);
 		renderer.end();
 	}
 

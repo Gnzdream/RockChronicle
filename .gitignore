@@ -4,6 +4,8 @@
 *.war
 *.ear
 hs_err_pid*
+*.psd
+*.fnt
 
 ## Robovm
 /ios/robovm-build/
@@ -123,6 +125,3 @@ Thumbs.db
 !/ios-moe/xcode/*.xcodeproj/xcshareddata
 !/ios-moe/xcode/*.xcodeproj/project.pbxproj
 /ios-moe/xcode/native/
-
-## other type
-*.psd

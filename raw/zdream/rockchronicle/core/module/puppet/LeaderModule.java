@@ -1,0 +1,198 @@
+package zdream.rockchronicle.core.module.puppet;
+
+import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.JsonValue;
+
+import zdream.rockchronicle.core.character.CharacterEntry;
+import zdream.rockchronicle.core.character.event.CharacterEvent;
+import zdream.rockchronicle.core.character.parameter.CharacterParameter;
+import zdream.rockchronicle.core.module.AbstractModule;
+import zdream.rockchronicle.core.move.IMovable;
+import zdream.rockchronicle.platform.body.Box;
+import zdream.rockchronicle.utils.JsonUtils;
+
+/**
+ * <p>领队模块.
+ * <p>为跟随者的主人, 所有其跟随者接受其管理.
+ * 该类将在初始化时就生成它的跟随者.
+ * <p>主人很大可能携带 {@link LeaderModule} 模块来管理它的跟随方,
+ * 而跟随方很大可能携带 {@link FollowerModule} 模块来跟随主人.
+ * <p>为了做到跟随方随着主人行动, 跟随方会将 {@link IMovable} 添加到主人的行动列表中,
+ * 并设置负的优先度, 在主人移动完成之后, 对跟随方进行移动.
+ * </p>
+ * 
+ * @author Zdream
+ * @since v0.0.1
+ * @date
+ *   2019-06-04 (created)
+ *   2019-06-04 (last modified)
+ */
+public class LeaderModule extends AbstractModule {
+
+	public LeaderModule(CharacterEntry parent) {
+		this(parent, "base");
+	}
+
+	protected LeaderModule(CharacterEntry parent, String desc) {
+		super(parent, "leader", desc);
+	}
+
+	@Override
+	public int priority() {
+		return -50;
+	}
+	
+	/*
+	 * 这里需要确定
+	 * 1. 携带的跟随方的参数, 包含跟随方的初始位置 (锚点与本角色锚点位置之差)
+	 * 如果是出场时自动添加上去的, 那在该模块 init 方法执行时,
+	 * 创建跟随方的实体.
+	 */
+	Array<FollowerParam> followers = new Array<>(8);
+	
+	@Override
+	public void init(FileHandle file, JsonValue value) {
+		super.init(file, value);
+		
+		// 其它参数
+		JsonValue oleader = value.get("leader");
+		if (oleader != null) {
+			initLeaderParam(oleader);
+		}
+		
+		// 产生跟随的角色
+		createFollowers(value);
+		
+		// 监听
+		parent.addSubscribe("release_follower", this);
+	}
+	
+	private void initLeaderParam(JsonValue oleader) {
+		JsonValue afollowers = oleader.get("followers");
+		if (afollowers != null) {
+			for (JsonValue ofollower = afollowers.child; ofollower != null; ofollower = ofollower.next) {
+				FollowerParam p = new FollowerParam(parent.id);
+				
+				p.offx = (int) (ofollower.getFloat("offsetX", 0) * Box.P_PER_BLOCK);
+				p.offy = (int) (ofollower.getFloat("offsetY", 0) * Box.P_PER_BLOCK);
+				p.name = ofollower.getString("name");
+				p.param = ofollower.get("param");
+				
+				followers.add(p);
+			}
+		}
+	}
+	
+	/**
+	 * <p>产生跟随的角色
+	 * <p>注: 这里不能直接从 Box 里面取锚点位置因为现在还在初始化阶段
+	 * </p>
+	 */
+	private void createFollowers(JsonValue v) {
+		// 确定位置
+		JsonValue obox = v.get("box");
+		JsonValue oanchor = obox.get("anchor");
+		
+		int px, py;
+		if (oanchor.has("px")) {
+			px = oanchor.getInt("px");
+		} else {
+			px = (int) ((oanchor.getFloat("x")) * Box.P_PER_BLOCK);
+		}
+		if (oanchor.has("py")) {
+			py = oanchor.getInt("py");
+		} else {
+			py = (int) ((oanchor.getFloat("y")) * Box.P_PER_BLOCK);
+		}
+		
+		// 确定朝向
+		JsonValue ostate = v.get("state");
+		boolean orientation = (ostate == null) ? true : ostate.getBoolean("orientation", true);
+		
+		// 确定阵营
+		JsonValue ocamp = v.get("camp");
+		int camp = (ocamp == null) ? 0 : ocamp.getInt("camp", 0);
+
+		for (int i = 0; i < followers.size; i++) {
+			FollowerParam item = this.followers.get(i);
+			int pxx = px + item.offx;
+			int pyy = py + item.offy;
+			
+			CharacterEntry c = parent.createEntry(item.name,
+					CharacterParameter.newInstance(JsonUtils.clone(item.param))
+						.setBoxAnchorP(pxx, pyy)
+						.setStateOrientation(orientation)
+						.setMotionFlipX(!orientation)
+						.setCamp(camp)
+						.get());
+			
+			item.followerId = c.id;
+			
+			// 将跟随者的 IMovable 放入领队的列表中
+			AbstractModule af = c.getModule(FollowerModule.NAME);
+			if (af != null && af instanceof FollowerModule) {
+				FollowerModule f = (FollowerModule) af;
+				item.movable = f;
+				
+				f.setFollowerParam(item);
+				parent.getBoxModule().addMovable(f, -20);
+			}
+		}
+	}
+	
+	/**
+	 * (主动) 释放跟随者
+	 */
+	public void releaseFollower(int id) {
+		FollowerParam[] params = followers.toArray(FollowerParam.class);
+		for (int i = 0; i < params.length; i++) {
+			FollowerParam param = params[i];
+			
+			if (param.followerId == id) {
+				// 执行脱钩
+				releaseFollower(param);
+				followers.removeValue(param, true);
+			}
+		}
+	}
+	
+	private void releaseFollower(FollowerParam param) {
+		parent.getBoxModule().removeMovable(param.movable);
+		
+		CharacterEntry follower = parent.findEntry(param.followerId);
+		if (follower != null) {
+			CharacterEvent event = new CharacterEvent("detach_leader");
+			follower.publishNow(event);
+		}
+	}
+	
+	@Override
+	public void receiveEvent(CharacterEvent event) {
+		if ("release_follower".equals(event.name)) {
+			// target 可能是: "all", "random", 和 id (integer), [id, ...] (array)
+			JsonValue target = event.value.get("id");
+			
+			if (target.isNumber()) {
+				int id = target.asInt();
+				releaseFollower(id);
+			} else if (target.isString()) {
+				String text = target.asString();
+				if ("all".equals(text)) {
+					FollowerParam[] params = followers.toArray(FollowerParam.class);
+					for (int i = 0; i < params.length; i++) {
+						releaseFollower(params[i]);
+					}
+					followers.clear();
+				} else {
+					// TODO
+				}
+			} else if (target.isArray()) {
+				// TODO
+			}
+			
+		}
+		super.receiveEvent(event);
+	}
+
+}
