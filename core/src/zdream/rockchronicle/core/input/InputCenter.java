@@ -7,6 +7,8 @@ import com.badlogic.gdx.controllers.Controllers;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntIntMap;
 
+import zdream.rockchronicle.RockChronicle;
+
 /**
  * 配置键位
  * @author Zdream
@@ -72,6 +74,11 @@ public class InputCenter {
 		@Override
 		public boolean keyDown(int keycode) {
 			p1.keyPressed(keycode);
+			if (keycode == 45) { // Q
+				RockChronicle g = RockChronicle.INSTANCE;
+				System.out.println(g);
+			}
+			
 //			p2.keyPressed(keycode);
 			return false;
 		}

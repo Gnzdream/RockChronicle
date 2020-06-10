@@ -11,9 +11,8 @@ import zdream.rockchronicle.core.Config;
 import zdream.rockchronicle.core.GameRuntime;
 import zdream.rockchronicle.core.input.InputCenter;
 import zdream.rockchronicle.screen.MainMenuScreen;
-import zdream.rockchronicle.textures.painter.PainterManager;
+//import zdream.rockchronicle.textures.painter.PainterManager;
 import zdream.rockchronicle.utils.FilePathUtil;
-import zdream.rockchronicle.utils.JsonUtils;
 
 /**
  * 游戏主体
@@ -34,7 +33,7 @@ public class RockChronicle {
 		this.game = game;
 		projectPath = System.getProperty("user.dir");
 		input = new InputCenter();
-		painter = new PainterManager();
+//		painter = new PainterManager();
 		runtime = new GameRuntime();
 	}
 	
@@ -49,7 +48,7 @@ public class RockChronicle {
 	// 类
 	public final String projectPath;
 	public final InputCenter input;
-	public final PainterManager painter;
+//	public final PainterManager painter;
 	public final GameRuntime runtime;
 	
 	// 与引擎相关的
@@ -60,7 +59,6 @@ public class RockChronicle {
 
 	public void create() {
 		// 初始化
-		initConfig();
 		initControl();
 		
 		widthInPixel = width * Config.INSTANCE.blockWidth;
@@ -95,10 +93,4 @@ public class RockChronicle {
 	private void initControl() {
 		input.init();
 	}
-	
-	private void initConfig() {
-		Config.INSTANCE.init(JsonUtils.jreader.parse(
-				FilePathUtil.localFiles("res", "conf", "conf.json")));
-	}
-	
 }

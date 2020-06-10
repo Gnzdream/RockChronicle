@@ -1,16 +1,19 @@
 package zdream.rockchronicle.screen;
 
+import java.util.Comparator;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.utils.Array;
 
 import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.GameRuntime;
-import zdream.rockchronicle.core.character.parameter.CharacterParameter;
-import zdream.rockchronicle.platform.region.Region;
-import zdream.rockchronicle.sprite.character.megaman.MegamanInLevel;
+import zdream.rockchronicle.core.foe.IFoePainter;
+import zdream.rockchronicle.core.region.Region;
+import zdream.rockchronicle.foes.megaman.Megaman;
 
 public class LevelScreen implements Screen {
 	
@@ -27,25 +30,21 @@ public class LevelScreen implements Screen {
 	 */
 	OrthographicCamera symbolCamera;
 	
-	Region region;
-	
-	/*
-	 * 缓存人物
-	 */
-	MegamanInLevel megaman;
-	
 	SpriteBatch batch = new SpriteBatch();
+	
+	/**
+	 * 绘画降序排列
+	 */
+	Comparator<IFoePainter> comparator = (foe1, foe2) -> foe2.zIndex() - foe1.zIndex();
 	
 	public LevelScreen() {
 		app = RockChronicle.INSTANCE;
+		worldCamera = app.runtime.scene.camera;
+		app.runtime.ticker.setFrameStartListener((count) -> this.frameStart(count));
+		app.runtime.ticker.setFrameFinishedListener((count) -> this.frameFinished(count));
 		
 		// tiled 地图
-//		region = app.runtime.regionBuilder.buildForTerrainOnly("mm1cut");
-//		region = app.runtime.regionBuilder.build("mm1cut");
-		
-		worldCamera = app.runtime.scene.camera;
-//		worldCamera.combined.scale(Config.INSTANCE.blockWidth, Config.INSTANCE.blockHeight, 1);
-//		worldCamera.combined.scale(2, 2, 1);
+		app.runtime.setCurrentRegion("mm1cut");
 		
 		symbolCamera = new OrthographicCamera();
 		symbolCamera.setToOrtho(false, app.widthInPixel, app.heightInPixel);
@@ -54,39 +53,43 @@ public class LevelScreen implements Screen {
 	@Override
 	public void show() {
 		GameRuntime runtime = app.runtime;
+		Region region = runtime.curRegion;
 		
-		/*
-		 * 物理
-		 */
+		Megaman mm = new Megaman(region.spawnx + 0.5f, region.spawny);
+		runtime.addFoe(mm);
+		
+		
 		// 设置 megaman 的初始位置, 到 room 所对应的 spawn 点
 		// 人物设置必须晚于世界创建
-		runtime.createWorld();
-		runtime.setSpawnRegion("mm1cut");
-		region = runtime.curRegion;
-		
-		
-		megaman = (MegamanInLevel) app.runtime.characterBuilder.create("megaman",
-				CharacterParameter.newInstance().setBoxAnchor(region.spawnx + 0.5f, region.spawny)
-				.setCamp(1)
-				.get());
-//		megaman.load(Gdx.files.local("res\\characters\\megaman\\megaman.json"));
-		runtime.putPlayer(1, megaman);
-//		megaman.setBlockPos(region.spawnx, region.spawny);
-		
-		// 测试: 放进去小怪
-		{
-			runtime.addEntry(app.runtime.characterBuilder.create("testfoe",
-					CharacterParameter.newInstance().setBoxAnchor(region.spawnx + 3.5f, region.spawny)
-					.get()));
-
-			runtime.addEntry(app.runtime.characterBuilder.create("testfoe",
-					CharacterParameter.newInstance().setBoxAnchor(12, 8)
-					.get()));
-			
-			runtime.addEntry(app.runtime.characterBuilder.create("mm2bird",
-					CharacterParameter.newInstance().setBoxAnchor(20, 7)
-					.get()));
-		}
+//		runtime.createWorld();
+//		runtime.setSpawnRegion("mm1cut");
+//		region = runtime.curRegion;
+//		
+//		
+//		megaman = (MegamanInLevel) app.runtime.characterBuilder.create("megaman",
+//				CharacterParameter.newInstance().setBoxAnchorP(
+//						(int) ((region.spawnx + 0.5f) * Box.P_PER_BLOCK),
+//						region.spawny * Box.P_PER_BLOCK)
+//				.setCamp(1)
+//				.get());
+////		megaman.load(Gdx.files.local("res\\characters\\megaman\\megaman.json"));
+//		runtime.putPlayer(1, megaman);
+////		megaman.setBlockPos(region.spawnx, region.spawny);
+//		
+//		// 测试: 放进去小怪
+//		{
+////			runtime.addEntry(app.runtime.characterBuilder.create("testfoe",
+////					CharacterParameter.newInstance().setBoxAnchor(region.spawnx + 3.5f, region.spawny)
+////					.get()));
+//
+//			runtime.addEntry(app.runtime.characterBuilder.create("testfoe",
+//					CharacterParameter.newInstance().setBoxAnchorP(12 * Box.P_PER_BLOCK, 8 * Box.P_PER_BLOCK)
+//					.get()));
+//			
+//			runtime.addEntry(app.runtime.characterBuilder.create("mm2bird",
+//					CharacterParameter.newInstance().setBoxAnchorP(20 * Box.P_PER_BLOCK, 7 * Box.P_PER_BLOCK)
+//					.get()));
+//		}
 		
 //		Room curRoom = region.rooms[runtime.room];
 		
@@ -94,14 +97,30 @@ public class LevelScreen implements Screen {
 		// mapRender
 		fixMapRender();
 		
-		batch.setProjectionMatrix(worldCamera.combined); // 投影矩阵
-//		batch.setTransformMatrix(worldCamera.projection); // 变换矩阵
-		
 		// 测试帧率部分
 		frameTimestamp = System.currentTimeMillis();
 	}
 	
-	int count = 0;
+	public void frameStart(int stepCount) {
+		Gdx.gl.glClearColor(0.1f, 0, 0.2f, 1);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+	}
+	
+	public void frameFinished(int stepCount) {
+		GameRuntime runtime = app.runtime;
+		runtime.scene.updateCamera();
+		fixMapRender();
+		runtime.scene.renderMap();
+		
+		batch.setProjectionMatrix(worldCamera.combined); // 投影矩阵
+		
+		// 画所有 Foe
+		Array<IFoePainter> painters = runtime.painters;
+		painters.sort(comparator);
+		for (int i = 0; i < painters.size; i++) {
+			painters.get(i).draw(batch, worldCamera);
+		}
+	}
 	
 	/**
 	 * 在界面启动时, 和每帧
@@ -117,10 +136,8 @@ public class LevelScreen implements Screen {
 	
 	@Override
 	public void render(float delta) {
-		Gdx.gl.glClearColor(0.1f, 0, 0.2f, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		
-		float realDelta = Math.min(delta, 0.1f); // 该值不会大于 0.1f
+		final GameRuntime runtime = app.runtime;
+		runtime.tick(delta);
 		
 		
 		// 镜头控制
@@ -131,16 +148,11 @@ public class LevelScreen implements Screen {
 //		worldCamera.update();
 		
 		// 物理
-		app.runtime.tick(realDelta);
 		
 		// 渲染部分
 		// symbol 层是不能被 render 的
-		app.runtime.scene.updateCamera();
-		fixMapRender();
-		app.runtime.scene.renderMap();
 		
-//		batch.setTransformMatrix(worldCamera.projection);
-		app.runtime.drawEntries(batch, worldCamera);
+//		app.runtime.drawEntries(batch, worldCamera);
 		
 		// 帧率
 		long now = System.currentTimeMillis();
@@ -153,11 +165,11 @@ public class LevelScreen implements Screen {
 		}
 		frameCount++;
 		app.batch.begin();
-		int displayHp = app.runtime.cast.megaman.hp;
-		displayHp = (displayHp > 256) ? displayHp / 256 : (displayHp > 256) ? 1 : 0;
+//		int displayHp = app.runtime.cast.megaman.hp;
+//		displayHp = (displayHp > 256) ? displayHp / 256 : (displayHp > 256) ? 1 : 0;
 		
-		app.font.draw(app.batch, String.format("帧率: %d HP:%d",
-				lastFrameCount, displayHp), 10, 20);
+		app.font.draw(app.batch, String.format("帧率: %d HP:%s",
+				lastFrameCount, "??"), 10, 20);
 		app.batch.end();
 	}
 	
@@ -174,24 +186,17 @@ public class LevelScreen implements Screen {
 
 	@Override
 	public void pause() {
-		app.runtime.pauseWorld(); // TODO 应该是游戏整体暂停, 而非只有世界暂停
+//		app.runtime.pauseWorld(); // TODO 应该是游戏整体暂停, 而非只有世界暂停
 	}
 
 	@Override
 	public void resume() {
-		app.runtime.resumeWorld(); // TODO 应该是游戏整体复苏, 而非只有世界复苏
+//		app.runtime.resumeWorld(); // TODO 应该是游戏整体复苏, 而非只有世界复苏
 	}
 
 	@Override
 	public void hide() {
-		app.runtime.pauseWorld();
-	}
-	
-	public void willDispose() {
-		// 删除控制端. 这里不一定是 megaman 要注意
-		megaman.unbindController();
-//		game.runtime.levelWorld.setStepCallBack(null);
-		app.runtime.levelWorld = null;
+//		app.runtime.pauseWorld();
 	}
 
 	@Override
