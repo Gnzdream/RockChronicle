@@ -32,6 +32,13 @@ public abstract class Foe {
 	public final int id;
 	public final String name;
 	
+	/**
+	 * <p>自己属于哪个阵营的.
+	 * <p>一般来说, 0 为公共, 1 为我方, 2 为敌方
+	 * </p>
+	 */
+	public byte camp;
+	
 	private static int ID = 1;
 	
 	/*
@@ -58,8 +65,21 @@ public abstract class Foe {
 		return disposed;
 	}
 	
-	public void dispose() {
-		// TODO Auto-generated method stub
+	/**
+	 * 如果想自毁, 请调用它
+	 */
+	public void destroy() {
+		runtime.removeFoe(this);
+	}
+	
+	/**
+	 * 这个是系统调用的
+	 */
+	public void onDispose() {
+		Box[] boxes = getBoxes();
+		for (int i = 0; i < boxes.length; i++) {
+			removeBoxFromWorld(boxes[i]);
+		}
 		disposed = true;
 	}
 	
@@ -120,6 +140,10 @@ public abstract class Foe {
 	 *   世界是否暂停
 	 */
 	public void step(boolean pause) {
+		if (pause) {
+			return;
+		}
+		
 		// 所有状态数值寿命减一
 		for (Entries<String, JsonValue> it = states.iterator(); it.hasNext;) {
 			Entry<String, JsonValue> a = it.next();

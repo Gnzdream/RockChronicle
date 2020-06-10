@@ -19,10 +19,16 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 public class ShapePainter implements IFoePainter {
 	
 	private final Box box;
+	private final Color color;
 	protected ShapeRenderer renderer;
 
 	public ShapePainter(Box box) {
+		this(box, Color.WHITE);
+	}
+
+	public ShapePainter(Box box, Color color) {
 		this.box = box;
+		this.color = color;
 		renderer = new ShapeRenderer();
 	}
 
@@ -34,7 +40,7 @@ public class ShapePainter implements IFoePainter {
 		renderer.getProjectionMatrix().translate(dx, dy, 0);
 		
 		renderer.begin(ShapeType.Line);
-		renderer.setColor(Color.WHITE);
+		renderer.setColor(color);
 		
 		if (box != null) {
 			box.flush();

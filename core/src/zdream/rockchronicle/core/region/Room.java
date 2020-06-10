@@ -33,13 +33,11 @@ public class Room {
 	 * 左下角这个点在 {@link Region} 中的位置. 单位: 块
 	 */
 	public int offsetx, offsety;
-	public int poffsetx, poffsety;
 	
 	/**
 	 * 房间的宽高. 单位: 块
 	 */
 	public int width, height;
-	public int pwidth, pheight;
 	
 	/**
 	 * [x][y]
@@ -79,9 +77,9 @@ public class Room {
 	 */
 	public boolean overlaps(float bx, float by, float bw, float bh) {
 		return offsetx < bx + bw
-				&& offsetx + pwidth > bx
+				&& offsetx + width > bx
 				&& offsety < by + bh
-				&& offsety + pheight > by;
+				&& offsety + height > by;
 	}
 
 	/**
@@ -114,27 +112,6 @@ public class Room {
 		return (0 < bx && width > bx && 0 < by && height > by) ? 1 : 0;
 	}
 
-	/**
-	 * 查看一个点是否在该房间范围内, 或者压住房间的边缘线.
-	 * @param px
-	 *   这个点在当前房间中的横坐标, 单位: p
-	 * @param py
-	 *   这个点在当前房间中的纵坐标, 单位: p
-	 * @return
-	 *   1: 房间内
-	 *   0: 在边缘线
-	 *   -1: 房间外
-	 */
-	public int containInRoom(int px, int py) {
-		if (pwidth == 0) {
-			throw new IllegalStateException("Room.containInRoom(int,int)");
-		}
-		if (px > pwidth || px < 0 || py > pheight || py < 0) {
-			return -1;
-		}
-		return (0 < px && pwidth > px && 0 < py && pheight > py) ? 1 : 0;
-	}
-	
 	/**
 	 * 查看一个区域点块是否在该房间范围内
 	 * @param x

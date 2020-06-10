@@ -307,7 +307,7 @@ public class LevelWorld implements ITerrainStatic {
 	 * @return
 	 *   重合了返回 false
 	 */
-	private boolean isBoxOverlap(int pxStart, int pyStart, int pWidth, int pHeight) {
+	public boolean isBoxOverlap(int pxStart, int pyStart, int pWidth, int pHeight) {
 		int pxEnd = pxStart + pWidth;
 		int pyEnd = pyStart + pHeight;
 		
@@ -327,6 +327,21 @@ public class LevelWorld implements ITerrainStatic {
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * 判断是否在房间外. 贴线的返回 false
+	 */
+	public boolean isOutside(int pxStart, int pyStart, int pWidth, int pHeight) {
+		// return x < r.x + r.width && x + width > r.x && y < r.y + r.height && y + height > r.y;
+		Room room = getCurrentRoom();
+		int pRoomWidth = block2P(room.width);
+		int pRoomHeight = block2P(room.height);
+		
+		return 0 > pxStart + pWidth
+				|| pRoomWidth < pxStart
+				|| 0 > pyStart + pHeight
+				|| pRoomHeight < pyStart;
 	}
 	
 	/**

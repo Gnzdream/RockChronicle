@@ -2,6 +2,7 @@ package zdream.rockchronicle.foes.megaman;
 
 import static zdream.rockchronicle.core.world.Ticker.WORLD_STEP;
 
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
 import com.badlogic.gdx.utils.ObjectMap;
@@ -19,6 +20,7 @@ public class Megaman extends Foe implements IInputBindable {
 
 	public Megaman() {
 		super("megaman");
+		camp = 1;
 		
 		box = new Box(id);
 		boxes = new Box[] {box};
@@ -39,13 +41,22 @@ public class Megaman extends Foe implements IInputBindable {
 		box.setAnchor(Box.block2P(bAnchorX), Box.block2P(bAnchorY));
 	}
 	
+	ShapePainter painter;
+	
 	@Override
 	public void init(GameRuntime runtime) {
 		super.init(runtime);
-		
+
 		initMotion();
+		initWeapon();
 		
-		putPainter(new ShapePainter(box));
+		putPainter(painter = new ShapePainter(box));
+	}
+	
+	@Override
+	public void onDispose() {
+		removePainter(painter);
+		super.onDispose();
 	}
 	
 	/*
@@ -55,14 +66,15 @@ public class Megaman extends Foe implements IInputBindable {
 	 *  - 处理控制
 	 *  - 自己状态更新 / state 数据寿命减一
 	 *  - 重叠、攻击判定 (跨 Foe)
-	 * 
-	 * 2. submit (这个函数只管自己的状态)
 	 *  - 移动部分的提交
 	 * 
+	 * 2. submit (这个函数只管自己的状态)
+	 *  - 各种收尾事项. 其实一般不用
 	 */
 	
 	@Override
 	public void step(boolean pause) {
+		super.step(pause);
 		if (pause) {
 			return;
 		}
@@ -84,6 +96,10 @@ public class Megaman extends Foe implements IInputBindable {
 		// box 初始化、在地形中的情形、是否受伤僵直、移动情况
 		runtime.world.freshBox(box, true);
 		handleMotion();
+		
+		// 处理攻击情况.
+		handleFire();
+		
 		
 		// TODO 是否受伤僵直. 僵直时移动情况被自动设置
 		
@@ -114,17 +130,19 @@ public class Megaman extends Foe implements IInputBindable {
 //			motion = "walk";
 //		}
 //		setState("state.motion", new JsonValue(motion));
-	}
-	
-	@Override
-	public void submit(boolean pause) {
-		resetParam();
 		
+		// 最后……
 		// 处理左右移动
 		runtime.world.submitMotion(box, true);
 		
 		// 处理 glitch
 		runtime.world.glitchFix(box);
+	}
+	
+	@Override
+	public void submit(boolean pause) {
+		super.submit(pause);
+		resetParam();
 	}
 	
 	/* **********
@@ -344,6 +362,7 @@ public class Megaman extends Foe implements IInputBindable {
 		if (jump && !lastJump && down) {
 			// 判断成滑铲
 			startSlide = true;
+//			System.out.println(String.format("%d : slide", runtime.ticker.count));
 		} else {
 			jumpStart = !lastJump && jump && !stiffness && !inAir;
 			jumpEnd = (lastJump && !jump) || stiffness && inAir;
@@ -361,6 +380,12 @@ public class Megaman extends Foe implements IInputBindable {
 				jumpPressDuration = -1;
 				jumpStart = true;
 			}
+			
+//			if (jumpStart) {
+//				System.out.println(String.format("%d : jump", runtime.ticker.count));
+//			} else if (!lastJump && jump && inAir) {
+//				System.out.println(String.format("%d : inAir", runtime.ticker.count));
+//			}
 		}
 		
 		// 5. 执行左右移动
@@ -502,6 +527,55 @@ public class Megaman extends Foe implements IInputBindable {
 	}
 	
 	/* **********
+	 *   武器   *
+	 ********** */
+	
+	public Array<IMegamanWeapon> weapons;
+	public int currentWeapon = 0;
+	
+	private void initWeapon() {
+		weapons = new Array<>();
+		weapons.add(new BusterWeapon(runtime));
+	}
+	
+	public IMegamanWeapon getCurrentWeapon() {
+		return weapons.get(currentWeapon);
+	}
+	
+	private void handleFire() {
+		/*
+		 * 以下情况可以攻击:
+		 * 
+		 * 1. 当前配置武器时
+		 * 2. 当前武器有能量时 (如果有能量限制);
+		 * 3. 当前武器在蓄力完成、子弹个数等条件均满足时;
+		 * 4. 洛克人不在受伤硬直状态
+		 * 5. 洛克人不在滑铲状态 (注, 这里特殊, 是 slideDuration > 0 不让攻击)
+		 * 
+		 * 如果武器能蓄力:
+		 * 
+		 * 1. 当受伤硬直时, 蓄力消失 ?
+		 * 2. 滑铲状态可以蓄力
+		 */
+		
+		for (int i = 0; i < weapons.size; i++) {
+			IMegamanWeapon weapon = weapons.get(i);
+			if (weapon != null) {
+				weapon.tick(this);
+			}
+		}
+		
+		if (!lastAttack && attack) {
+			IMegamanWeapon weapon = getCurrentWeapon();
+			weapon.onAttackPressed(this);
+		} else if (lastAttack && !attack) {
+			IMegamanWeapon weapon = getCurrentWeapon();
+			weapon.onAttackReleased(this);
+		}
+		
+	}
+	
+	/* **********
 	 *   控制   *
 	 ********** */
 
@@ -598,10 +672,6 @@ public class Megaman extends Foe implements IInputBindable {
 		if (attack != lastAttack || jump != lastJump || slide != lastSlide) {
 			publish(motionInputEvent(attack, attack != lastAttack,
 					jump, jump != lastJump, slide, slide != lastSlide));
-		}
-		
-		if (slide != lastSlide) {
-			System.out.println("slide: " + slide);
 		}
 	}
 	

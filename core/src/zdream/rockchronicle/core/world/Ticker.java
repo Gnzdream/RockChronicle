@@ -13,7 +13,8 @@ import java.util.function.IntConsumer;
  */
 public class Ticker {
 	
-	public static final float WORLD_STEP = 1f / 120;
+	public static final int STEP_PRE_SECOND = 120;
+	public static final float WORLD_STEP = 1f / STEP_PRE_SECOND;
 	
 	/**
 	 * 包括暂停时间的所有步数
