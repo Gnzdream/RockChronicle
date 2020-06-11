@@ -3,9 +3,9 @@ package zdream.rockchronicle.foes.mm2pipi;
 import com.badlogic.gdx.graphics.Color;
 
 import zdream.rockchronicle.core.GameRuntime;
-import zdream.rockchronicle.core.foe.Box;
-import zdream.rockchronicle.core.foe.Foe;
 import zdream.rockchronicle.core.foe.ShapePainter;
+import zdream.rockchronicle.core.foe.SimpleBoxFoe;
+import zdream.rockchronicle.core.world.Ticker;
 
 /**
  * <p>2 代带着蛋飞的鸟.
@@ -19,17 +19,15 @@ import zdream.rockchronicle.core.foe.ShapePainter;
  * @author Zdream
  * @date 2020-06-11
  */
-public class MM2PipiEgg extends Foe {
+public class MM2PipiEgg extends SimpleBoxFoe {
 
 	public MM2PipiEgg() {
-		super("mm2pipi_egg");
-		type = "foe";
-		camp = 2;
+		super("mm2pipi_egg", "foe", (byte) 2);
 		
-		box = new Box(id);
-		box.setBox(-30037, 0, 62805, 52429); // 锚点在下底的中点偏左
-		box.setAnchor(99999, 99999);
-		boxes = new Box[] { box };
+		box.setBox(-24576, -16384, 49152, 32768); // 锚点在上边的中点偏左
+
+		outsideTrialPeriod = Ticker.STEPS_PER_SECOND;
+		outsideThreshold = Ticker.STEPS_PER_SECOND / 10;
 	}
 	
 	@Override
@@ -38,17 +36,15 @@ public class MM2PipiEgg extends Foe {
 		
 		putPainter(new ShapePainter(box, Color.YELLOW));
 	}
+
+	@Override
+	protected void stepIfNotPause() {
+		// TODO Auto-generated method stub
+		
+	}
 	
 	/* **********
 	 *   盒子   *
 	 ********** */
-	
-	Box box;
-	Box[] boxes;
-
-	@Override
-	public Box[] getBoxes() {
-		return boxes;
-	}
 
 }

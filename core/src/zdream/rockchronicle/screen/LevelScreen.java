@@ -49,18 +49,17 @@ public class LevelScreen implements Screen {
 		symbolCamera = new OrthographicCamera();
 		symbolCamera.setToOrtho(false, app.widthInPixel, app.heightInPixel);
 	}
+	
+	Megaman mm;
 
 	@Override
 	public void show() {
 		GameRuntime runtime = app.runtime;
 		Region region = runtime.world.curRegion;
 		
-		Megaman mm = new Megaman(region.spawnx + 0.5f, region.spawny);
-		runtime.addFoe(mm);
+		mm = new Megaman(region.spawnx + 0.5f, region.spawny);
+		runtime.setPlayer1(mm);
 		mm.getBoxes()[0].orientation = true;
-		
-		mm.bindController(RockChronicle.INSTANCE.input.p1);
-		
 		
 		// 设置 megaman 的初始位置, 到 room 所对应的 spawn 点
 		// 人物设置必须晚于世界创建
@@ -171,8 +170,8 @@ public class LevelScreen implements Screen {
 //		int displayHp = app.runtime.cast.megaman.hp;
 //		displayHp = (displayHp > 256) ? displayHp / 256 : (displayHp > 256) ? 1 : 0;
 		
-		app.font.draw(app.batch, String.format("帧率: %d HP:%s",
-				lastFrameCount, "??"), 10, 20);
+		app.font.draw(app.batch, String.format("帧率: %d HP:%d",
+				lastFrameCount, mm.hp / 256), 10, 20);
 		app.batch.end();
 	}
 	

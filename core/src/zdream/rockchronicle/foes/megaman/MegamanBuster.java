@@ -131,7 +131,6 @@ public class MegamanBuster extends Foe {
 	private void checkCollision() {
 		ch.reset();
 		
-		// 阵营判断部分
 		runtime.world.overlaps(box, ch, true);
 	}
 	

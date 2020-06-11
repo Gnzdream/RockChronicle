@@ -2,9 +2,11 @@ package zdream.rockchronicle.core;
 
 import com.badlogic.gdx.utils.Array;
 
+import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.foe.Box;
 import zdream.rockchronicle.core.foe.Foe;
 import zdream.rockchronicle.core.foe.IFoePainter;
+import zdream.rockchronicle.core.input.IInputBindable;
 import zdream.rockchronicle.core.region.Region;
 import zdream.rockchronicle.core.region.Room;
 import zdream.rockchronicle.core.world.LevelWorld;
@@ -112,6 +114,7 @@ public class GameRuntime {
 	public Array<IFoePainter> painters = new Array<>();
 	private final Array<Foe> foesWaitingForAdd = new Array<>();
 	private final Array<Foe> foesWaitingForRemove = new Array<>();
+	public Foe player1;
 	
 	// debug 用
 	int foeCount = 0;
@@ -130,6 +133,14 @@ public class GameRuntime {
 			}
 		}
 		return null;
+	}
+	
+	public void setPlayer1(Foe entry) {
+		this.player1 = entry;
+		if (entry instanceof IInputBindable) {
+			((IInputBindable) entry).bindController(RockChronicle.INSTANCE.input.p1);
+		}
+		addFoe(entry);
 	}
 	
 	public void addFoe(Foe entry) {

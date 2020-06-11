@@ -15,6 +15,7 @@ import zdream.rockchronicle.core.foe.ShapePainter;
 import zdream.rockchronicle.core.input.IInputBindable;
 import zdream.rockchronicle.core.input.InputCenter;
 import zdream.rockchronicle.core.input.PlayerInput;
+import zdream.rockchronicle.core.world.Ticker;
 
 public class Megaman extends Foe implements IInputBindable {
 
@@ -54,6 +55,8 @@ public class Megaman extends Foe implements IInputBindable {
 		
 		putPainter(painter = new ShapePainter(box));
 		putPainter(mPainter = new MegamanPainter(this));
+		
+		addSubscribe("applyDamage", this::recieveDamage);
 	}
 	
 	@Override
@@ -98,6 +101,7 @@ public class Megaman extends Foe implements IInputBindable {
 		// 3. 查询洛克人状态, 含:
 		// box 初始化、在地形中的情形、是否受伤僵直、移动情况
 		runtime.world.freshBox(box, true);
+		handleImmuse();
 		handleMotion();
 		
 		// 处理攻击情况.
@@ -317,10 +321,6 @@ public class Megaman extends Foe implements IInputBindable {
 	 * 其它大于 0: 都是不同的状态
 	 */
 	public int climbing;
-	/**
-	 * 是否在受伤僵直状态
-	 */
-	public boolean stiffness;
 	
 	public void initMotion() {
 		this.phorizontalVelDelta = HORIZONTAL_VELOCITY_DELTA;
@@ -376,8 +376,8 @@ public class Megaman extends Foe implements IInputBindable {
 			startSlide = true;
 //			System.out.println(String.format("%d : slide", runtime.ticker.count));
 		} else {
-			jumpStart = !lastJump && jump && !stiffness && !inAir;
-			jumpEnd = (lastJump && !jump) || stiffness && inAir;
+			jumpStart = !lastJump && jump && stiffness == 0 && !inAir;
+			jumpEnd = (lastJump && !jump) || stiffness > 0 && inAir;
 			// 缓解跳不起来的情况
 			if (jumpPressDuration == 10) {
 				jumpPressDuration = -1;
@@ -385,7 +385,7 @@ public class Megaman extends Foe implements IInputBindable {
 			if (jumpPressDuration >= 0) {
 				jumpPressDuration ++;
 			}
-			if (jump && !lastJump && !stiffness && inAir) {
+			if (jump && !lastJump && stiffness == 0 && inAir) {
 				jumpPressDuration = 0;
 			}
 			if (jumpPressDuration > 0 && !inAir) {
@@ -401,7 +401,7 @@ public class Megaman extends Foe implements IInputBindable {
 		}
 		
 		// 5. 执行左右移动
-		if (stiffness) {
+		if (stiffness != 0) {
 			// 在击退 / 硬直状态下
 			if (stopInstant) {
 				if (box.orientation) {
@@ -597,6 +597,66 @@ public class Megaman extends Foe implements IInputBindable {
 			attacking = false;
 		}
 		
+	}
+	
+	/* **********
+	 *   健康   *
+	 ********** */
+	
+	protected int hpMax = 256 * 28;
+	public int hp = hpMax; // 需要初始化
+	
+	public int stiffnessDuration = (int) (0.45f * Ticker.STEPS_PER_SECOND);
+	public int immuneDuration = (int) (1.5f * Ticker.STEPS_PER_SECOND);
+	
+	/**
+	 * 是否在受伤僵直状态. 处于僵直状态, 参数大于 0, 为剩余时间 (步)
+	 */
+	public int stiffness;
+	/**
+	 * 剩余无敌时间
+	 */
+	public int immuneRemain;
+	/**
+	 * 防御等级
+	 */
+	public int defenseLevel = 0;
+	
+	private void handleImmuse() {
+		if (stiffness > 0) {
+			stiffness--;
+		}
+		if (immuneRemain > 0) {
+			immuneRemain--;
+		}
+		if (immuneRemain == 0) {
+			defenseLevel = 0;
+			// debug
+			hp = hpMax;
+		}
+	}
+	
+	private void recieveDamage(FoeEvent eve) {
+		int camp = eve.value.getInt("camp");
+		if (camp != this.camp) {
+			// 确定受伤啦
+			int damage = eve.value.getInt("damage");
+			int level = eve.value.getInt("level");
+			
+			if (defenseLevel < level) {
+				eve.value.get("recieved").set(true);
+				
+				hp -= damage;
+				stiffness = stiffnessDuration;
+				immuneRemain = immuneDuration;
+				defenseLevel = 10;
+				
+				if (hp <= 0) {
+					System.out.println("Megaman -- destroy");
+//					this.desaktroy();
+				}
+			}
+		}
 	}
 	
 	/* **********

@@ -53,7 +53,7 @@ public class BusterWeapon implements IMegamanWeapon {
 			return false;
 		}
 		
-		if (mm.stiffness || mm.slideDuration > 0) {
+		if (mm.stiffness > 0 || mm.slideDuration > 0) {
 			return false;
 		}
 		

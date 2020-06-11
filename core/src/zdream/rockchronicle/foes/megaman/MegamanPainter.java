@@ -26,7 +26,7 @@ public class MegamanPainter extends SingleBoxSpritePainter {
 		}
 		
 		// 是否硬直
-		if (mm.stiffness) {
+		if (mm.stiffness > 0) {
 			motion = "stiffness";
 			setState("stiffness");
 			select.tick(1);
@@ -127,6 +127,11 @@ public class MegamanPainter extends SingleBoxSpritePainter {
 		}
 
 		select.tick(1);
+	}
+	
+	@Override
+	public int getImmune() {
+		return mm.immuneRemain;
 	}
 	
 	@Override

@@ -69,7 +69,6 @@ public abstract class SingleBoxSpritePainter implements IFoePainter {
 		return sprite;
 	}
 	
-	
 	/**
 	 * 获得纹理的朝向, 是向左还是向右
 	 * @return
