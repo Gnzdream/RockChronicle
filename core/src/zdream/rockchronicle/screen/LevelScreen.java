@@ -35,7 +35,7 @@ public class LevelScreen implements Screen {
 	/**
 	 * 绘画降序排列
 	 */
-	Comparator<IFoePainter> comparator = (foe1, foe2) -> foe2.zIndex() - foe1.zIndex();
+	Comparator<IFoePainter> comparator = (foe1, foe2) -> foe1.zIndex() - foe2.zIndex();
 	
 	public LevelScreen() {
 		app = RockChronicle.INSTANCE;

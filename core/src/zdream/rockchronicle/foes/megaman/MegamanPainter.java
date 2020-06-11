@@ -118,7 +118,7 @@ public class MegamanPainter extends SingleBoxSpritePainter {
 			this.motion = "walk";
 		} else {
 			if (attackRemain > 0) {
-				
+				setState("normal"); // attacking TODO
 			} else {
 				setState("normal");
 			}
