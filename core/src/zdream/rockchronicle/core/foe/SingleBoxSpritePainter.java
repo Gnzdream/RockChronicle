@@ -142,7 +142,7 @@ public abstract class SingleBoxSpritePainter implements IFoePainter {
 		select.setState(stateName);
 	}
 	
-	protected void tick() {
+	public void tick() {
 		select.tick(1);
 	}
 	

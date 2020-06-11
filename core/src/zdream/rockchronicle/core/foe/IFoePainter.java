@@ -10,6 +10,7 @@ public interface IFoePainter {
 	/**
 	 * <p>越高的在前面.
 	 * <p>洛克人: 1000
+	 * <p>一般的怪: 501 - 700
 	 * </p>
 	 * @return
 	 */

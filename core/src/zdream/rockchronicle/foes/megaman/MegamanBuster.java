@@ -1,10 +1,15 @@
 package zdream.rockchronicle.foes.megaman;
 
+import java.util.function.Predicate;
+
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.JsonValue.ValueType;
 
 import zdream.rockchronicle.core.GameRuntime;
 import zdream.rockchronicle.core.foe.Box;
 import zdream.rockchronicle.core.foe.Foe;
+import zdream.rockchronicle.core.foe.FoeEvent;
 import zdream.rockchronicle.core.foe.ShapePainter;
 import zdream.rockchronicle.core.world.Ticker;
 
@@ -55,7 +60,7 @@ public class MegamanBuster extends Foe {
 			// 运动
 			handleMotion();
 			// 判断是否打中别人
-			// TODO
+			checkCollision();
 		}
 	}
 
@@ -117,5 +122,59 @@ public class MegamanBuster extends Foe {
 		box.flush();
 		return runtime.world.isOutside(box.posX, box.posY, box.boxWidth, box.boxHeight);
 	}
+	
+	/* **********
+	 * 施加伤害 *
+	 ********** */
+	int damage = 1 * 256; // 所有生命值都乘这个倍数
+	
+	private void checkCollision() {
+		ch.reset();
+		
+		// 阵营判断部分
+		runtime.world.overlaps(box, ch, true);
+	}
+	
+	class Check implements Predicate<Box> {
+		
+		FoeEvent eve;
+		
+		@Override
+		public boolean test(Box box) {
+			int targetId = box.parentId;
+			
+			Foe target = runtime.findEntry(targetId);
+			if (target.camp != 1) {
+				switch (target.type) {
+				case "leader": case "foe": case "elite": {
+					target.publishNow(eve);
+					if (eve.value.getBoolean("recieved")) {
+						MegamanBuster.this.destroy();
+						return false;
+					}
+				} break;
+
+				default:
+					break;
+				}
+			}
+			
+			// 继续判断后面的盒子
+			return true;
+		}
+
+		public void reset() {
+			eve = new FoeEvent("applyDamage");
+			JsonValue v = new JsonValue(ValueType.object);
+			v.addChild("damage", new JsonValue(256));
+			v.addChild("level", new JsonValue(10));
+			v.addChild("camp", new JsonValue(MegamanBuster.this.camp));
+			v.addChild("recieved", new JsonValue(false));
+			eve.value = v;
+		}
+		
+	}
+	Check ch = new Check();
+	
 
 }

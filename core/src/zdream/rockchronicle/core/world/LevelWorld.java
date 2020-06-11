@@ -554,7 +554,7 @@ public class LevelWorld implements ITerrainStatic {
 			Box other = boxes.get(i);
 			if (other != box) {
 				int oxleft = other.posX;
-				int oxright = pxLeft + other.posWidth;
+				int oxright = oxleft + other.posWidth;
 				int oybottom = other.posY;
 				int oytop = oybottom + other.posHeight;
 				

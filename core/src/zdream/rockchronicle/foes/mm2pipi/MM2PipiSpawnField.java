@@ -55,6 +55,19 @@ public class MM2PipiSpawnField extends Foe {
 		box.setAnchor(block2P(orect.getFloat("x")), block2P(orect.getFloat("y")));
 		box.flush();
 		
+		JsonValue ospawn = json.get("spawn");
+		if (ospawn != null) {
+			JsonValue ispawnx = ospawn.get("x");
+			if (ispawnx != null) {
+				spawnX = block2P(ispawnx.asFloat());
+			}
+
+			JsonValue ispawny = ospawn.get("y");
+			if (ispawny != null) {
+				spawnY = block2P(ispawny.asFloat());
+			}
+		}
+		
 		boxes = new Box[] { box };
 	}
 	
@@ -91,6 +104,11 @@ public class MM2PipiSpawnField extends Foe {
 	 * 到下一只怪生成的剩余时间 (步), 状态项
 	 */
 	public int spawnRemain;
+	/**
+	 * 怪生成的位置. x 或 y = null 时为自适应
+	 * 自适应时, 怪从屏幕边缘出来, 屏幕上方, 按照当前照相机范围指定.
+	 */
+	public Integer spawnX, spawnY;
 	
 	private void initTrigger() {
 		spawnRemain = firstDuration;
@@ -119,6 +137,12 @@ public class MM2PipiSpawnField extends Foe {
 
 	private void spawn() {
 		MM2Pipi pipi = new MM2Pipi();
+		
+		int[] viewBound = runtime.scene.getCameraBound();
+		int spx = (spawnX == null) ? viewBound[0] + viewBound[2] + Box.P_PER_BLOCK : spawnX,
+			spy = (spawnY == null) ? viewBound[1] + viewBound[3] - Box.P_PER_BLOCK * 3 : spawnY;
+		
+		pipi.setMotion(spx, spy, -4369, false);
 		runtime.addFoe(pipi);
 	}
 

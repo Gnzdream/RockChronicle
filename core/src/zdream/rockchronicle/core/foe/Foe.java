@@ -267,6 +267,21 @@ public abstract class Foe {
 		this.events.add(event);
 	}
 	
+	/**
+	 * 发布事件, 同步执行
+	 */
+	public void publishNow(FoeEvent event) {
+		Array<Consumer<FoeEvent>> a = subscribes.get(event.name);
+		if (a == null || a.size == 0) {
+			return;
+		}
+		
+		Consumer<FoeEvent>[] array = subscribes.get(event.name).toArray(Consumer.class);
+		for (int i = 0; i < array.length; i++) {
+			array[i].accept(event);
+		}
+	}
+	
 	/* **********
 	 * 角色补充 *
 	 ********** */

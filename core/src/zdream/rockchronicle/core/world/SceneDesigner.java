@@ -16,6 +16,8 @@ import zdream.rockchronicle.core.region.FieldDef;
 import zdream.rockchronicle.core.region.Gate;
 import zdream.rockchronicle.core.region.Room;
 
+import static zdream.rockchronicle.core.foe.Box.*;
+
 /**
  * <p>场景设计师
  * <p>对现在世界进入的房间, 将所有的 {@link OrthogonalTiledMapRenderer} 摆放至指定位置;
@@ -189,6 +191,19 @@ public class SceneDesigner {
 		for (int i = 0; i < renders.size; i++) {
 			renders.get(i).render.render();
 		}
+	}
+	
+	public int[] getCameraBound() {
+		Rectangle viewBounds = mainRender.getViewBounds();
+		Room curRoom = runtime.getCurrentRoom();
+		int[] rets = new int[4];
+		
+		rets[0] = block2P(viewBounds.x - curRoom.offsetx);
+		rets[1] = block2P(viewBounds.y - curRoom.offsety);
+		rets[2] = block2P(viewBounds.width);
+		rets[3] = block2P(viewBounds.height);
+		
+		return rets;
 	}
 	
 	/* **********
