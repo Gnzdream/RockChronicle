@@ -35,7 +35,7 @@ public class MegamanBuster extends Foe {
 	@Override
 	public void init(GameRuntime runtime) {
 		super.init(runtime);
-		putPainter(painter = new ShapePainter(box, Color.YELLOW));
+		putPainter(painter = new ShapePainter(box, Color.RED));
 	}
 	
 	@Override

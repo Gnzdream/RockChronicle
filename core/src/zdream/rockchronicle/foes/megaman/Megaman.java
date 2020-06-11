@@ -21,6 +21,7 @@ public class Megaman extends Foe implements IInputBindable {
 	public Megaman() {
 		super("megaman");
 		camp = 1;
+		type = "leader";
 		
 		box = new Box(id);
 		boxes = new Box[] {box};

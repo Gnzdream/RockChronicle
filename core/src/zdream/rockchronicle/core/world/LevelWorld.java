@@ -1,15 +1,22 @@
 package zdream.rockchronicle.core.world;
 
-import static zdream.rockchronicle.core.foe.Box.*;
+import static zdream.rockchronicle.core.foe.Box.P_PER_BLOCK;
+import static zdream.rockchronicle.core.foe.Box.block2P;
+import static zdream.rockchronicle.core.foe.Box.blockLeft;
+import static zdream.rockchronicle.core.foe.Box.blockRight;
+
+import java.util.function.Predicate;
 
 import com.badlogic.gdx.utils.Array;
 
 import zdream.rockchronicle.core.GameRuntime;
 import zdream.rockchronicle.core.foe.Box;
 import zdream.rockchronicle.core.foe.BoxOccupation;
+import zdream.rockchronicle.core.region.ConnectionProperties;
 import zdream.rockchronicle.core.region.ITerrainStatic;
 import zdream.rockchronicle.core.region.Region;
 import zdream.rockchronicle.core.region.RegionBuilder;
+import zdream.rockchronicle.core.region.RegionPoint;
 import zdream.rockchronicle.core.region.Room;
 
 public class LevelWorld implements ITerrainStatic {
@@ -60,6 +67,7 @@ public class LevelWorld implements ITerrainStatic {
 	*/
 	public void setCurrentRoom(int room) {
 		this.room = room;
+		onRoomChanged();
 	}
 	
 	/**
@@ -493,6 +501,79 @@ public class LevelWorld implements ITerrainStatic {
 			this.bx = bx;
 			this.by = by;
 			this.terrain = terrain;
+		}
+	}
+	
+	public void onRoomChanged() {
+		Room room = getCurrentRoom();
+		System.out.println(room.gates);
+		
+		// 如果该房间有连接到其它区域, 需要初始化相邻的区域
+		// 扫描点
+		Array<RegionPoint> ps = curRegion.points;
+		for (int i = 0; i < ps.size; i++) {
+			RegionPoint p = ps.get(i);
+			if (!room.contain(p.x, p.y)) {
+				continue;
+			}
+			if (p.conn != null) {
+				ConnectionProperties conn = p.conn;
+				Region destRegion = regionBuilder.build(conn.destRegionName);
+				RegionPoint point = destRegion.findPoint(conn.destPoint);
+				if (point == null) {
+					continue; // 找不到这个点
+				}
+				Room destRoom = destRegion.of(point.x, point.y);
+				if (destRoom == null) {
+					continue; // 这个点不属于任何房间
+				}
+				regionBuilder.createGate(room, destRoom, p, point);
+			}
+		}
+		
+		System.out.println(room.gates);
+	}
+	
+	/**
+	 * 查看与指定的盒子发生碰撞的盒子, 并逐个进行判断.
+	 * @param box
+	 *   指定的碰撞盒子
+	 * @param test
+	 *   对碰撞的盒子进行判断. 返回 true 则继续判断后面的盒子, 否则停止
+	 * @param touched
+	 *   如果为 true, 贴边的也算
+	 */
+	public void overlaps(Box box, Predicate<Box> test, boolean touched) {
+		int pxLeft = box.posX;
+		int pxRight = pxLeft + box.posWidth;
+		int pyBottom = box.posY;
+		int pyTop = pyBottom + box.posHeight;
+		
+		Array<Box> boxes = runtime.boxes;
+		for (int i = 0; i < boxes.size; i++) {
+			Box other = boxes.get(i);
+			if (other != box) {
+				int oxleft = other.posX;
+				int oxright = pxLeft + other.posWidth;
+				int oybottom = other.posY;
+				int oytop = oybottom + other.posHeight;
+				
+				boolean b = (touched) ?
+						(oxleft <= pxRight &&
+						oxright >= pxLeft &&
+						oybottom <= pyTop &&
+						oytop >= pyBottom) :
+						(oxleft < pxRight &&
+						oxright > pxLeft &&
+						oybottom < pyTop &&
+						oytop > pyBottom); // rectagle.overlaps(otherRect)
+				if (!b) {
+					continue;
+				}
+				if (!test.test(other)) {
+					return;
+				}
+			}
 		}
 	}
 

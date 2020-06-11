@@ -9,6 +9,8 @@ import com.badlogic.gdx.utils.Array;
 import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.Config;
 import zdream.rockchronicle.core.GameRuntime;
+import zdream.rockchronicle.core.foe.Foe;
+import zdream.rockchronicle.core.region.FieldDef;
 //import zdream.rockchronicle.core.character.CharacterEntry;
 //import zdream.rockchronicle.core.body.Box;
 import zdream.rockchronicle.core.region.Gate;
@@ -17,7 +19,7 @@ import zdream.rockchronicle.core.region.Room;
 /**
  * <p>场景设计师
  * <p>对现在世界进入的房间, 将所有的 {@link OrthogonalTiledMapRenderer} 摆放至指定位置;
- * 管理镜头位置.
+ * 管理镜头位置. 将场景中的怪一一放到指定位置.
  * </p>
  * 
  * @author Zdream
@@ -50,6 +52,11 @@ public class SceneDesigner {
 	 */
 	public Array<MapRendererEntry> renders = new Array<>();
 	
+	/**
+	 * 创建怪的始作俑者
+	 */
+	public FoeBuilder foeBuilder = new FoeBuilder();
+	
 	public SceneDesigner(GameRuntime runtime) {
 		this.runtime = runtime;
 	}
@@ -66,7 +73,7 @@ public class SceneDesigner {
 		mainRender = new OrthogonalTiledMapRenderer(null, 1f / Config.INSTANCE.blockWidth);
 	}
 	
-	public void onRoomUpdated() {
+	public void onRoomChanged() {
 		Room room = runtime.getCurrentRoom();
 		
 		// 清空原来的渲染列表, 暂时不考虑重用.
@@ -90,7 +97,14 @@ public class SceneDesigner {
 			entry.gate = g;
 			renders.add(entry);
 		}
+		
+		// 开始放怪
+		putFoesIntoWorld(room);
 	}
+
+	/* **********
+	 *   镜头   *
+	 ********** */
 	
 	public void updateCamera() {
 //		if (!runtime.shift.durationShift()) {
@@ -176,4 +190,39 @@ public class SceneDesigner {
 			renders.get(i).render.render();
 		}
 	}
+	
+	/* **********
+	 *   生怪   *
+	 ********** */
+	/*
+	 * 怪、大门连接点、道具等等
+	 */
+
+	private void putFoesIntoWorld(Room room) {
+//		Region curRegion = room.region;
+//		RegionBuilder regionBuilder = runtime.world.regionBuilder;
+//		
+		// 将场放入世界
+		int length = room.fields.size;
+//		System.out.println("--> SceneDesigner.putFoesIntoWorld()");
+		for (int i = 0; i < length; i++) {
+			FieldDef f = room.fields.get(i);
+			
+			Foe foe = foeBuilder.create(f.name, f.param);
+			if (foe == null) {
+				continue;
+			}
+			runtime.addFoe(foe);
+		}
+//		
+//		// 将怪放入世界
+//		length = room.foes.size;
+//		for (int i = 0; i < length; i++) {
+//			FoeDef f = room.foes.get(i);
+//			
+//			CharacterEntry entry = characterBuilder.create(f.name, f.param);
+//			addEntry(entry);
+//		}
+	}
+	
 }

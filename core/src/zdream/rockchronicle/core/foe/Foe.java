@@ -34,18 +34,19 @@ public abstract class Foe {
 	
 	/**
 	 * <p>自己属于哪个阵营的.
-	 * <p>一般来说, 0 为公共, 1 为我方, 2 为敌方
+	 * <p>一般来说, 0 为无(一般无视所有攻击, 比如墙), 1 为我方, 2 为敌方, 3 无差别攻击方(比如陷阱)
 	 * </p>
 	 */
 	public byte camp;
 	
 	private static int ID = 1;
 	
-	/*
+	/**
 	 * 角色类型. 包括但不限于:
 	 * 
 	 * <li>重要角色 "leader": 含玩家控制角色、重要官邸 BOSS 以及有分量的 NPC
 	 * <li>小怪 "foe": 含敌方小怪以及我方、敌方、中立方等召唤的喽啰
+	 * <li>精英 "elite": 高级小怪
 	 * <li>子弹 "bullet": 含小怪以及重要角色释放的具有攻击或触发效果的物体角色
 	 * <li>陷阱 "trap": 除了静态地形以外的机关等
 	 * <li>道具 "mass": 含掉落物、购买商品以及其它可拾取物品,
@@ -54,6 +55,8 @@ public abstract class Foe {
 	 * <li>贴图 "texture": 也包括剑气等传统意义的近战武器释放的物体, 以及其它没有实际意义的物体
 	 * </li>
 	 */
+	public String type = "foe";
+	
 	public Foe(String name) {
 		synchronized (Foe.class) {
 			this.id = ID ++;

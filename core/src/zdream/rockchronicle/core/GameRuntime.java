@@ -63,8 +63,8 @@ public class GameRuntime {
 		
 		// debug
 		if (foes.size != foeCount) {
-			System.out.println(String.format("Foe: %d, Box: %d, Painter: %d",
-					foes.size, boxes.size, painters.size));
+			System.out.println(String.format("%d: Foe: %d, Box: %d, Painter: %d",
+					ticker.count, foes.size, boxes.size, painters.size));
 			foeCount = foes.size;
 		}
 	}
@@ -94,7 +94,7 @@ public class GameRuntime {
 	*/
 	public void setCurrentRoom(int room) {
 		world.setCurrentRoom(room);
-		this.scene.onRoomUpdated();
+		this.scene.onRoomChanged();
 	}
 	
 	/* **********
