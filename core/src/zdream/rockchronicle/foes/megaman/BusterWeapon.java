@@ -33,16 +33,19 @@ public class BusterWeapon implements IMegamanWeapon {
 	int restoreDuration = -1;
 	
 	@Override
-	public void onAttackPressed(Megaman mm) {
+	public boolean onAttackPressed(Megaman mm) {
 		// 蓄力
 		restoreDuration = 0;
+		return false;
 	}
 	
 	@Override
-	public void onAttackReleased(Megaman mm) {
+	public boolean onAttackReleased(Megaman mm) {
 		if (hasEmptySlot()) {
 			doFire(mm);
+			return true;
 		}
+		return false;
 	}
 	
 	public boolean canFire(Megaman mm) {

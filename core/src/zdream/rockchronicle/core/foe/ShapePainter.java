@@ -62,7 +62,7 @@ public class ShapePainter implements IFoePainter {
 
 	@Override
 	public int zIndex() {
-		return 0;
+		return 9999;
 	}
 
 }

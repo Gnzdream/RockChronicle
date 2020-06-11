@@ -84,7 +84,7 @@ public class MegamanBuster extends Foe {
 	 *   寿命   *
 	 ********** */
 	
-	public int remain = Ticker.STEP_PRE_SECOND;
+	public int remain = Ticker.STEPS_PER_SECOND;
 	public int outsideDuration = 0;
 	
 	/**
@@ -99,7 +99,7 @@ public class MegamanBuster extends Foe {
 		
 		if (isOutside()) {
 			outsideDuration++;
-			if (outsideDuration > Ticker.STEP_PRE_SECOND / 20) {
+			if (outsideDuration > Ticker.STEPS_PER_SECOND / 20) {
 				return true;
 			}
 		} else {

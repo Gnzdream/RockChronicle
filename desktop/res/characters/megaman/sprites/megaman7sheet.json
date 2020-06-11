@@ -125,6 +125,15 @@
 				"jump_attack_1"
 			],
 			"step":0.0666667,
+		},
+		{
+			"state":"slide",
+			"sequence":
+			[
+				"slide_1",
+				"slide_2"
+			],
+			"step":0.0666667,
 		}
 	],
 	"textures":
@@ -467,6 +476,25 @@
 			"h":48,
 			"offx":-18,
 			"offy":-4
+		},
+
+		{
+			"name":"slide_1",
+			"x":86,
+			"y":299,
+			"w":48,
+			"h":28,
+			"offx":-23,
+			"offy":-2
+		},
+		{
+			"name":"slide_2",
+			"x":145,
+			"y":300,
+			"w":44,
+			"h":28,
+			"offx":-19,
+			"offy":-2
 		}
 	]
 }

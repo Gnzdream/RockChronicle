@@ -7,13 +7,21 @@ package zdream.rockchronicle.foes.megaman;
  * @date 2020-06-10
  */
 public interface IMegamanWeapon {
-	
-	default void onAttackPressed(Megaman mm) {
-		
+
+	/**
+	 * @return
+	 *   是否成功攻击
+	 */
+	default boolean onAttackPressed(Megaman mm) {
+		return false;
 	}
 	
-	default void onAttackReleased(Megaman mm) {
-		
+	/**
+	 * @return
+	 *   是否成功攻击
+	 */
+	default boolean onAttackReleased(Megaman mm) {
+		return false;
 	}
 	
 	/**

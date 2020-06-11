@@ -42,6 +42,7 @@ public class Megaman extends Foe implements IInputBindable {
 	}
 	
 	ShapePainter painter;
+	MegamanPainter mPainter;
 	
 	@Override
 	public void init(GameRuntime runtime) {
@@ -51,6 +52,7 @@ public class Megaman extends Foe implements IInputBindable {
 		initWeapon();
 		
 		putPainter(painter = new ShapePainter(box));
+		putPainter(mPainter = new MegamanPainter(this));
 	}
 	
 	@Override
@@ -137,6 +139,9 @@ public class Megaman extends Foe implements IInputBindable {
 		
 		// 处理 glitch
 		runtime.world.glitchFix(box);
+		
+		// 绘画处理
+		mPainter.tick();
 	}
 	
 	@Override
@@ -244,6 +249,10 @@ public class Megaman extends Foe implements IInputBindable {
 	 * 在冰面上该参数为 false.
 	 */
 	public boolean stopInstant;
+	/**
+	 * 是否在行走. 向右行走:1, 左:-1, 无:0
+	 */
+	public int walking;
 	
 	/*
 	 * 跳跃参数
@@ -302,9 +311,11 @@ public class Megaman extends Foe implements IInputBindable {
 	 * 行动状态参数
 	 */
 	/**
-	 * 是否在攀爬状态
+	 * 是否在攀爬状态.
+	 * 0 : 不在攀爬
+	 * 其它大于 0: 都是不同的状态
 	 */
-	public boolean climbing;
+	public int climbing;
 	/**
 	 * 是否在受伤僵直状态
 	 */
@@ -404,9 +415,11 @@ public class Megaman extends Foe implements IInputBindable {
 					vx = calcVelocity(vx, horizontalVelDelta, parryVel);
 				}
 			}
-		} else if (climbing) {
+			walking = 0;
+		} else if (climbing > 0) {
 			// 在爬梯子
 			// TODO
+			walking = 0;
 		} else {
 			// 处理滑铲
 			if (startSlide) {
@@ -424,6 +437,7 @@ public class Megaman extends Foe implements IInputBindable {
 			
 			// 正常情况下, 每秒增加 horizontalVelDelta 的水平速度, horizontalVelMax 为最值.
 			if (left) {
+				walking = -1;
 				box.orientation = false;
 				if (inAir) { // 空中
 					vx = -horizontalVelMax;
@@ -440,6 +454,7 @@ public class Megaman extends Foe implements IInputBindable {
 					}
 				}
 			} else if (right) {
+				walking = 1;
 				box.orientation = true;
 				if (inAir) { // 空中
 					vx = horizontalVelMax;
@@ -456,6 +471,7 @@ public class Megaman extends Foe implements IInputBindable {
 					}
 				}
 			} else {
+				walking = 0;
 				if (slideDuration >= 0) {
 					vx = (box.orientation) ? slideVelocity : -slideVelocity;
 				} else if (stopInstant) {
@@ -478,7 +494,7 @@ public class Megaman extends Foe implements IInputBindable {
 		
 		// 竖直方向上的判断
 //		int vy = 0;
-		if (climbing) {
+		if (climbing > 0) {
 			jumpVel = 0;
 		} else {
 			float gravityScale = box.gravityScale;
@@ -533,6 +549,11 @@ public class Megaman extends Foe implements IInputBindable {
 	public Array<IMegamanWeapon> weapons;
 	public int currentWeapon = 0;
 	
+	/**
+	 * 在成功攻击的一步时间内, 为 true
+	 */
+	public boolean attacking;
+	
 	private void initWeapon() {
 		weapons = new Array<>();
 		weapons.add(new BusterWeapon(runtime));
@@ -567,10 +588,12 @@ public class Megaman extends Foe implements IInputBindable {
 		
 		if (!lastAttack && attack) {
 			IMegamanWeapon weapon = getCurrentWeapon();
-			weapon.onAttackPressed(this);
+			attacking = weapon.onAttackPressed(this);
 		} else if (lastAttack && !attack) {
 			IMegamanWeapon weapon = getCurrentWeapon();
-			weapon.onAttackReleased(this);
+			attacking = weapon.onAttackReleased(this);
+		} else {
+			attacking = false;
 		}
 		
 	}

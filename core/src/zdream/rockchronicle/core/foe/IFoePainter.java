@@ -7,6 +7,12 @@ public interface IFoePainter {
 	
 	void draw(SpriteBatch batch, OrthographicCamera camera);
 	
+	/**
+	 * <p>越高的在前面.
+	 * <p>洛克人: 1000
+	 * </p>
+	 * @return
+	 */
 	int zIndex();
 
 }
