@@ -650,6 +650,9 @@ public class Megaman extends Foe implements IInputBindable {
 				stiffness = stiffnessDuration;
 				immuneRemain = immuneDuration;
 				defenseLevel = 10;
+				slideDuration = -1;
+				climbing = 0;
+				setCurrentPattern("normal"); // TODO 不计滑铲时无法恢复的情况
 				
 				if (hp <= 0) {
 					System.out.println("Megaman -- destroy");

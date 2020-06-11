@@ -110,10 +110,10 @@ public abstract class SingleBoxSpritePainter implements IFoePainter {
 				batch.setBlendFunction(GL20.GL_ONE_MINUS_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 				batch.draw(sprite, x, y, fw, fh);
 				batch.setBlendFunction(GL20.GL_ONE_MINUS_DST_ALPHA, GL20.GL_DST_ALPHA);
-				batch.setColor(1, 1, 1, 0.75f);
+				batch.setColor(1, 1, 1, 0.8f);
 				batch.draw(Textures.white, x, y, fw, fh);
 				batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-				batch.setColor(1, 1, 1, 0.25f);
+				batch.setColor(1, 1, 1, 0.4f);
 				batch.draw(sprite, x, y, fw, fh);
 				batch.setColor(1, 1, 1, 1);
 			} else {

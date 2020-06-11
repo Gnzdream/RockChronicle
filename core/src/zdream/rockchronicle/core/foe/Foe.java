@@ -96,7 +96,7 @@ public abstract class Foe {
 	
 	@Override
 	public String toString() {
-		return String.format("Foe: %s", name);
+		return String.format("Foe#%d: %s", id, name);
 	}
 
 	/* **********

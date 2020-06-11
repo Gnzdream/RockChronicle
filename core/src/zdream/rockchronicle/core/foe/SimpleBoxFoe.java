@@ -59,13 +59,14 @@ public abstract class SimpleBoxFoe extends Foe {
 		
 		if (!pause) {
 			stepIfNotPause();
-		}
-		
-		handleRemain();
-		handleAttack();
-		
-		if (painter != null) {
-			painter.tick();
+			
+			handleRemain();
+			handleImmuse();
+			handleAttack();
+			
+			if (painter != null) {
+				painter.tick();
+			}
 		}
 	}
 	
@@ -92,7 +93,7 @@ public abstract class SimpleBoxFoe extends Foe {
 	 * 角色判断时长, 单位: 步, 配置项.
 	 * -1 表示不自动销毁
 	 */
-	public int outsideThreshold = -1;
+	public int outsideThreshold = Ticker.STEPS_PER_SECOND / 10;
 	/**
 	 * 角色在房间外的时长, 单位: 步, 状态项
 	 */
@@ -182,6 +183,7 @@ public abstract class SimpleBoxFoe extends Foe {
 		int targetId = box.parentId;
 		
 		Foe target = runtime.findEntry(targetId);
+		
 		if (target.camp != this.camp) {
 			switch (target.type) {
 			case "leader": case "foe": case "elite": {
@@ -203,18 +205,36 @@ public abstract class SimpleBoxFoe extends Foe {
 	
 	protected int hp; // 需要初始化
 	
+	protected int immuseDuration = Ticker.STEPS_PER_SECOND / 20; // 0.05s
+	protected int immuseRemain;
+	protected int defenseLevel = 0;
+	
+	private void handleImmuse() {
+		if (immuseRemain > 0) {
+			immuseRemain--;
+			if (immuseRemain == 0) {
+				defenseLevel = 0;
+			}
+		}
+
+	}
+	
 	private void recieveDamage(FoeEvent eve) {
 		int camp = eve.value.getInt("camp");
 		if (camp != this.camp) {
 			// 确定受伤啦
 			int damage = eve.value.getInt("damage");
+			int level = eve.value.getInt("level");
 			
-			if (onDamageRecieved(damage, eve)) {
+			if (onDamageRecieved(damage, level, eve)) {
 				eve.value.get("recieved").set(true);
 				
 				hp -= damage;
+				immuseRemain = immuseDuration;
+				defenseLevel = 10;
+				
 				if (hp <= 0) {
-					this.destroy();
+					destroy();
 				}
 			}
 		}
@@ -226,8 +246,20 @@ public abstract class SimpleBoxFoe extends Foe {
 	 * @return
 	 *   返回 false 可以取消这次伤害
 	 */
-	protected boolean onDamageRecieved(int damage, FoeEvent eve) {
-		return true;
+	protected boolean onDamageRecieved(int damage, int level, FoeEvent eve) {
+		return level > defenseLevel;
+	}
+	
+	protected void beforeDestroy() {
+		
+	}
+	
+	@Override
+	public void destroy() {
+		if (!isDisposed()) {
+			beforeDestroy();
+			super.destroy();
+		}
 	}
 	
 	/* **********
@@ -235,19 +267,22 @@ public abstract class SimpleBoxFoe extends Foe {
 	 ********** */
 	
 	protected SingleBoxSpritePainter createPainter(String[] path) {
-		painter = new Painter(path);
+		painter = new Painter(path, this);
 		putPainter(painter);
 		return painter;
 	}
 	
-	class Painter extends SingleBoxSpritePainter {
-		public Painter(String[] path) {
+	static class Painter extends SingleBoxSpritePainter {
+		final SimpleBoxFoe foe;
+		
+		public Painter(String[] path, SimpleBoxFoe foe) {
 			super(path);
+			this.foe = foe;
 		}
 
 		@Override
 		public int zIndex() {
-			switch (type) {
+			switch (foe.type) {
 			case "foe": return 505;
 			case "elite": return 555;
 			case "leader": return 605;
@@ -257,17 +292,22 @@ public abstract class SimpleBoxFoe extends Foe {
 
 		@Override
 		public boolean getOrientation() {
-			return box.orientation;
+			return foe.box.orientation;
 		}
 
 		@Override
 		public float getBx() {
-			return p2block(box.anchorX);
+			return p2block(foe.box.anchorX);
 		}
 
 		@Override
 		public float getBy() {
-			return p2block(box.anchorY);
+			return p2block(foe.box.anchorY);
+		}
+		
+		@Override
+		public int getImmune() {
+			return foe.immuseRemain;
 		}
 		
 	}

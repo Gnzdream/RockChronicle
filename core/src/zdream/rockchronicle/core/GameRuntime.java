@@ -132,6 +132,12 @@ public class GameRuntime {
 				return entry;
 			}
 		}
+		for (int i = 0; i < foesWaitingForAdd.size; i++) {
+			Foe entry = foesWaitingForAdd.get(i);
+			if (entry.id == id) {
+				return entry;
+			}
+		}
 		return null;
 	}
 	
@@ -157,9 +163,17 @@ public class GameRuntime {
 		foesWaitingForRemove.forEach((foe) -> foe.onDispose());
 		foes.removeAll(foesWaitingForRemove, true);
 		foesWaitingForRemove.clear();
-		foes.addAll(foesWaitingForAdd);
-		foesWaitingForAdd.forEach((foe) -> foe.init(this));
-		foesWaitingForAdd.clear();
+		
+		if (foesWaitingForAdd.size > 0) {
+			Foe[] foeadds = foesWaitingForAdd.toArray(Foe.class);
+			
+			for (int i = 0; i < foeadds.length; i++) {
+				Foe foeadd = foeadds[i];
+				foeadd.init(this);
+				foes.add(foeadd);
+				foesWaitingForAdd.removeValue(foeadd, true);
+			}
+		}
 	}
 
 	public void addBox(Box box) {

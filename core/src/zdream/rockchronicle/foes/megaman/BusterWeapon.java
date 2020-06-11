@@ -41,7 +41,7 @@ public class BusterWeapon implements IMegamanWeapon {
 	
 	@Override
 	public boolean onAttackReleased(Megaman mm) {
-		if (hasEmptySlot()) {
+		if (hasEmptySlot() && mm.slideDuration < 0 && mm.stiffness == 0) {
 			doFire(mm);
 			return true;
 		}
@@ -80,8 +80,8 @@ public class BusterWeapon implements IMegamanWeapon {
 		Box busterBox = b.box;
 		Box megamanBox = mm.box;
 		busterBox.setAnchor(
-				(megamanBox.orientation) ? megamanBox.posX + 65536 : megamanBox.posX - 65536,
-				megamanBox.posY + 49152);
+				(megamanBox.orientation) ? megamanBox.anchorX + 65536 : megamanBox.anchorX - 65536,
+				megamanBox.anchorY + 49152);
 		busterBox.orientation = megamanBox.orientation;
 		busterBox.flush();
 		

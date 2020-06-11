@@ -310,8 +310,12 @@ public class LevelWorld implements ITerrainStatic {
 		}
 	}
 	
+	public boolean isBoxOverlap(Box box) {
+		return isBoxOverlap(box.posX, box.posY, box.posWidth, box.posHeight);
+	}
+	
 	/**
-	 * 判断是否重合
+	 * 判断是否和地形或地形方块 Foe 重合
 	 * @return
 	 *   重合了返回 false
 	 */

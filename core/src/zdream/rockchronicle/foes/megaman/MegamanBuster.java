@@ -29,6 +29,7 @@ public class MegamanBuster extends Foe {
 	public MegamanBuster() {
 		super("megaman_buster");
 		camp = 1;
+		type = "bullet";
 		
 		box = new Box(this.id);
 		box.setBox(-10923, -8192, 21845, 16384);
