@@ -45,6 +45,7 @@ public class LevelScreen implements Screen {
 		
 		// tiled 地图
 		app.runtime.setCurrentRegion("mm1cut");
+		app.runtime.levelStart();
 		
 		symbolCamera = new OrthographicCamera();
 		symbolCamera.setToOrtho(false, app.widthInPixel, app.heightInPixel);
@@ -113,8 +114,6 @@ public class LevelScreen implements Screen {
 		runtime.scene.updateCamera();
 		fixMapRender();
 		runtime.scene.renderMap();
-		
-		batch.setProjectionMatrix(worldCamera.combined); // 投影矩阵
 		
 		// 画所有 Foe
 		Array<IFoePainter> painters = runtime.painters;

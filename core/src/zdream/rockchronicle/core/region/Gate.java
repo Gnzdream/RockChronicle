@@ -46,7 +46,7 @@ public class Gate {
 	/**
 	 * <p>如果两个房间来源于不同的区域, 则这两个区域的原点之间的差值.
 	 * destRegion - srcRegion = (offsetXOfRegion, offsetYOfRegion)
-	 * <p>如果两个房间来源于同一个区域, 两个值为 0
+	 * <p>如果两个房间来源于同一个区域, 两个值为 0. 单位: 块
 	 * </p>
 	 */
 	public int offsetXOfRegion, offsetYOfRegion;

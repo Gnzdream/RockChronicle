@@ -29,7 +29,7 @@ public class MegamanPainter extends SingleBoxSpritePainter {
 		if (mm.stiffness > 0) {
 			motion = "stiffness";
 			setState("stiffness");
-			select.tick(1);
+			super.tick();
 			return;
 		}
 		
@@ -59,7 +59,7 @@ public class MegamanPainter extends SingleBoxSpritePainter {
 				break;
 			}
 			
-			select.tick(1);
+			super.tick();
 			return;
 		}
 		
@@ -67,7 +67,7 @@ public class MegamanPainter extends SingleBoxSpritePainter {
 		if ("slide".equals(mm.currentPattern)) {
 			setState("slide");
 			
-			select.tick(1);
+			super.tick();
 			return;
 		}
 		
@@ -95,7 +95,7 @@ public class MegamanPainter extends SingleBoxSpritePainter {
 				}
 			}
 
-			select.tick(1);
+			super.tick();
 			return;
 		}
 		
@@ -126,7 +126,7 @@ public class MegamanPainter extends SingleBoxSpritePainter {
 			this.motion = "stop";
 		}
 
-		select.tick(1);
+		super.tick();
 	}
 	
 	@Override

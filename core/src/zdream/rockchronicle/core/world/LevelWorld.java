@@ -12,12 +12,15 @@ import com.badlogic.gdx.utils.Array;
 import zdream.rockchronicle.core.GameRuntime;
 import zdream.rockchronicle.core.foe.Box;
 import zdream.rockchronicle.core.foe.BoxOccupation;
+import zdream.rockchronicle.core.foe.Foe;
 import zdream.rockchronicle.core.region.ConnectionProperties;
+import zdream.rockchronicle.core.region.Gate;
 import zdream.rockchronicle.core.region.ITerrainStatic;
 import zdream.rockchronicle.core.region.Region;
 import zdream.rockchronicle.core.region.RegionBuilder;
 import zdream.rockchronicle.core.region.RegionPoint;
 import zdream.rockchronicle.core.region.Room;
+import static zdream.rockchronicle.core.region.Gate.*;
 
 public class LevelWorld implements ITerrainStatic {
 	
@@ -510,7 +513,6 @@ public class LevelWorld implements ITerrainStatic {
 	
 	public void onRoomChanged() {
 		Room room = getCurrentRoom();
-		System.out.println(room.gates);
 		
 		// 如果该房间有连接到其它区域, 需要初始化相邻的区域
 		// 扫描点
@@ -534,8 +536,6 @@ public class LevelWorld implements ITerrainStatic {
 				regionBuilder.createGate(room, destRoom, p, point);
 			}
 		}
-		
-		System.out.println(room.gates);
 	}
 	
 	/**
@@ -579,6 +579,161 @@ public class LevelWorld implements ITerrainStatic {
 				}
 			}
 		}
+	}
+	
+	/* **********
+	 * 房间切换 *
+	 ********** */
+	
+	/**
+	 * 房间切换是否允许. 如果像打 BOSS 这类限制房间切换的情况发生, 请设置为 false
+	 */
+	public boolean roomShiftEnable = true;
+	
+	/**
+	 * <p>检查指定角色的盒子是否到达房间边缘, 要进行房间的切换.
+	 * <p>切换的第一个判断是碰断角色是否碰到了房间的边缘,
+	 * 而该方法仅判断位置是否满足, 此外仍然需要附加判定, 比如向上切房间需要爬墙等姿势,
+	 * 这些在该方法均不判定.
+	 * </p>
+	 * @param box
+	 *   指定角色的盒子, 一般是玩家控制角色的
+	 * @return
+	 */
+	public Gate checkGateTouched(Box box) {
+		if (!roomShiftEnable) {
+			return null;
+		}
+		
+		BoxOccupation p = box.getOccupation();
+		Room currentRoom = getCurrentRoom();
+		
+		// 向左
+		LEFT: {
+			if (p.xleft != 0) {
+				break LEFT;
+			}
+			if (!p.xleftTightly) {
+				break LEFT;
+			}
+			Gate g = null;
+			for (int y = p.ybottom; y <= p.ytop; y++) {
+				Gate g2 = findGate(currentRoom, Gate.DIRECTION_LEFT, y);
+				if (g2 == null) { break LEFT; }
+				if (g == null) { g = g2; }
+				if (g != g2) { break LEFT; }
+			}
+			return g;
+		}
+
+		// 向右
+		RIGHT: {
+			if (p.xright != currentRoom.width - 1) { // 门的坐标是房间宽度 - 1
+				break RIGHT;
+			}
+			if (!p.xrightTightly) {
+				break RIGHT;
+			}
+			Gate g = null;
+			for (int y = p.ybottom; y <= p.ytop; y++) {
+				Gate g2 = findGate(currentRoom, Gate.DIRECTION_RIGHT, y);
+				if (g2 == null) { break RIGHT; }
+				if (g == null) { g = g2; }
+				if (g != g2) { break RIGHT; }
+			}
+			return g;
+		}
+		
+		// 向下
+		BOTTOM: {
+			if (p.ybottom >= 0) {
+				break BOTTOM;
+			}
+			Gate g = null;
+			for (int x = p.xleft; x <= p.xright; x++) {
+				Gate g2 = findGate(currentRoom, Gate.DIRECTION_BOTTOM, x);
+				if (g2 == null) { break BOTTOM; }
+				if (g == null) { g = g2; }
+				if (g != g2) { break BOTTOM; }
+			}
+			return g;
+		}
+		
+		// 向上
+		TOP: {
+			if (p.ytop < currentRoom.height) {
+				break TOP;
+			}
+			Gate g = null;
+			for (int x = p.xleft; x <= p.xright; x++) {
+				Gate g2 = findGate(currentRoom, Gate.DIRECTION_TOP, x);
+				if (g2 == null) { break TOP; }
+				if (g == null) { g = g2; }
+				if (g != g2) { break TOP; }
+			}
+			return g;
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * 根据规则在指定房间中查找大门
+	 * @param room
+	 * @param direction
+	 * @param xory
+	 * @return
+	 */
+	public Gate findGate(Room room, byte direction, int xory) {
+		Array<Gate> gates = room.gates;
+		for (int i = 0; i < gates.size; i++) {
+			Gate g = gates.get(i);
+			
+			if (g.direction != direction) {
+				continue;
+			}
+			int[] exits = g.exits;
+			for (int j = 0; j < exits.length; j++) {
+				if (xory == exits[j]) {
+					return g;
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * <p>切换房间的额外判定
+	 * <p>已经满足有大门的条件了, 还需要判定:
+	 * <p>如果顺着重力及其它环境力的合力方向，碰到边缘就可以切房间；
+	 * 如果逆着合力方向，就需要额外判定，比如需要在攀爬状态、踩在指定的角色上等
+	 * </p>
+	 * @param entry
+	 * @param g
+	 * @return
+	 */
+	public boolean checkShift(Foe entry, Gate g) {
+		if (g.direction == DIRECTION_LEFT || g.direction == DIRECTION_RIGHT) {
+			return true;
+		}
+		
+		Box box = entry.getBoxes()[0];
+		boolean gravityDown = box.gravityDown && box.gravityScale > 0
+				|| !box.gravityDown && box.gravityScale < 0;
+		
+		if (gravityDown && g.direction == DIRECTION_BOTTOM
+				|| !gravityDown && g.direction == DIRECTION_TOP) {
+			// 顺着重力（合力）往下掉的
+			return true;
+		}
+		
+		// TODO 这里判断比如需要在攀爬状态、踩在指定的角色上等
+		if (entry.getBoolean("climbing", false) || !box.inAir) {
+			return true;
+		}
+		
+		return false;
 	}
 
 }

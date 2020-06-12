@@ -7,6 +7,7 @@ import zdream.rockchronicle.core.foe.Box;
 import zdream.rockchronicle.core.foe.Foe;
 import zdream.rockchronicle.core.foe.IFoePainter;
 import zdream.rockchronicle.core.input.IInputBindable;
+import zdream.rockchronicle.core.region.Gate;
 import zdream.rockchronicle.core.region.Region;
 import zdream.rockchronicle.core.region.Room;
 import zdream.rockchronicle.core.world.LevelWorld;
@@ -41,7 +42,22 @@ public class GameRuntime {
 	 */
 	public Ticker ticker = new Ticker();
 	
-	public void step(boolean pause) {
+	public void step(byte pause) {
+		
+		// 如果房间还在切换中, 就切换吧. 当前 pause = 2;
+		if (scene.durationShift()) {
+			scene.tickShift();
+		} else {
+			// 检查是否需要发生房间切换
+			Gate gate = checkGateTriggered();
+			if (gate != null) {
+				scene.doShift(gate);
+			}
+			
+			// pause 需要更新
+			pause = ticker.pause;
+		}
+		
 		// 移动部分
 		for (int i = 0; i < foes.size; i++) {
 			try {
@@ -91,12 +107,48 @@ public class GameRuntime {
 	}
 	
 	/**
-	* 当前房间发生替换
-	* @param room
-	*/
+	 * 当前房间发生替换
+	 * @param room
+	 */
 	public void setCurrentRoom(int room) {
 		world.setCurrentRoom(room);
 		this.scene.onRoomChanged();
+	}
+
+	public void setCurrentRoom(Room destRoom) {
+		if (destRoom.region != world.curRegion) {
+			throw new IllegalArgumentException(destRoom.toString());
+		}
+		setCurrentRoom(destRoom.index);
+	}
+
+	public void levelStart() {
+		ticker.worldResume();
+	}
+	
+	public void roomShiftingStarted() {
+		ticker.roomShifting();
+		foesWaitingForAdd.clear();
+	}
+	
+	public void roomShiftingFinished() {
+		ticker.worldResume();
+	}
+	
+	/**
+	 * 查看是否发生房间切换 (房间的大门触发)
+	 */
+	private Gate checkGateTriggered() {
+		Foe c1 = player1;
+		if (c1 == null) {
+			return null;
+		}
+		Gate gate = world.checkGateTouched(c1.getBoxes()[0]);
+		if (gate != null && world.checkShift(c1, gate)) {
+//			shift.doShift(gate);
+			return gate;
+		}
+		return null;
 	}
 	
 	/* **********
@@ -157,6 +209,11 @@ public class GameRuntime {
 	public void removeFoe(Foe entry) {
 		if (entry != null)
 			foesWaitingForRemove.add(entry);
+	}
+	
+	public void destroyFoeNow(Foe entry) {
+		entry.onDispose();
+		foes.removeValue(entry, true);
 	}
 	
 	private void handleFoeAddAndRemove() {

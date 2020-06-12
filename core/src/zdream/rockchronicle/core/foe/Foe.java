@@ -140,10 +140,10 @@ public abstract class Foe {
 	/**
 	 * 行动. 只调用盒子模块
 	 * @param pause
-	 *   世界是否暂停
+	 *   世界是否暂停. 见 Ticker 类的静态参数
 	 */
-	public void step(boolean pause) {
-		if (pause) {
+	public void step(byte pause) {
+		if (pause == 0) {
 			return;
 		}
 		
@@ -165,9 +165,9 @@ public abstract class Foe {
 	 * 状态确定.
 	 * 刚创建的 Foe 第一步时间里不会调用 step 方法, 直接调用 submit.
 	 * @param pause
-	 *   世界是否暂停
+	 *   世界是否暂停. 见 Ticker 类的静态参数
 	 */
-	public void submit(boolean pause) {
+	public void submit(byte pause) {
 		
 	}
 	

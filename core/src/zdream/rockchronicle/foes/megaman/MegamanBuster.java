@@ -13,6 +13,8 @@ import zdream.rockchronicle.core.foe.FoeEvent;
 import zdream.rockchronicle.core.foe.ShapePainter;
 import zdream.rockchronicle.core.world.Ticker;
 
+import static zdream.rockchronicle.core.world.Ticker.*;
+
 /**
  * <p>洛克人的子弹
  * <p>
@@ -51,8 +53,8 @@ public class MegamanBuster extends Foe {
 	}
 	
 	@Override
-	public void step(boolean pause) {
-		if (!pause) {
+	public void step(byte pause) {
+		if (pause != WORLD_PAUSE) {
 			// 寿命
 			if (handleRemain()) {
 				destroy();

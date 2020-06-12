@@ -16,6 +16,10 @@ public class Ticker {
 	public static final int STEPS_PER_SECOND = 120;
 	public static final float WORLD_STEP = 1f / STEPS_PER_SECOND;
 	
+	public static final byte WORLD_PAUSE = 0;
+	public static final byte WORLD_RUNNING = 1;
+	public static final byte ROOM_SHIFTING = 2;
+	
 	/**
 	 * 包括暂停时间的所有步数
 	 */
@@ -30,15 +34,20 @@ public class Ticker {
 	/**
 	 * 时间每走一步调用的
 	 */
-	private Consumer<Boolean> stepListener;
+	private Consumer<Byte> stepListener;
 	/**
 	 * 时间每走一帧最后调用的
 	 */
 	private IntConsumer frameStartListener, frameFinishedListener;
 	/**
 	 * 是否暂停. 这个参数不能直接修改
+	 * 
+	 * <li>0: 全部暂停
+	 * <li>1: 正常运行
+	 * <li>2: 特殊情况. 当出现房间切换时
+	 * </li>
 	 */
-	public boolean pause;
+	public byte pause;
 	
 	public void tick(float delta) {
 		float realDelta = Math.min(delta, 0.1f);
@@ -53,7 +62,7 @@ public class Ticker {
 				stepListener.accept(pause);
 			}
 			count++;
-			if (!pause) {
+			if (pause != 0) {
 				runCount++;
 			}
 			accumulate -= WORLD_STEP;
@@ -64,7 +73,7 @@ public class Ticker {
 		}
 	}
 	
-	public void setStepListener(Consumer<Boolean> stepListener) {
+	public void setStepListener(Consumer<Byte> stepListener) {
 		this.stepListener = stepListener;
 	}
 	
@@ -77,9 +86,12 @@ public class Ticker {
 	}
 	
 	public void worldPause() {
-		this.pause = true;
+		this.pause = 0;
 	}
 	public void worldResume() {
-		this.pause = false;
+		this.pause = 1;
+	}
+	public void roomShifting() {
+		this.pause = 2;
 	}
 }

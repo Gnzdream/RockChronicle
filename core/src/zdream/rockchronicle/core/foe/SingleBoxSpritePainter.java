@@ -65,6 +65,15 @@ public abstract class SingleBoxSpritePainter implements IFoePainter {
 		return 0;
 	}
 	
+	/**
+	 * <p>用于在无敌时间时给角色添加白闪效果.
+	 * 当 immuseTicks % 12 < 6, 加白色, 否则半透明.
+	 * <p>至于为什么不使用 getImmune(). 你试一下房间切换时受伤就知道了.
+	 * 房间切换时 getImmune() 参数不会变, 导致角色一直都是白色.
+	 * </p>
+	 */
+	int immuseTicks = 0;
+	
 	public Sprite getSprite() {
 		return sprite;
 	}
@@ -106,7 +115,11 @@ public abstract class SingleBoxSpritePainter implements IFoePainter {
 		// 绘画
 		batch.begin();
 		if (immune > 0) {
-			if (immune % 12 < 6) {
+			if (immuseTicks == 0) {
+				immuseTicks = 1;
+			}
+			
+			if (immuseTicks % 12 < 6) {
 				batch.setBlendFunction(GL20.GL_ONE_MINUS_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 				batch.draw(sprite, x, y, fw, fh);
 				batch.setBlendFunction(GL20.GL_ONE_MINUS_DST_ALPHA, GL20.GL_DST_ALPHA);
@@ -122,6 +135,8 @@ public abstract class SingleBoxSpritePainter implements IFoePainter {
 				batch.setColor(1, 1, 1, 1);
 			}
 		} else {
+			immuseTicks = 0;
+			
 			batch.draw(sprite, x, y, fw, fh);
 		}
 		batch.end();
@@ -143,6 +158,10 @@ public abstract class SingleBoxSpritePainter implements IFoePainter {
 	
 	public void tick() {
 		select.tick(1);
+		
+		if (immuseTicks > 0) {
+			immuseTicks++;
+		}
 	}
 	
 }

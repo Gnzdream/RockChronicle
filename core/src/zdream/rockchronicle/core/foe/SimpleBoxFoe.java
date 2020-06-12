@@ -2,6 +2,8 @@ package zdream.rockchronicle.core.foe;
 
 import static zdream.rockchronicle.core.foe.Box.p2block;
 
+import static zdream.rockchronicle.core.world.Ticker.*;
+
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
@@ -54,10 +56,10 @@ public abstract class SimpleBoxFoe extends Foe {
 	}
 	
 	@Override
-	public final void step(boolean pause) {
+	public final void step(byte pause) {
 		super.step(pause);
 		
-		if (!pause) {
+		if (pause == WORLD_RUNNING) {
 			stepIfNotPause();
 			
 			handleRemain();

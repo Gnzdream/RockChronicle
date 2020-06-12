@@ -1,6 +1,7 @@
 package zdream.rockchronicle.foes.mm2pipi;
 
 import static zdream.rockchronicle.core.foe.Box.block2P;
+import static zdream.rockchronicle.core.world.Ticker.WORLD_PAUSE;
 
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -40,11 +41,19 @@ public class MM2PipiSpawnField extends Foe {
 		reset(json);
 	}
 	
+	ShapePainter sPainter;
+	
 	@Override
 	public void init(GameRuntime runtime) {
 		super.init(runtime);
-		putPainter(new ShapePainter(boxes[0], Color.BLUE));
+		putPainter(sPainter = new ShapePainter(boxes[0], Color.BLUE));
 		initTrigger();
+	}
+	
+	@Override
+	public void onDispose() {
+		removePainter(sPainter);
+		super.onDispose();
 	}
 
 	private void reset(JsonValue json) {
@@ -117,9 +126,9 @@ public class MM2PipiSpawnField extends Foe {
 	}
 	
 	@Override
-	public void step(boolean pause) {
+	public void step(byte pause) {
 		super.step(pause);
-		if (pause) {
+		if (pause == WORLD_PAUSE) {
 			return;
 		}
 

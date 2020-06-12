@@ -1,7 +1,5 @@
 package zdream.rockchronicle.foes.megaman;
 
-import static zdream.rockchronicle.core.world.Ticker.WORLD_STEP;
-
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
@@ -16,6 +14,8 @@ import zdream.rockchronicle.core.input.IInputBindable;
 import zdream.rockchronicle.core.input.InputCenter;
 import zdream.rockchronicle.core.input.PlayerInput;
 import zdream.rockchronicle.core.world.Ticker;
+
+import static zdream.rockchronicle.core.world.Ticker.*;
 
 public class Megaman extends Foe implements IInputBindable {
 
@@ -79,9 +79,13 @@ public class Megaman extends Foe implements IInputBindable {
 	 */
 	
 	@Override
-	public void step(boolean pause) {
+	public void step(byte pause) {
 		super.step(pause);
-		if (pause) {
+		if (pause == WORLD_PAUSE) {
+			return;
+		} else if (pause == ROOM_SHIFTING) {
+			// 房间切换中
+			mPainter.tick();
 			return;
 		}
 
@@ -145,12 +149,15 @@ public class Megaman extends Foe implements IInputBindable {
 		// 处理 glitch
 		runtime.world.glitchFix(box);
 		
+		// 设置属性
+		pushParam();
+		
 		// 绘画处理
 		mPainter.tick();
 	}
 	
 	@Override
-	public void submit(boolean pause) {
+	public void submit(byte pause) {
 		super.submit(pause);
 		resetParam();
 	}
@@ -338,6 +345,11 @@ public class Megaman extends Foe implements IInputBindable {
 		this.horizontalVelMax = this.phorizontalVelMax;
 		this.parryVel = this.pparryVel;
 		this.stopInstant = this.pstopSlide;
+	}
+	
+	private void pushParam() {
+		// 房间切换要用到
+		setState("climbing", new JsonValue(climbing));
 	}
 	
 	private int calcVelocity(int velocity, int acceleration, int max) {

@@ -67,11 +67,6 @@ public class MM2PipiEgg extends SimpleBoxFoe {
 		}
 	}
 	
-	@Override
-	public void onDispose() {
-		super.onDispose();
-	}
-	
 	/* **********
 	 *   阶段   *
 	 ********** */
