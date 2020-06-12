@@ -7,15 +7,20 @@ import com.badlogic.gdx.utils.ObjectMap;
 
 import zdream.rockchronicle.core.GameRuntime;
 import zdream.rockchronicle.core.foe.Box;
+import zdream.rockchronicle.core.foe.BoxOccupation;
 import zdream.rockchronicle.core.foe.Foe;
 import zdream.rockchronicle.core.foe.FoeEvent;
 import zdream.rockchronicle.core.foe.ShapePainter;
 import zdream.rockchronicle.core.input.IInputBindable;
 import zdream.rockchronicle.core.input.InputCenter;
 import zdream.rockchronicle.core.input.PlayerInput;
+import zdream.rockchronicle.core.region.Terrains;
 import zdream.rockchronicle.core.world.Ticker;
 
 import static zdream.rockchronicle.core.world.Ticker.*;
+import static zdream.rockchronicle.core.foe.Box.*;
+
+import static zdream.rockchronicle.core.region.ITerrainStatic.*;
 
 public class Megaman extends Foe implements IInputBindable {
 
@@ -106,6 +111,7 @@ public class Megaman extends Foe implements IInputBindable {
 		// box 初始化、在地形中的情形、是否受伤僵直、移动情况
 		runtime.world.freshBox(box, true);
 		handleImmuse();
+		handleClimb();
 		handleMotion();
 		
 		// 处理攻击情况.
@@ -320,14 +326,33 @@ public class Megaman extends Foe implements IInputBindable {
 	public byte slideDuration = -1;
 	
 	/*
-	 * 行动状态参数
+	 * 攀爬参数
+	 * 
+	 * 从正常状态到攀爬状态 (不是从顶端下来):
+	 * climbing: 0 -> 1~7
+	 * climbDirection: 0
 	 */
 	/**
-	 * 是否在攀爬状态.
-	 * 0 : 不在攀爬
-	 * 其它大于 0: 都是不同的状态
+	 * 攀爬速度, 每步攀爬的格子数. 配置项
+	 * 单位: p / 步, 默认 5块 / 秒, 换算后为 2731 p / 步
 	 */
-	public int climbing;
+	int climbVelocity;
+	/**
+	 * 攀爬状态参数, 0 表示不攀爬, 1 表示攀爬中, [2-13] 表示在梯子顶端的特殊攀爬状态,
+	 * 共 12 步时间 (0.1 s)
+	 * 
+	 * 如果上一帧不为 0, 后面每帧都需要检测, 直到将其设置为 0
+	 */
+	int climbing;
+	/**
+	 * 当前帧攀爬的方向, 0: 无, 1: 上, -1: 下,
+	 * 每步不重置 / upOrDown
+	 */
+	byte climbDirection;
+	/**
+	 * 由于在攀爬状态下攻击将有 0.25 秒时间不能上下移动, 这里记录剩余的恢复速度
+	 */
+	int climbHaltRemain;
 	
 	public void initMotion() {
 		this.phorizontalVelDelta = HORIZONTAL_VELOCITY_DELTA;
@@ -345,6 +370,8 @@ public class Megaman extends Foe implements IInputBindable {
 		this.horizontalVelMax = this.phorizontalVelMax;
 		this.parryVel = this.pparryVel;
 		this.stopInstant = this.pstopSlide;
+		
+		this.climbVelocity = 2731;
 	}
 	
 	private void pushParam() {
@@ -368,11 +395,255 @@ public class Megaman extends Foe implements IInputBindable {
 		return velocity;
 	}
 	
-	private void handleMotion() {
-//		if (climbing) { // 1. 如果在攀爬状态, 所有的速度修改都不需要了
-//			return;
-//		}
+	private void handleClimb() {
+		final int pCenterX = box.getCenterX();
+		final int pCenterY = box.getCenterY();
+		final int centerX = Box.blockLeft(pCenterX);
+		final int centerY = Box.blockLeft(pCenterY);
+		BoxOccupation occ = box.getOccupation();
+		// 现在查看这个中心点映射到的是哪个地形
 		
+		// 表示当前帧, 角色从 climbing = 0 的状态变成附到梯子上
+		boolean adhere = false;
+		
+		// 表示在梯子顶端按下将下降到下面的梯子上
+		boolean lower = true;
+		int lowerX = 0, lowerY = 0; // 单位: 块
+		
+		if (climbing > 0) {
+			this.climbDirection = (byte) (up ? 1 : down ? -1 : 0);
+		} else {
+			this.climbDirection = 0;
+		}
+		
+		STEP1: {
+			if (climbing == 0) {
+				
+				byte terrain = runtime.world.getTerrain(centerX, centerY);
+				if (Terrains.isLadder(terrain)) {
+					// 这个时候如果按了上或者下, 就应该到梯子上了, 除了一种情况: 你在落地时按下
+					if (up || down) {
+						if (box.gravityDown && occ.ybottomTightly) {
+							if (runtime.world.getTerrain(centerX, occ.ybottom - 1) == TERRAIN_SOLID && down) {
+								// do-nothing
+							} else {
+								adhere = true;
+							}
+						} else if (!box.gravityDown && occ.ytopTightly) {
+							if (runtime.world.getTerrain(centerX, occ.ytop + 1) == TERRAIN_SOLID && up) {
+								// do-nothing
+							} else {
+								adhere = true;
+							}
+						} else {
+							adhere = true;
+						}
+					}
+				} else {
+					// 还有一种情况, 在梯子顶端按下将下降到下面的梯子上
+					if (box.gravityDown && occ.ybottomTightly) {
+						if (Terrains.isLadder(runtime.world.getTerrain(centerX, occ.ybottom - 1)) && down) {
+							// 可以向下降到梯子上
+							lower = true;
+							lowerX = centerX;
+							lowerY = occ.ybottom;
+						}
+					} else if (!box.gravityDown && occ.ytopTightly) {
+						if (Terrains.isLadder(runtime.world.getTerrain(centerX, occ.ytop + 1)) && up) {
+							// 人是倒着的, 可以向上“降”到梯子上
+							lower = true;
+							lowerX = centerX;
+							lowerY = occ.ytop + 1;
+						}
+					}
+				}
+				break STEP1;
+			}
+			
+			// 到达这里说明 climbing > 0
+			
+			// 检测是否在攀登状态. 取消攀登状态的可能有以下情况: 
+			// 1. 梯子消失 (现在正在检查的) (需要检查中点和锚点, 一项满足即可)
+			// 2. 被攻击 (前面已经过滤)
+			// 3. 跳下来 (监听事件, 不在这里)
+			// 4. 顺着梯子到底, 站到了平地上 (当 climbing <= 7 时需要检查锚点)
+			int anchorX = Box.blockRight(box.anchorX);
+			int anchorY = Box.blockRight(box.anchorY);
+			
+			if (climbing <= 7) {
+				byte terrain = runtime.world.getTerrain(anchorX, anchorY);
+				// 顺着梯子到底, 站到了平地上 (以后会扩展到站到其它实体)
+				if (Terrains.isLadder(terrain)) {
+					if (box.gravityDown && occ.ybottomTightly) {
+						// TODO 其它平地块
+						if (runtime.world.getTerrain(centerX, occ.ybottom - 1) == TERRAIN_SOLID && down) {
+							climbing = 0; // 变成站立
+							setCurrentPattern("normal");
+							break STEP1;
+						}
+					} else if (!box.gravityDown && occ.ytopTightly) {
+						// TODO 其它平地块
+						if (runtime.world.getTerrain(centerX, occ.ytop + 1) == TERRAIN_SOLID && up) {
+							climbing = 0; // 变成站立
+							setCurrentPattern("normal");
+							break STEP1;
+						}
+					}
+				} else {
+					terrain = runtime.world.getTerrain(centerX, centerY); // 检查中点
+					if (!Terrains.isLadder(terrain)) {
+						// 梯子消失 ?
+						climbing = 0; // 变成站立
+						setCurrentPattern("normal");
+						break STEP1;
+					}
+				}
+			}
+			
+			// 这里附加判断:
+			// 角色是不能够攀爬房间区域以外的梯子的. 否则切换房间的判定将出现问题
+			if (runtime.world.getCurrentRoom().containInRoomForBlock(centerX, centerY) == -1) {
+				climbing = 0;
+				setCurrentPattern("normal");
+				break STEP1;
+			}
+		}
+		
+		// 阶段 2
+		STEP2: {
+			int px = box.anchorX;
+			if (climbing == 0) {
+				if (adhere) {
+					box.setAnchorX((int) ((blockRight(px) + 0.5f) * P_PER_BLOCK));
+					box.setVelocity(0, 0);
+					climbing = 1;
+					break STEP2;
+				} else if (lower) {
+					if (box.gravityDown && occ.ybottomTightly &&
+							Terrains.isLadder(runtime.world.getTerrain(lowerX, lowerY - 1))) {
+						setCurrentPattern("climb_top_1");
+						box.setAnchorX(block2P((lowerX + 0.5f)));
+						// y 为梯子顶部, (整数), 即不动
+						climbing = 13;
+						break STEP2;
+					}
+					if (!box.gravityDown && occ.ybottomTightly &&
+							Terrains.isLadder(runtime.world.getTerrain(lowerX, lowerY))) {
+						setCurrentPattern("climb_top_1");
+						box.setAnchorX(block2P((lowerX + 0.5f)));
+						// y 为梯子顶部 (人是倒立的, 可以视作底部), (整数), 即不动
+						climbing = 13;
+						break STEP2;
+					}
+				}
+				break STEP2;
+			}
+			
+			// 特殊攀爬状态
+			if (climbing >= 2) {
+				int last = climbing;
+				box.setVelocity(0, 0);
+				
+				if (up) {
+					climbing = (box.gravityDown) ? climbing + 1 : climbing - 1;
+				} else if (down) {
+					climbing = (box.gravityDown) ? climbing - 1 : climbing + 1;
+				}
+				
+				if (climbing > 13) {
+					// 站在楼梯顶端
+					climbing = 0;
+					setCurrentPattern("normal");
+				} else if (climbing == 1) {
+					// 回到一般状态
+					setCurrentPattern("normal");
+					box.setAnchorY(pCeil(box.anchorY) - (int) (P_PER_BLOCK * 0.55f));
+				} else {
+					if (last == 7 && climbing == 8) {
+						setCurrentPattern("climb_top_1");
+						box.setAnchorY(pCeil(box.anchorY));
+					} else if (last == 8 && climbing == 7) {
+						setCurrentPattern("climb_top_0");
+						box.setAnchorY(pCeil(box.anchorY) - (int) (P_PER_BLOCK * 0.25f));
+					}
+				}
+
+				break STEP2;
+			}
+			
+			// 角色将改变形状 (共 3 个形状, 存储在 StateModule 中的 motion 字段)、
+			// 姿势 (爬梯子状态, Box 里面的参数)
+			
+			// 角色如果原本不在爬梯子状态, 需要对角色的位置进行调整,
+			// 平移到梯子上;
+			box.setAnchorX((int) ((blockRight(px) + 0.5) * P_PER_BLOCK));
+			
+			// 将根据角色与梯子顶端的距离来设置爬梯子状态;
+			
+			// 下面需要粗略计算离梯子顶端的距离 (这里的 y 以角色锚点为准)
+			int iy = Box.pCeil(box.anchorY); // 单位: p
+			boolean yTightly = box.anchorY == iy;
+			int distance = (iy - box.anchorY) +
+					(yTightly ?
+					(Terrains.isLadder(runtime.world.getTerrainForP(px, iy + P_PER_BLOCK)) ? P_PER_BLOCK : 0) :
+					(Terrains.isLadder(runtime.world.getTerrainForP(px, iy)) ? P_PER_BLOCK : 0));  // 单位: p
+			
+			int vy = 0;
+			
+			// vy
+			if (distance < P_PER_BLOCK / 2) {
+				// 两个快爬到顶端的状态, 速度和状态需要修改
+				climbing = 2;
+				box.setAnchorY(iy - P_PER_BLOCK / 4);
+				
+				// 改变形态
+				setCurrentPattern("climb_top_0");
+			} else {
+				// 离顶端还很远
+				// 当在攻击状态时, 将不移动
+				if (climbHaltRemain == 0) {
+					if (up) {
+						vy = climbVelocity;
+					} else if (down) { // upOrDown == 2
+						vy = -climbVelocity;
+					}
+				}
+			}
+			
+			if (climbHaltRemain > 0) {
+				climbHaltRemain --;
+			}
+			
+			// 如果在底端按下, 也会退出攀爬状态
+			if (climbing == 1) {
+				if (box.gravityDown && box.bottomTouched && down &&
+						runtime.world.getTerrain(centerX, occ.ybottom - 1) == TERRAIN_SOLID ||
+						!box.gravityDown && box.topTouched && up &&
+						runtime.world.getTerrain(centerX, occ.ytop + 1) == TERRAIN_SOLID) {
+					climbing = 0;
+					setCurrentPattern("normal");
+				}
+			}
+			
+			box.setVelocityX(0);
+			box.setVelocityY(vy);
+			break STEP2;
+		}
+		
+		if (climbing > 0) {
+			slideDuration = -1;
+			jumpVel = 0;
+		}
+		
+		if (climbing != lastClimbing) {
+			System.out.println(runtime.ticker.count + ":" + climbing);
+			lastClimbing = climbing;
+		}
+	}
+	
+	int lastClimbing = 0;
+	
+	private void handleMotion() {
 		// 2. 修改速度. 单位: p
 		box.flush();
 		int vx = box.velocityX;
@@ -390,6 +661,22 @@ public class Megaman extends Foe implements IInputBindable {
 		} else {
 			jumpStart = !lastJump && jump && stiffness == 0 && !inAir;
 			jumpEnd = (lastJump && !jump) || stiffness > 0 && inAir;
+			
+			// 攀爬中起跳问题
+			if (climbing == 1) { // 不会僵直
+				if (!lastJump && jump) {
+					climbing = 0;
+				}
+			} else if (climbing > 1) { // 不会僵直
+				jumpStart = !lastJump && jump;
+				if (jumpStart) {
+					climbing = 0;
+	 				box.setAnchorY(pCeil(box.anchorY));
+					runtime.world.freshBox(box, true);
+					inAir = box.inAir;
+				}
+			}
+			
 			// 缓解跳不起来的情况
 			if (jumpPressDuration == 10) {
 				jumpPressDuration = -1;
@@ -410,6 +697,10 @@ public class Megaman extends Foe implements IInputBindable {
 //			} else if (!lastJump && jump && inAir) {
 //				System.out.println(String.format("%d : inAir", runtime.ticker.count));
 //			}
+		}
+		
+		if (climbing > 0) {
+			return;
 		}
 		
 		// 5. 执行左右移动
@@ -609,6 +900,9 @@ public class Megaman extends Foe implements IInputBindable {
 			attacking = false;
 		}
 		
+		if (attacking && climbing > 0) {
+			climbHaltRemain = STEPS_PER_SECOND / 4; // 0.25s
+		}
 	}
 	
 	/* **********
