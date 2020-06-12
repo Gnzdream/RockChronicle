@@ -1,5 +1,15 @@
 package zdream.rockchronicle.foes.megaman;
 
+import static zdream.rockchronicle.core.foe.Box.P_PER_BLOCK;
+import static zdream.rockchronicle.core.foe.Box.block2P;
+import static zdream.rockchronicle.core.foe.Box.blockRight;
+import static zdream.rockchronicle.core.foe.Box.pCeil;
+import static zdream.rockchronicle.core.region.ITerrainStatic.TERRAIN_SOLID;
+import static zdream.rockchronicle.core.world.Ticker.ROOM_SHIFTING;
+import static zdream.rockchronicle.core.world.Ticker.STEPS_PER_SECOND;
+import static zdream.rockchronicle.core.world.Ticker.WORLD_PAUSE;
+import static zdream.rockchronicle.core.world.Ticker.WORLD_STEP;
+
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
@@ -16,11 +26,6 @@ import zdream.rockchronicle.core.input.InputCenter;
 import zdream.rockchronicle.core.input.PlayerInput;
 import zdream.rockchronicle.core.region.Terrains;
 import zdream.rockchronicle.core.world.Ticker;
-
-import static zdream.rockchronicle.core.world.Ticker.*;
-import static zdream.rockchronicle.core.foe.Box.*;
-
-import static zdream.rockchronicle.core.region.ITerrainStatic.*;
 
 public class Megaman extends Foe implements IInputBindable {
 
@@ -150,7 +155,7 @@ public class Megaman extends Foe implements IInputBindable {
 		
 		// 最后……
 		// 处理左右移动
-		runtime.world.submitMotion(box, true, true);
+		runtime.world.submitMotion(box, true);
 		
 		// 处理 glitch
 		runtime.world.glitchFix(box);
@@ -379,6 +384,27 @@ public class Megaman extends Foe implements IInputBindable {
 		setState("climbing", new JsonValue(climbing));
 	}
 	
+	/**
+	 * 进入攀爬状态
+	 */
+	private void setClimb(int climbing) {
+		if (climbing == 1) {
+			setCurrentPattern("normal");
+		} else if (climbing == 0 || climbing > 13) {
+			this.climbing = 0;
+			setCurrentPattern("normal");
+			return;
+		} else if (climbing > 7) {
+			setCurrentPattern("climb_top_1");
+		} else {
+			setCurrentPattern("climb_top_0");
+		}
+
+		this.climbing = climbing;
+		this.slideDuration = -1;
+		this.jumpVel = 0;
+	}
+	
 	private int calcVelocity(int velocity, int acceleration, int max) {
 		if (acceleration > 0) {
 			velocity += acceleration;
@@ -516,7 +542,7 @@ public class Megaman extends Foe implements IInputBindable {
 				if (adhere) {
 					box.setAnchorX((int) ((blockRight(px) + 0.5f) * P_PER_BLOCK));
 					box.setVelocity(0, 0);
-					climbing = 1;
+					setClimb(1);
 					break STEP2;
 				} else if (lower) {
 					if (box.gravityDown && occ.ybottomTightly &&
@@ -524,7 +550,7 @@ public class Megaman extends Foe implements IInputBindable {
 						setCurrentPattern("climb_top_1");
 						box.setAnchorX(block2P((lowerX + 0.5f)));
 						// y 为梯子顶部, (整数), 即不动
-						climbing = 13;
+						setClimb(13);
 						break STEP2;
 					}
 					if (!box.gravityDown && occ.ybottomTightly &&
@@ -532,7 +558,7 @@ public class Megaman extends Foe implements IInputBindable {
 						setCurrentPattern("climb_top_1");
 						box.setAnchorX(block2P((lowerX + 0.5f)));
 						// y 为梯子顶部 (人是倒立的, 可以视作底部), (整数), 即不动
-						climbing = 13;
+						setClimb(13);
 						break STEP2;
 					}
 				}
@@ -545,25 +571,20 @@ public class Megaman extends Foe implements IInputBindable {
 				box.setVelocity(0, 0);
 				
 				if (up) {
-					climbing = (box.gravityDown) ? climbing + 1 : climbing - 1;
+					setClimb((box.gravityDown) ? climbing + 1 : climbing - 1);
 				} else if (down) {
-					climbing = (box.gravityDown) ? climbing - 1 : climbing + 1;
+					setClimb((box.gravityDown) ? climbing - 1 : climbing + 1);
 				}
 				
-				if (climbing > 13) {
-					// 站在楼梯顶端
-					climbing = 0;
-					setCurrentPattern("normal");
+				if (climbing == 0) {
+					// 站在楼梯顶端, 13 -> 0
 				} else if (climbing == 1) {
 					// 回到一般状态
-					setCurrentPattern("normal");
 					box.setAnchorY(pCeil(box.anchorY) - (int) (P_PER_BLOCK * 0.55f));
 				} else {
 					if (last == 7 && climbing == 8) {
-						setCurrentPattern("climb_top_1");
 						box.setAnchorY(pCeil(box.anchorY));
 					} else if (last == 8 && climbing == 7) {
-						setCurrentPattern("climb_top_0");
 						box.setAnchorY(pCeil(box.anchorY) - (int) (P_PER_BLOCK * 0.25f));
 					}
 				}
@@ -593,11 +614,8 @@ public class Megaman extends Foe implements IInputBindable {
 			// vy
 			if (distance < P_PER_BLOCK / 2) {
 				// 两个快爬到顶端的状态, 速度和状态需要修改
-				climbing = 2;
+				setClimb(2);
 				box.setAnchorY(iy - P_PER_BLOCK / 4);
-				
-				// 改变形态
-				setCurrentPattern("climb_top_0");
 			} else {
 				// 离顶端还很远
 				// 当在攻击状态时, 将不移动
@@ -620,7 +638,7 @@ public class Megaman extends Foe implements IInputBindable {
 						runtime.world.getTerrain(centerX, occ.ybottom - 1) == TERRAIN_SOLID ||
 						!box.gravityDown && box.topTouched && up &&
 						runtime.world.getTerrain(centerX, occ.ytop + 1) == TERRAIN_SOLID) {
-					climbing = 0;
+					setClimb(0);
 					setCurrentPattern("normal");
 				}
 			}
@@ -631,22 +649,18 @@ public class Megaman extends Foe implements IInputBindable {
 		}
 		
 		if (climbing > 0) {
-			slideDuration = -1;
-			jumpVel = 0;
-		}
-		
-		if (climbing != lastClimbing) {
-			System.out.println(runtime.ticker.count + ":" + climbing);
-			lastClimbing = climbing;
+			if (left) {
+				box.orientation = false;
+			} else if (right) {
+				box.orientation = true;
+			}
 		}
 	}
-	
-	int lastClimbing = 0;
 	
 	private void handleMotion() {
 		// 2. 修改速度. 单位: p
 		box.flush();
-		int vx = box.velocityX;
+		int vx = 0;
 		
 		// 3. 是否在空中
 		boolean inAir = box.inAir;
@@ -665,12 +679,12 @@ public class Megaman extends Foe implements IInputBindable {
 			// 攀爬中起跳问题
 			if (climbing == 1) { // 不会僵直
 				if (!lastJump && jump) {
-					climbing = 0;
+					setClimb(0);
 				}
 			} else if (climbing > 1) { // 不会僵直
 				jumpStart = !lastJump && jump;
 				if (jumpStart) {
-					climbing = 0;
+					setClimb(0);
 	 				box.setAnchorY(pCeil(box.anchorY));
 					runtime.world.freshBox(box, true);
 					inAir = box.inAir;

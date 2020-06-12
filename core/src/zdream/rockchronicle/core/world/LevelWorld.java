@@ -80,16 +80,35 @@ public class LevelWorld implements ITerrainStatic {
 	 * <li>当 y 向下出界时, 返回 TERRAIN_EMPTY
 	 * </li></p>
 	 * @param x
-	 *   相对于房间的横坐标, 单位: 格子
+	 *   相对于房间的横坐标, 单位: 块
 	 * @param y
-	 *   相对于房间的纵坐标, 单位: 格子
+	 *   相对于房间的纵坐标, 单位: 块
 	 * @return
 	 *   地形码
 	 */
 	public byte getTerrain(int x, int y) {
+		return getTerrain(x, y, TERRAIN_SOLID);
+	}
+	
+	/**
+	 * <p>获得地形数据.
+	 * <li>当 x 出界时, 返回 xOutsideTerrain
+	 * <li>当 y 向上出界时, 返回 room.terrains[room.height - 1]
+	 * <li>当 y 向下出界时, 返回 TERRAIN_EMPTY
+	 * </li></p>
+	 * @param x
+	 *   相对于房间的横坐标, 单位: 块
+	 * @param y
+	 *   相对于房间的纵坐标, 单位: 块
+	 * @param xOutsideTerrain
+	 *   横坐标出界后返回的地形
+	 * @return
+	 *   地形码
+	 */
+	public byte getTerrain(int x, int y, byte xOutsideTerrain) {
 		Room currentRoom = curRegion.rooms[room];
 		if (x < 0 || x >= currentRoom.width) {
-			return TERRAIN_SOLID;
+			return xOutsideTerrain;
 		}
 		if (y >= currentRoom.height) {
 			return currentRoom.terrains[x][currentRoom.height - 1];
@@ -109,6 +128,13 @@ public class LevelWorld implements ITerrainStatic {
 	 ********** */
 	
 	/**
+	 * @see #freshBox(Box, boolean, byte)
+	 */
+	public Box freshBox(Box box, boolean climbable) {
+		return freshBox(box, climbable, TERRAIN_SOLID);
+	}
+	
+	/**
 	 * <p>计算 Box 的数值. 适用于单一盒子. 不要将不受地形影响的 Foe 的盒子调用该方法.
 	 * 
 	 * <p>以下数值将重新计算:
@@ -118,8 +144,10 @@ public class LevelWorld implements ITerrainStatic {
 	 * 
 	 * @param climbable
 	 *   这个角色会不会爬梯子
+	 * @param xOutsideTerrain
+	 *   横坐标出界后返回的地形
 	 */
-	public Box freshBox(Box box, boolean climbable) {
+	public Box freshBox(Box box, boolean climbable, byte xOutsideTerrain) {
 		box.flush();
 		BoxOccupation occ = box.getOccupation();
 		Room room = getCurrentRoom();
@@ -144,7 +172,7 @@ public class LevelWorld implements ITerrainStatic {
 		box.rightTouched = false;
 		if (occ.xleftTightly) {
 			for (int y = ibyBottom; y <= ibyTop; y++) {
-				int terrain = getTerrain(ibxLeft - 1, y);
+				int terrain = getTerrain(ibxLeft - 1, y, xOutsideTerrain);
 				if (terrain == TERRAIN_SOLID) { // TODO 其它实体块
 					box.leftTouched = true; break;
 				}
@@ -152,7 +180,7 @@ public class LevelWorld implements ITerrainStatic {
 		}
 		if (occ.xrightTightly) {
 			for (int y = ibyBottom; y <= ibyTop; y++) {
-				int terrain = getTerrain(ibxRight + 1, y);
+				int terrain = getTerrain(ibxRight + 1, y, xOutsideTerrain);
 				if (terrain == TERRAIN_SOLID) { // TODO 其它实体块
 					box.rightTouched = true; break;
 				}
@@ -164,12 +192,13 @@ public class LevelWorld implements ITerrainStatic {
 		box.topTouched = false;
 		if (occ.ybottomTightly) {
 			for (int x = ibxLeft; x <= ibxRight; x++) {
-				int terrain = getTerrain(x, ibyBottom - 1);
+				int terrain = getTerrain(x, ibyBottom - 1, xOutsideTerrain);
 				if (terrain == TERRAIN_SOLID) { // TODO 其它实体块
 					box.bottomTouched = true; break;
 				} else if (terrain == TERRAIN_STAB_LADDER) {
 					// 梯子只有最上面那一块能站
-					if (getTerrain(x, ibyBottom) != TERRAIN_STAB_LADDER && box.gravityDown && climbable) {
+					if (getTerrain(x, ibyBottom, xOutsideTerrain) != TERRAIN_STAB_LADDER
+							&& box.gravityDown && climbable) {
 						box.bottomTouched = true; break;
 					}
 				}
@@ -177,12 +206,12 @@ public class LevelWorld implements ITerrainStatic {
 		}
 		if (occ.ytopTightly) {
 			for (int x = ibxLeft; x <= ibxRight; x++) {
-				int terrain = getTerrain(x, ibyTop + 1);
+				int terrain = getTerrain(x, ibyTop + 1, xOutsideTerrain);
 				if (terrain == TERRAIN_SOLID) { // TODO 其它实体块
 					box.topTouched = true; break;
 				} else if (terrain == TERRAIN_STAB_LADDER) {
 					// 梯子只有最上面那一块能站
-					if (getTerrain(x, ibyTop) != TERRAIN_STAB_LADDER && !box.gravityDown && climbable) {
+					if (getTerrain(x, ibyTop, xOutsideTerrain) != TERRAIN_STAB_LADDER && !box.gravityDown && climbable) {
 						box.topTouched = true; break;
 					}
 				}
@@ -195,134 +224,142 @@ public class LevelWorld implements ITerrainStatic {
 		return box;
 	}
 	
+	public void submitFloatBoxMotion(Box box) {
+		box.flush();
+		box.addAnchorX(box.velocityX);
+		box.addAnchorY(box.velocityY);
+		box.flush();
+	}
+	
+	/**
+	 * @see #submitMotion(Box, boolean, byte)
+	 */
+	public void submitMotion(Box box, boolean climbable) {
+		submitMotion(box, climbable, TERRAIN_SOLID);
+	}
+	
 	/**
 	 * 处理 Foe 的移动, 按照盒子中的速度来更新盒子中的 anchor 位置.
 	 * @param box
-	 * @param inTerrain
-	 *   是否受地形影响.
 	 * @param climbable
 	 *   角色会不会爬梯子
+	 * @param xOutsideTerrain
+	 *   横坐标出界后返回的地形. 默认是固体
 	 */
-	public void submitMotion(Box box, boolean inTerrain, boolean climbable) {
+	public void submitMotion(Box box, boolean climbable, byte xOutsideTerrain) {
 		box.flush();
 		
-		if (inTerrain) {
-			int vx = box.velocityX;
-			int vy = box.velocityY;
-			BoxOccupation occ = box.getOccupation();
+		int vx = box.velocityX;
+		int vy = box.velocityY;
+		BoxOccupation occ = box.getOccupation();
+		
+		// 水平移动
+		if (vx < 0) {
+			int pxsLeft = box.posX; // src 单位：p
+			int bxsLeft = occ.xleft; // 单位：块
+			int pxdLeft = pxsLeft + vx; // dest 单位：p
+			int bxdLeft = blockRight(pxdLeft); // 单位：块
 			
-			// 水平移动
-			if (vx < 0) {
-				int pxsLeft = box.posX; // src 单位：p
-				int bxsLeft = occ.xleft; // 单位：块
-				int pxdLeft = pxsLeft + vx; // dest 单位：p
-				int bxdLeft = blockRight(pxdLeft); // 单位：块
+			if (bxsLeft != bxdLeft) { // 出现了跨格子 (只判断跨一个格子的情况)
+				int byTop = occ.ytop;
+				int byBottom = occ.ybottom;
 				
-				if (bxsLeft != bxdLeft) { // 出现了跨格子 (只判断跨一个格子的情况)
-					int byTop = occ.ytop;
-					int byBottom = occ.ybottom;
-					
-					for (int y = byBottom; y <= byTop; y++) {
-						int terrain = getTerrain(bxdLeft, y);
-						if (terrain == TERRAIN_SOLID) { // TODO 其它实体块
-							// 最后向左移动的结果就是撞到该格子
-							vx = block2P(bxsLeft) - pxsLeft;
-							break;
-						}
+				for (int y = byBottom; y <= byTop; y++) {
+					int terrain = getTerrain(bxdLeft, y, xOutsideTerrain);
+					if (terrain == TERRAIN_SOLID) { // TODO 其它实体块
+						// 最后向左移动的结果就是撞到该格子
+						vx = block2P(bxsLeft) - pxsLeft;
+						break;
 					}
-				} else { // 向左移的过程中, 没有跨格子
+				}
+			} else { // 向左移的过程中, 没有跨格子
 //					box.addAnchorX(vx);
-				}
-				
-			} else if (vx > 0) {
-				int pxsRight = box.posX + box.posWidth; // src
-				int bxsRight = occ.xright;
-				int pxdRight = pxsRight + vx; // dest
-				int bxdRight = blockLeft(pxdRight);
-				
-				if (bxsRight != bxdRight) { // 出现了跨格子 (只判断跨一个格子的情况)
-					int byTop = occ.ytop;
-					int byBottom = occ.ybottom;
-					
-					for (int y = byBottom; y <= byTop; y++) {
-						int terrain = getTerrain(bxdRight, y);
-						
-						if (terrain == TERRAIN_SOLID) { // TODO 其它实体块
-							// 最后向左移动的结果就是撞到该格子
-							vx = block2P(bxdRight) - pxsRight;
-							break;
-						}
-					}
-				}
-				
-			} // 不处理 vx == 0 的情况
-			if (vx != 0) {
-				box.addAnchorX(vx);
-				box.flush();
 			}
 			
-			if (vy < 0) {
-				int pysBottom = box.posY; // src
-				int bysBottom = occ.ybottom;
-				int pydBottom = box.posY + vy; // dest
-				int bydBottom = blockRight(pydBottom);
-				
-				if (bysBottom != bydBottom) { // 跨格子
-					int bxLeft = Math.max(occ.xleft, 0);
-					int bxRight = Math.min(occ.xright, getCurrentRoom().width - 1);
-					
-					for (int x = bxLeft; x <= bxRight; x++) {
-						int terrain = getTerrain(x, bydBottom);
-						
-						boolean barrier = terrain == TERRAIN_SOLID; // 是否被格子拦住
-						if (!barrier && climbable && terrain == TERRAIN_STAB_LADDER && box.gravityDown) {
-							// 只有顶端的梯子有效
-							barrier = getTerrain(x, bydBottom + 1) != TERRAIN_STAB_LADDER;
-						}
-						
-						if (barrier) {
-							vy = block2P(bysBottom) - pysBottom;
-							break;
-						}
-					}
-				}
-			} else if (vy > 0) {
-				int pysTop = box.posY + box.posHeight; // src
-				int bysTop = occ.ytop;
-				int pydTop = pysTop + vy; // dest
-				int bydTop = blockLeft(pydTop);
-				
-				if (bysTop != bydTop) { // 跨格子
-					int bxLeft = Math.max(occ.xleft, 0);
-					int bxRight = Math.min(occ.xright, getCurrentRoom().width - 1);
-					
-					for (int x = bxLeft; x <= bxRight; x++) {
-						int terrain = getTerrain(x, bydTop);
-						
-						boolean barrier = terrain == TERRAIN_SOLID; // 是否被格子拦住
-						if (!barrier && climbable && terrain == TERRAIN_STAB_LADDER && !box.gravityDown) {
-							// 只有顶端的梯子有效
-							barrier = getTerrain(x, bydTop - 1) != TERRAIN_STAB_LADDER;
-						}
-						
-						if (barrier) {
-							vy = block2P(bydTop) - pysTop;
-							break;
-						}
-					}
-				}
-			} // 不处理 vy == 0 的情况
+		} else if (vx > 0) {
+			int pxsRight = box.posX + box.posWidth; // src
+			int bxsRight = occ.xright;
+			int pxdRight = pxsRight + vx; // dest
+			int bxdRight = blockLeft(pxdRight);
 			
-			if (vy != 0) {
-				box.addAnchorY(vy);
-				box.flush();
+			if (bxsRight != bxdRight) { // 出现了跨格子 (只判断跨一个格子的情况)
+				int byTop = occ.ytop;
+				int byBottom = occ.ybottom;
+				
+				for (int y = byBottom; y <= byTop; y++) {
+					int terrain = getTerrain(bxdRight, y, xOutsideTerrain);
+					
+					if (terrain == TERRAIN_SOLID) { // TODO 其它实体块
+						// 最后向左移动的结果就是撞到该格子
+						vx = block2P(bxdRight) - pxsRight;
+						break;
+					}
+				}
 			}
 			
-		} else {
-			box.addAnchorX(box.velocityX);
-			box.addAnchorY(box.velocityY);
+		} // 不处理 vx == 0 的情况
+		if (vx != 0) {
+			box.addAnchorX(vx);
 			box.flush();
 		}
+		
+		if (vy < 0) {
+			int pysBottom = box.posY; // src
+			int bysBottom = occ.ybottom;
+			int pydBottom = box.posY + vy; // dest
+			int bydBottom = blockRight(pydBottom);
+			
+			if (bysBottom != bydBottom) { // 跨格子
+				int bxLeft = Math.max(occ.xleft, 0);
+				int bxRight = Math.min(occ.xright, getCurrentRoom().width - 1);
+				
+				for (int x = bxLeft; x <= bxRight; x++) {
+					int terrain = getTerrain(x, bydBottom, xOutsideTerrain);
+					
+					boolean barrier = terrain == TERRAIN_SOLID; // 是否被格子拦住
+					if (!barrier && climbable && terrain == TERRAIN_STAB_LADDER && box.gravityDown) {
+						// 只有顶端的梯子有效
+						barrier = getTerrain(x, bydBottom + 1, xOutsideTerrain) != TERRAIN_STAB_LADDER;
+					}
+					
+					if (barrier) {
+						vy = block2P(bysBottom) - pysBottom;
+						break;
+					}
+				}
+			}
+		} else if (vy > 0) {
+			int pysTop = box.posY + box.posHeight; // src
+			int bysTop = occ.ytop;
+			int pydTop = pysTop + vy; // dest
+			int bydTop = blockLeft(pydTop);
+			
+			if (bysTop != bydTop) { // 跨格子
+				int bxLeft = Math.max(occ.xleft, 0);
+				int bxRight = Math.min(occ.xright, getCurrentRoom().width - 1);
+				
+				for (int x = bxLeft; x <= bxRight; x++) {
+					int terrain = getTerrain(x, bydTop, xOutsideTerrain);
+					
+					boolean barrier = terrain == TERRAIN_SOLID; // 是否被格子拦住
+					if (!barrier && climbable && terrain == TERRAIN_STAB_LADDER && !box.gravityDown) {
+						// 只有顶端的梯子有效
+						barrier = getTerrain(x, bydTop - 1, xOutsideTerrain) != TERRAIN_STAB_LADDER;
+					}
+					
+					if (barrier) {
+						vy = block2P(bydTop) - pysTop;
+						break;
+					}
+				}
+			}
+		} // 不处理 vy == 0 的情况
+		
+		if (vy != 0) {
+			box.addAnchorY(vy);
+			box.flush();
+		}
+			
 	}
 	
 	public boolean isBoxOverlap(Box box) {

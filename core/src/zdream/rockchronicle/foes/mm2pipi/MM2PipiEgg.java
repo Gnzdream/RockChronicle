@@ -2,6 +2,7 @@ package zdream.rockchronicle.foes.mm2pipi;
 
 import zdream.rockchronicle.core.GameRuntime;
 import zdream.rockchronicle.core.foe.SimpleBoxFoe;
+import zdream.rockchronicle.core.region.ITerrainStatic;
 
 /**
  * <p>2 代飞鸟带着的蛋.
@@ -51,7 +52,7 @@ public class MM2PipiEgg extends SimpleBoxFoe {
 				dropVelocity = maxDropVelocity;
 			}
 			
-			runtime.world.freshBox(box, false);
+			runtime.world.freshBox(box, false, ITerrainStatic.TERRAIN_EMPTY);
 			if (box.leftTouched || box.rightTouched || box.topTouched || box.bottomTouched) {
 				broken();
 				return;
@@ -63,7 +64,7 @@ public class MM2PipiEgg extends SimpleBoxFoe {
 			}
 			
 			box.setVelocityY(dropVelocity);
-			runtime.world.submitMotion(box, true, false);
+			runtime.world.submitMotion(box, false, ITerrainStatic.TERRAIN_EMPTY);
 		}
 	}
 	

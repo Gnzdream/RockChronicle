@@ -184,8 +184,8 @@ public class SceneDesigner {
 						int pxLeft = box.posX;
 						int pAnchorX = box.anchorX;
 						int pAnchorY = box.anchorY;
-						// 向右移屏后, 角色左边需要等于 1
-						int pxDestLeft = block2P(destRoom.offsetx - gate.offsetXOfRegion - srcRoom.offsetx + 1);
+						// 向右移屏后, 角色左边需要等于 0.5
+						int pxDestLeft = block2P(destRoom.offsetx - gate.offsetXOfRegion - srcRoom.offsetx + 0.5f);
 						
 						param.phase2EntryWidth[i] = pxDestLeft - pxLeft;
 						param.entriesPos[i] = new int[]{ pAnchorX + param.phase2EntryWidth[i], pAnchorY };
@@ -201,8 +201,8 @@ public class SceneDesigner {
 						int pxRight = box.posX + box.posWidth; // 相对于 srcRoom
 						int pAnchorX = box.anchorX;
 						int pAnchorY = box.anchorY;
-						// 向左移屏后, 角色右边需要等于目标房间的宽 - 1
-						int pxDestRight = block2P(-1);
+						// 向左移屏后, 角色右边需要等于目标房间的宽 - 0.5f
+						int pxDestRight = block2P(-0.5f);
 						
 						param.phase2EntryWidth[i] = pxRight - pxDestRight; // 保持正数
 						param.entriesPos[i] = new int[]{ pAnchorX - param.phase2EntryWidth[i], pAnchorY };
