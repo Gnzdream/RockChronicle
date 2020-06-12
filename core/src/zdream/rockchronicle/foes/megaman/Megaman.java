@@ -144,7 +144,7 @@ public class Megaman extends Foe implements IInputBindable {
 		
 		// 最后……
 		// 处理左右移动
-		runtime.world.submitMotion(box, true);
+		runtime.world.submitMotion(box, true, true);
 		
 		// 处理 glitch
 		runtime.world.glitchFix(box);

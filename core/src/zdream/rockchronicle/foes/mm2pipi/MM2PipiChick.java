@@ -44,7 +44,7 @@ public class MM2PipiChick extends SimpleBoxFoe {
 		}
 		box.setVelocity(vx, vy);
 		
-		runtime.world.submitMotion(box, false);
+		runtime.world.submitMotion(box, false, false);
 	}
 	
 	/* **********

@@ -647,7 +647,15 @@ public class RegionBuilder {
 					if (ystart2 < yend && yend2 > ystart) { // room 的右边界接壤 room2
 						createGateHorizontal(room, room2, 0, 0);
 					}
-				} // else TODO 上下接壤
+				} else if (yend + 1 == ystart2) {
+					if (xstart2 < xend && xend2 > xstart) { // room 的上边界接壤 room2
+						createGateVertical(room2, room, 0, 0);
+					}
+				} else if (ystart - 1 == yend2) {
+					if (xstart2 < xend && xend2 > xstart) { // room 的下边界接壤 room2
+						createGateVertical(room, room2, 0, 0);
+					}
+				}
 			}
 		}
 	}

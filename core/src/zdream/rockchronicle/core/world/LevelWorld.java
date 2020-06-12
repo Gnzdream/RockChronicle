@@ -200,8 +200,10 @@ public class LevelWorld implements ITerrainStatic {
 	 * @param box
 	 * @param inTerrain
 	 *   是否受地形影响.
+	 * @param climbable
+	 *   角色会不会爬梯子
 	 */
-	public void submitMotion(Box box, boolean inTerrain) {
+	public void submitMotion(Box box, boolean inTerrain, boolean climbable) {
 		box.flush();
 		
 		if (inTerrain) {
@@ -272,8 +274,13 @@ public class LevelWorld implements ITerrainStatic {
 					for (int x = bxLeft; x <= bxRight; x++) {
 						int terrain = getTerrain(x, bydBottom);
 						
-						if (terrain == TERRAIN_SOLID) { // TODO 其它实体块
-							// 最后向左移动的结果就是撞到该格子
+						boolean barrier = terrain == TERRAIN_SOLID; // 是否被格子拦住
+						if (!barrier && climbable && terrain == TERRAIN_STAB_LADDER && box.gravityDown) {
+							// 只有顶端的梯子有效
+							barrier = getTerrain(x, bydBottom + 1) != TERRAIN_STAB_LADDER;
+						}
+						
+						if (barrier) {
 							vy = block2P(bysBottom) - pysBottom;
 							break;
 						}
@@ -292,8 +299,13 @@ public class LevelWorld implements ITerrainStatic {
 					for (int x = bxLeft; x <= bxRight; x++) {
 						int terrain = getTerrain(x, bydTop);
 						
-						if (terrain == TERRAIN_SOLID) { // TODO 其它实体块
-							// 最后向左移动的结果就是撞到该格子
+						boolean barrier = terrain == TERRAIN_SOLID; // 是否被格子拦住
+						if (!barrier && climbable && terrain == TERRAIN_STAB_LADDER && !box.gravityDown) {
+							// 只有顶端的梯子有效
+							barrier = getTerrain(x, bydTop - 1) != TERRAIN_STAB_LADDER;
+						}
+						
+						if (barrier) {
 							vy = block2P(bydTop) - pysTop;
 							break;
 						}

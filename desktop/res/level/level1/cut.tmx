@@ -1,37 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.2" tiledversion="2018.11.13" orientation="orthogonal" renderorder="right-up" width="52" height="16" tilewidth="24" tileheight="24" infinite="0" nextlayerid="6" nextobjectid="12">
+<map version="1.2" tiledversion="2018.11.13" orientation="orthogonal" renderorder="right-up" width="52" height="44" tilewidth="24" tileheight="24" infinite="0" nextlayerid="9" nextobjectid="12">
  <tileset firstgid="1" source="mm1cuttiles.tsx"/>
  <tileset firstgid="201" name="symbol" tilewidth="24" tileheight="24" tilecount="100" columns="10">
   <image source="../symbol/symbol.png" width="240" height="240"/>
  </tileset>
- <layer id="1" name="back" width="52" height="16" locked="1">
+ <layer id="6" name="back" width="52" height="44">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAACu3PsQkAQAgEQZuw/1aNTMxvMdiD5zFapotZQ51tpR85PXrI6dFDTo+e20vfhCf90x5qev56qBbVGWtlr7gADQAA
+   H4sIAAAAAAAACu3TsQrAIAyE4b6E0K521bV9/zdrFhfn5CL1/+AQp+QQy6FRRHPGrOgo0Yc+SvShjxJ96DPPi74r+kSf6j4q9Fm3j2qW+o0AAAAAAMB+TsuVvYSjarmzl3DULD17CUeP5c1ewhH/Z21/+z+7+gC5cnEnwCMAAA==
   </data>
  </layer>
  <objectgroup id="2" name="Fields" locked="1">
   <object id="1" name="field01" x="144" y="24" width="408" height="216"/>
  </objectgroup>
- <layer id="3" name="Terrain" width="52" height="16">
+ <layer id="7" name="Terrain" width="52" height="44">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAACu2W4QqAIAyELfBXvUTv/5IhMZDhtTOdRnSwHyuc99mMhfCL1ZLFBkKr9Oyubh6jJDzee4zS13iQSn1n5UizeKz7w67XauVZG9f3Vq/v8xau3v1Wy3U07ve0X2vFctXyjPKPZHFZPOKf5Z79v9Y+0fkzPMx8kN573fUYLp9M/1g8pXlHvKf6u1Mu5x8Jn2jW0/xofvPkkFwCzZLW3MrU+KJOgutFDQANAAA=
+   H4sIAAAAAAAACu2YQY7CMAxFAxKr4QDMEmbLbIf734yi0ZdaK27s2E7bKE/yoqDaeTRuQlIaSDnN4osJSu6ztbzzaAV8omu0ojcfjty8K11zbOVT6h/p/RSrz9l4vzdez2cvXt7zTet1N9arna9apF5an1bj5yh5lXwwfqn31u9rOk7u95f4SPYHn++jev2S/scpmT8ln9x+B2P/5L8GXeP3vwjGye316Pzj9m+RHrhGcHvJ0r5V49MCa93bFN+Jf65b+Fh4TPGT+vF5TvGb+vH5m+KV+vEZ/RPL6J8lo39iGf2zZN4/ub3y0XzQP3A5us8tLV2uzvm1WOutuXjk11Jbb+7BuVjy11JTjz4TzqU2vwVtPeqC9ccrvxVpPW5+Yf2x5vdC60PnF9Yfa34vuHr4D17qeaw/2vxRrNXD+Ump5+k9OPPCOUtLIs5i6FlPS+h5n0f9vfjgWvOOkERLcvU8x7IHnyPlb11v6/dbRPTIGwZ81fnAIwAA
   </data>
  </layer>
- <layer id="4" name="Symbol" width="52" height="16">
+ <layer id="8" name="Symbol" width="52" height="44">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAACmNgGH7gJI3NP0UnO0bBKBgFo2AUjIJRMAqoBU4PtANGGLhMY/Ov0MmO4QgA82sl/gANAAA=
+   H4sIAAAAAAAACu3YwQ0AIAgDQPffTH3qQC4hmODdAG2fhNbq6cH5I6kDAOCW+XrAZ1Zw/k7qyOS+BgAAAACoodr/OssBUtcVGsAjAAA=
   </data>
  </layer>
  <objectgroup id="5" name="Points">
-  <object id="5" name="1-A" x="648" y="360">
-   <properties>
-    <property name="destPoint" value="2-A"/>
-    <property name="destRegion" value="mm1cut-2"/>
-    <property name="direction" value="bottom"/>
-    <property name="type" value="connection"/>
-   </properties>
-   <point/>
-  </object>
   <object id="7" name="E-1" x="1032" y="216">
    <properties>
     <property name="def" value="E-1"/>

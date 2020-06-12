@@ -85,7 +85,7 @@ public class MegamanBuster extends Foe {
 		box.velocityX = (box.orientation) ? velocityX : -velocityX;
 		box.velocityY = velocityY;
 		
-		runtime.world.submitMotion(box, false);
+		runtime.world.submitMotion(box, false, false);
 	}
 	
 	/* **********

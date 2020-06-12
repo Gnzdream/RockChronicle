@@ -44,7 +44,7 @@ public class MM2Pipi extends SimpleBoxFoe {
 	public void stepIfNotPause() {
 		box.velocityX = vx;
 		box.velocityY = 0;
-		runtime.world.submitMotion(box, false);
+		runtime.world.submitMotion(box, false, false);
 		
 		// 接下来是蛋的
 		if (egg != null) {

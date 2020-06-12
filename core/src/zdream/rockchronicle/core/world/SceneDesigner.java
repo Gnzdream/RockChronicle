@@ -460,35 +460,35 @@ public class SceneDesigner {
 	 ********** */
 	
 	public void updateCamera() {
-//		if (!durationShift()) {
-//			// 根据玩家位置改变镜头
-//			Foe entry = runtime.player1;
-//			if (entry != null) {
-//				Box box = entry.getBoxes()[0];
-//				centerPoint.x = ((float) box.getCenterX()) / Box.P_PER_BLOCK;
-//				centerPoint.y = ((float) box.getCenterY()) / Box.P_PER_BLOCK;
-//				
-//				Room curRoom = runtime.getCurrentRoom();
-//				float halfWidth = camera.viewportWidth / 2;
-//				float halfHeight = camera.viewportHeight / 2;
-//				
-//				float xstart = halfWidth;
-//				float xend = curRoom.width - halfWidth;
-//				float ystart = halfHeight;
-//				float yend = curRoom.height - halfHeight;
-//				if (centerPoint.x < xstart) {
-//					centerPoint.x = xstart;
-//				} else if (centerPoint.x > xend) {
-//					centerPoint.x = xend;
-//				}
-//				if (centerPoint.y < ystart) {
-//					centerPoint.y = ystart;
-//				} else if (centerPoint.y > yend) {
-//					centerPoint.y = yend;
-//				}
-//				camera.position.set(centerPoint, 0);
-//			}
-//		}
+		if (!durationShift()) {
+			// 根据玩家位置改变镜头
+			Foe entry = runtime.player1;
+			if (entry != null) {
+				Box box = entry.getBoxes()[0];
+				centerPoint.x = p2block(box.anchorX);
+				centerPoint.y = p2block(box.anchorY + 1);
+				
+				Room curRoom = runtime.getCurrentRoom();
+				float halfWidth = camera.viewportWidth / 2;
+				float halfHeight = camera.viewportHeight / 2;
+				
+				float xstart = halfWidth;
+				float xend = curRoom.width - halfWidth;
+				float ystart = halfHeight;
+				float yend = curRoom.height - halfHeight;
+				if (centerPoint.x < xstart) {
+					centerPoint.x = xstart;
+				} else if (centerPoint.x > xend) {
+					centerPoint.x = xend;
+				}
+				if (centerPoint.y < ystart) {
+					centerPoint.y = ystart;
+				} else if (centerPoint.y > yend) {
+					centerPoint.y = yend;
+				}
+				camera.position.set(centerPoint, 0);
+			}
+		}
 		
 		// 更新 MapRender
 		fixMapRender();
