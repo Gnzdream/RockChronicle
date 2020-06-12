@@ -22,7 +22,7 @@ public class MainMenuScreen implements Screen {
 
 	@Override
 	public void show() {
-		// TODO Auto-generated method stub
+		app.assets.startLoading();
 
 	}
 
@@ -33,16 +33,23 @@ public class MainMenuScreen implements Screen {
 
 		camera.update();
 		app.batch.setProjectionMatrix(camera.combined);
+		
+
+		// 检查资源加载情况
+		int remain = app.assets.hasLoaded();
+		String text = (remain > 0) ? "还剩 " + remain : "还剩 0 : 点击屏幕开始";
+		
 
 		app.batch.begin();
 		app.font.draw(app.batch, "这是 Demo!!! ", 100, 150);
-		app.font.draw(app.batch, "Tap anywhere to begin!", 100, 100);
+		app.font.draw(app.batch, text, 100, 100);
 		app.batch.end();
 
 		if (Gdx.input.isTouched()) {
 			app.game.setScreen(new LevelScreen());
 			dispose();
 		}
+		
 	}
 
 	@Override
@@ -71,7 +78,6 @@ public class MainMenuScreen implements Screen {
 
 	@Override
 	public void dispose() {
-		System.out.println(getClass().getName() + " : dispose");
 		// nothing
 
 	}

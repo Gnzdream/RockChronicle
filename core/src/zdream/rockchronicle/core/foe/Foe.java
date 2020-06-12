@@ -72,7 +72,8 @@ public abstract class Foe {
 	 * 如果想自毁, 请调用它
 	 */
 	public void destroy() {
-		runtime.removeFoe(this);
+		if (runtime != null)
+			runtime.removeFoe(this);
 	}
 	
 	/**

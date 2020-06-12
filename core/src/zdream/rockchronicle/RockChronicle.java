@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFont
 import zdream.rockchronicle.core.Config;
 import zdream.rockchronicle.core.GameRuntime;
 import zdream.rockchronicle.core.input.InputCenter;
+import zdream.rockchronicle.core.textures.TextureManager;
 import zdream.rockchronicle.screen.MainMenuScreen;
 //import zdream.rockchronicle.textures.painter.PainterManager;
 import zdream.rockchronicle.utils.FilePathUtil;
@@ -35,6 +36,7 @@ public class RockChronicle {
 		input = new InputCenter();
 //		painter = new PainterManager();
 		runtime = new GameRuntime();
+		assets = new TextureManager();
 	}
 	
 	// 其它数据
@@ -50,6 +52,7 @@ public class RockChronicle {
 	public final InputCenter input;
 //	public final PainterManager painter;
 	public final GameRuntime runtime;
+	public final TextureManager assets;
 	
 	// 与引擎相关的
 	

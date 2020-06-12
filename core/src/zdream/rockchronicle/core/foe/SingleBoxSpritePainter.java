@@ -1,7 +1,5 @@
 package zdream.rockchronicle.core.foe;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -42,8 +40,7 @@ public abstract class SingleBoxSpritePainter implements IFoePainter {
 	
 	public void loadTexture() {
 		// TODO 这里假设 texturePaths 只有一个元素
-		FileHandle texFile = Gdx.files.local(texturePaths[0]);
-		textures = TextureSheet.createSheet(texFile);
+		textures = TextureSheet.getSheet(texturePaths[0]);
 		
 		// 没有设定位置, 所以默认是 0, 0
 		sprite = new Sprite();
