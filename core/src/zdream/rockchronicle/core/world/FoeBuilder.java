@@ -9,6 +9,7 @@ import com.badlogic.gdx.utils.ObjectMap;
 import zdream.rockchronicle.core.foe.Foe;
 import zdream.rockchronicle.foes.mm2pipi.MM2PipiSpawnField;
 import zdream.rockchronicle.foes.mm2shotman.MM2Shotman;
+import zdream.rockchronicle.foes.mm5bbitter.MM5BBitter;
 import zdream.rockchronicle.utils.JsonUtils;
 
 /**
@@ -34,6 +35,7 @@ public class FoeBuilder {
 		
 		defs.put("mm2pipi_spawnfield", MM2PipiSpawnField.class);
 		defs.put("mm2shotman", MM2Shotman.class);
+		defs.put("mm5b_bitter", MM5BBitter.class);
 	}
 	
 	/**

@@ -37,6 +37,8 @@ public class TextureManager {
 		resourcePaths.add("res/characters/mm2birds/sprites/mm2pipi_chicks_sheet.json");
 		resourcePaths.add("res/characters/mm2shotman/sprites/mm2shotman_sheet_a.json");
 		resourcePaths.add("res/characters/mm2shotman/sprites/mm2shotman_sheet_b.json");
+		resourcePaths.add("res/characters/mm5bbitter/mm5bbitter_sheet_a.json");
+//		resourcePaths.add("res/characters/mm5bbitter/mm5bbitter_sheet_b.json");
 	}
 	
 	public void startLoading() {

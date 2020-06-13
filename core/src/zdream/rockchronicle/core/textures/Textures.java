@@ -9,9 +9,9 @@ public class Textures {
 	public static final Texture white;
 
 	static {
-		Pixmap p = new Pixmap(48, 48, Format.RGB888);
+		Pixmap p = new Pixmap(72, 72, Format.RGB888);
 		p.setColor(1, 1, 1, 1);
-		p.fillRectangle(0, 0, 48, 48);
+		p.fillRectangle(0, 0, 72, 72);
 		white = new Texture(p);
 	}
 

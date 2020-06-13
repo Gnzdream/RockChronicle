@@ -14,7 +14,7 @@ import zdream.rockchronicle.core.GameRuntime;
 import zdream.rockchronicle.core.foe.IFoePainter;
 import zdream.rockchronicle.core.region.Region;
 import zdream.rockchronicle.foes.megaman.Megaman;
-import zdream.rockchronicle.foes.mm2shotman.MM2Shotman;
+import zdream.rockchronicle.foes.mm5bbitter.MM5BBitter;
 
 public class LevelScreen implements Screen {
 	
@@ -63,7 +63,7 @@ public class LevelScreen implements Screen {
 		runtime.setPlayer1(mm);
 		mm.getBoxes()[0].orientation = true;
 		
-		MM2Shotman sh = new MM2Shotman();
+		MM5BBitter sh = new MM5BBitter();
 		runtime.addFoe(sh);
 		sh.getBoxes()[0].setAnchor(65536 * 21, 65536 * 5);
 		

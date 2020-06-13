@@ -47,6 +47,17 @@
 					"orientation" : true
 				}
 			}
+		},
+		{
+			"key" : "E-4",
+			"param":
+			{
+				"name" : "mm5b_bitter",
+				"box" :
+				{
+					"orientation" : false
+				}
+			}
 		}
 	]
 },

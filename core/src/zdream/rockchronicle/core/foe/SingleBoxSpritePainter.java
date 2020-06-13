@@ -131,6 +131,20 @@ public abstract class SingleBoxSpritePainter implements IFoePainter {
 				batch.draw(sprite, x, y, fw, fh);
 				batch.setColor(1, 1, 1, 1);
 			}
+		} else if (blend) {
+			batch.enableBlending();
+			batch.setColor(1, 1, 1, 1);
+			batch.setBlendFunctionSeparate(GL20.GL_ONE, GL20.GL_ONE,
+					GL20.GL_SRC_ALPHA, GL20.GL_ONE);
+//			batch.setBlendFunction(GL20.GL_ONE_MINUS_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+			batch.draw(sprite, x, y, fw, fh);
+//			batch.setBlendFunction(GL20.GL_ONE_MINUS_DST_ALPHA, GL20.GL_ONE);
+//			batch.setColor(1, 1, 1, 0.8f);
+//			batch.draw(Textures.white, x, y, fw / 2, fh);
+//			batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+//			batch.setColor(1, 1, 1, 0.4f);
+//			batch.draw(sprite, x, y, fw, fh);
+//			batch.setColor(1, 1, 1, 1);
 		} else {
 			immuseTicks = 0;
 			
@@ -163,6 +177,11 @@ public abstract class SingleBoxSpritePainter implements IFoePainter {
 		if (immuseTicks > 0) {
 			immuseTicks++;
 		}
+	}
+
+	private boolean blend;
+	public void testBlend() {
+		blend = true;
 	}
 	
 }
