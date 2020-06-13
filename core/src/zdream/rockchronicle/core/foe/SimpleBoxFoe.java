@@ -34,6 +34,7 @@ public abstract class SimpleBoxFoe extends Foe {
 		
 		Color color = Color.GRAY;
 		switch (type) {
+		case "bullet": color = Color.RED; break;
 		case "foe": color = Color.YELLOW; break;
 		case "elite": color = Color.ORANGE; break;
 		case "leader": color = Color.GREEN; break;
@@ -58,6 +59,7 @@ public abstract class SimpleBoxFoe extends Foe {
 	@Override
 	public final void step(byte pause) {
 		super.step(pause);
+		attackCount = 0;
 		
 		if (pause == WORLD_RUNNING) {
 			stepIfNotPause();
@@ -161,6 +163,10 @@ public abstract class SimpleBoxFoe extends Foe {
 	 * </li></p>
 	 */
 	protected byte damageLevel = 1;
+	/**
+	 * 本步时间内攻击次数
+	 */
+	protected int attackCount = 0;
 	
 	private void handleAttack() {
 		if (damage < 0) {
@@ -168,15 +174,20 @@ public abstract class SimpleBoxFoe extends Foe {
 		}
 		
 		runtime.world.overlaps(box, this::checkCollision, true);
+		if (attackCount > 0) {
+			onAttackFinished(attackCount);
+		}
 	}
-	
+
 	protected FoeEvent createDamageEvent() {
 		FoeEvent damageEvent = new FoeEvent("applyDamage");
 		JsonValue v = new JsonValue(ValueType.object);
-		v.addChild("damage", new JsonValue(damage));
-		v.addChild("level", new JsonValue(damageLevel));
-		v.addChild("camp", new JsonValue(this.camp));
 		v.addChild("recieved", new JsonValue(false));
+		v.addChild("camp", new JsonValue(this.camp));
+		v.addChild("level", new JsonValue(damageLevel));
+		v.addChild("damage", new JsonValue(damage));
+		v.addChild("attacker", new JsonValue(this.name));
+		v.addChild("tags", new JsonValue(ValueType.array));
 		damageEvent.value = v;
 		return damageEvent;
 	}
@@ -185,20 +196,33 @@ public abstract class SimpleBoxFoe extends Foe {
 		int targetId = box.parentId;
 		
 		Foe target = runtime.findEntry(targetId);
+		if (needAttack(target)) {
+			FoeEvent eve = createDamageEvent();
+			target.publishNow(eve);
+			attackCount++;
+		}
 		
+		return shouldScanNextAttackTarget(target, attackCount);
+	}
+	
+	protected boolean needAttack(Foe target) {
 		if (target.camp != this.camp) {
 			switch (target.type) {
-			case "leader": case "foe": case "elite": {
-				FoeEvent eve = createDamageEvent();
-				target.publishNow(eve);
-			} break;
+			case "leader": case "foe": case "elite":  return true;
 
 			default:
 				break;
 			}
 		}
-		
+		return false;
+	}
+	
+	protected boolean shouldScanNextAttackTarget(Foe lastFoe, int attackCount) {
 		return true;
+	}
+	
+	protected void onAttackFinished(int attackCount) {
+		
 	}
 	
 	/* **********

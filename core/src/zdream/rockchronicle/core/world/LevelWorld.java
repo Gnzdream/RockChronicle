@@ -8,6 +8,7 @@ import static zdream.rockchronicle.core.foe.Box.blockRight;
 import java.util.function.Predicate;
 
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.IntSet;
 
 import zdream.rockchronicle.core.GameRuntime;
 import zdream.rockchronicle.core.foe.Box;
@@ -596,16 +597,17 @@ public class LevelWorld implements ITerrainStatic {
 	 * @param touched
 	 *   如果为 true, 贴边的也算
 	 */
-	public void overlaps(Box box, Predicate<Box> test, boolean touched) {
-		int pxLeft = box.posX;
-		int pxRight = pxLeft + box.posWidth;
-		int pyBottom = box.posY;
-		int pyTop = pyBottom + box.posHeight;
+	public void overlaps(int px, int py, int pWidth, int pHeight,
+			Predicate<Box> test, boolean touched, IntSet ignoreIds) {
+		int pxLeft = px;
+		int pxRight = px + pWidth;
+		int pyBottom = py;
+		int pyTop = py + pHeight;
 		
 		Array<Box> boxes = runtime.boxes;
 		for (int i = 0; i < boxes.size; i++) {
 			Box other = boxes.get(i);
-			if (other != box) {
+			if (ignoreIds == null || !ignoreIds.contains(other.id)) {
 				int oxleft = other.posX;
 				int oxright = oxleft + other.posWidth;
 				int oybottom = other.posY;
@@ -628,6 +630,20 @@ public class LevelWorld implements ITerrainStatic {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * 查看与指定的盒子发生碰撞的盒子, 并逐个进行判断.
+	 * @param box
+	 *   指定的碰撞盒子
+	 * @param test
+	 *   对碰撞的盒子进行判断. 返回 true 则继续判断后面的盒子, 否则停止
+	 * @param touched
+	 *   如果为 true, 贴边的也算
+	 */
+	public void overlaps(Box box, Predicate<Box> test, boolean touched) {
+		this.overlaps(box.posX, box.posY, box.posWidth, box.posHeight,
+				test, touched, IntSet.with(box.id));
 	}
 	
 	/* **********

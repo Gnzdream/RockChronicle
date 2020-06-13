@@ -1,6 +1,8 @@
 package zdream.rockchronicle.foes.mm2pipi;
 
 import zdream.rockchronicle.core.GameRuntime;
+import zdream.rockchronicle.core.foe.Foe;
+import zdream.rockchronicle.core.foe.FoeEvent;
 import zdream.rockchronicle.core.foe.SimpleBoxFoe;
 import zdream.rockchronicle.core.region.ITerrainStatic;
 
@@ -8,7 +10,7 @@ import zdream.rockchronicle.core.region.ITerrainStatic;
  * <p>2 代飞鸟带着的蛋.
  * <p>扔下来前:
  * <li>位置跟随飞鸟. 当鸟死了之后蛋也会没.
- * <li>生命值: 1, 无碰撞伤害
+ * <li>生命值: 1, 碰撞伤害: 2(仅下落阶段), 碰撞 camp=3
  * </li>
  * <p>扔下来后:
  * <li>开始受地形影响, 做自由落体运动. 水平方向无速度.
@@ -35,6 +37,7 @@ public class MM2PipiEgg extends SimpleBoxFoe {
 		box.setBox(-24576, -16384, 49152, 32768); // 锚点在正中央.
 		
 		this.hp = 256;
+		this.damage = 256 * 2;
 	}
 	
 	@Override
@@ -67,7 +70,7 @@ public class MM2PipiEgg extends SimpleBoxFoe {
 			runtime.world.submitMotion(box, false, ITerrainStatic.TERRAIN_EMPTY);
 		}
 	}
-	
+
 	/* **********
 	 *   阶段   *
 	 ********** */
@@ -86,12 +89,41 @@ public class MM2PipiEgg extends SimpleBoxFoe {
 		stage = 2;
 	}
 	
+	@Override
+	protected FoeEvent createDamageEvent() {
+		FoeEvent event = super.createDamageEvent();
+		
+		event.value.get("camp").set(3, null);
+		
+		return event;
+	}
+	
+	protected boolean needAttack(Foe target) {
+		if (stage == 1) {
+			return false;
+		}
+		
+		if (target.name.equals("mm2pipi")) {
+			return false;
+		}
+		
+		switch (target.type) {
+		case "leader": case "foe": case "elite":  return true;
+
+		default:
+			return false;
+		}
+	}
+	
+	@Override
+	protected void onAttackFinished(int attackCount) {
+		broken();
+	}
+
 	/**
 	 * 碎了, 要出鸟了
 	 */
-	void broken() {
-		// TODO 一旦砸到东西, 给予 camp=3 数值 2 的无差别伤害
-		
+	private void broken() {
 		// 产生 8 只鸟
 		int[][] is = new int[][] {
 			{-2185, 0},

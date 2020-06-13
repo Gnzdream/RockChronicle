@@ -14,6 +14,7 @@ import zdream.rockchronicle.core.GameRuntime;
 import zdream.rockchronicle.core.foe.IFoePainter;
 import zdream.rockchronicle.core.region.Region;
 import zdream.rockchronicle.foes.megaman.Megaman;
+import zdream.rockchronicle.foes.mm2shotman.MM2Shotman;
 
 public class LevelScreen implements Screen {
 	
@@ -61,6 +62,12 @@ public class LevelScreen implements Screen {
 		mm = new Megaman(region.spawnx + 0.5f, region.spawny);
 		runtime.setPlayer1(mm);
 		mm.getBoxes()[0].orientation = true;
+		
+		MM2Shotman sh = new MM2Shotman();
+		runtime.addFoe(sh);
+		sh.getBoxes()[0].setAnchor(65536 * 21, 65536 * 5);
+		
+		
 		
 		// 设置 megaman 的初始位置, 到 room 所对应的 spawn 点
 		// 人物设置必须晚于世界创建

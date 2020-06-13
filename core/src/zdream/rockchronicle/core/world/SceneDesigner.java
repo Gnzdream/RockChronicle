@@ -13,6 +13,7 @@ import zdream.rockchronicle.core.GameRuntime;
 import zdream.rockchronicle.core.foe.Box;
 import zdream.rockchronicle.core.foe.Foe;
 import zdream.rockchronicle.core.region.FieldDef;
+import zdream.rockchronicle.core.region.FoeDef;
 import zdream.rockchronicle.core.region.Gate;
 import zdream.rockchronicle.core.region.Room;
 
@@ -583,15 +584,18 @@ public class SceneDesigner {
 			}
 			runtime.addFoe(foe);
 		}
-//		
-//		// 将怪放入世界
-//		length = room.foes.size;
-//		for (int i = 0; i < length; i++) {
-//			FoeDef f = room.foes.get(i);
-//			
-//			CharacterEntry entry = characterBuilder.create(f.name, f.param);
-//			addEntry(entry);
-//		}
+		
+		// 将怪放入世界
+		length = room.foes.size;
+		for (int i = 0; i < length; i++) {
+			FoeDef f = room.foes.get(i);
+			
+			Foe foe = foeBuilder.create(f.name, f.param);
+			if (foe == null) {
+				continue;
+			}
+			runtime.addFoe(foe);
+		}
 	}
 	
 }

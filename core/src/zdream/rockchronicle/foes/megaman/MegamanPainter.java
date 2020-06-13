@@ -61,6 +61,8 @@ public class MegamanPainter extends SingleBoxSpritePainter {
 			
 			if (mm.climbDirection != 0 && mm.climbHaltRemain == 0) {
 				super.tick();
+			} else {
+				super.tick(0);
 			}
 			return;
 		}

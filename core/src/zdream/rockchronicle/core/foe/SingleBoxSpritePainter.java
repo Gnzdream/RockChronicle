@@ -154,7 +154,11 @@ public abstract class SingleBoxSpritePainter implements IFoePainter {
 	}
 	
 	public void tick() {
-		select.tick(1);
+		this.tick(1);
+	}
+	
+	public void tick(int v) {
+		select.tick(v);
 		
 		if (immuseTicks > 0) {
 			immuseTicks++;

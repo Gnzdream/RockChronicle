@@ -443,8 +443,7 @@ public class Megaman extends Foe implements IInputBindable {
 		}
 		
 		STEP1: {
-			if (climbing == 0) {
-				
+			if (climbing == 0 && stiffness == 0) {
 				byte terrain = runtime.world.getTerrain(centerX, centerY);
 				if (Terrains.isLadder(terrain)) {
 					// 这个时候如果按了上或者下, 就应该到梯子上了, 除了一种情况: 你在落地时按下

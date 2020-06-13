@@ -41,7 +41,11 @@
 			"key" : "E-2",
 			"param":
 			{
-				"name" : "mm2shotman"
+				"name" : "mm2shotman",
+				"box" :
+				{
+					"orientation" : true
+				}
 			}
 		}
 	]
