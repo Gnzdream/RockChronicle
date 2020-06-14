@@ -377,12 +377,12 @@ public class LevelWorld implements ITerrainStatic {
 		int pyEnd = pyStart + pHeight;
 		
 		int bxStart = blockRight(pxStart);
-		int bxEnd = blockRight(pxEnd);
+		int bxEnd = blockLeft(pxEnd);
 		int byStart = blockRight(pyStart);
-		int byEnd = blockRight(pyEnd);
+		int byEnd = blockLeft(pyEnd);
 		
-		for (int x = bxStart; x < bxEnd; x++) {
-			for (int y = byStart; y < byEnd; y++) {
+		for (int x = bxStart; x <= bxEnd; x++) {
+			for (int y = byStart; y <= byEnd; y++) {
 				int terrain = getTerrain(x, y);
 				
 				if (terrain == TERRAIN_SOLID) { // TODO 其它实体块

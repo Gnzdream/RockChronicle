@@ -4,6 +4,7 @@ import java.util.Comparator;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -176,8 +177,12 @@ public class LevelScreen implements Screen {
 //		int displayHp = app.runtime.cast.megaman.hp;
 //		displayHp = (displayHp > 256) ? displayHp / 256 : (displayHp > 256) ? 1 : 0;
 		
-		app.font.draw(app.batch, String.format("帧率: %d HP:%d",
-				lastFrameCount, mm.hp / 256), 10, 20);
+		String debugText = String.format("帧率: %d, 时间: %d\n%s",
+				lastFrameCount, app.runtime.ticker.count, app.runtime);
+		app.font.setColor(Color.BLACK);
+		app.font.draw(app.batch, debugText, 12, 38);
+		app.font.setColor(Color.WHITE);
+		app.font.draw(app.batch, debugText, 10, 40);
 		app.batch.end();
 	}
 	

@@ -78,13 +78,12 @@ public class GameRuntime {
 				e.printStackTrace();
 			}
 		}
-		
-		// debug
-		if (foes.size != foeCount) {
-			System.out.println(String.format("%d: Foe: %d, Box: %d, Painter: %d",
-					ticker.count, foes.size, boxes.size, painters.size));
-			foeCount = foes.size;
-		}
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("Foe: %d, Box: %d, Painter: %d",
+				foes.size, boxes.size, painters.size);
 	}
 	
 	/* **********
@@ -167,9 +166,6 @@ public class GameRuntime {
 	private final Array<Foe> foesWaitingForAdd = new Array<>();
 	private final Array<Foe> foesWaitingForRemove = new Array<>();
 	public Foe player1;
-	
-	// debug 用
-	int foeCount = 0;
 	
 	/**
 	 * 用 id 来寻找角色.

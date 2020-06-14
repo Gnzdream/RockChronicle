@@ -691,6 +691,13 @@ public class Megaman extends Foe implements IInputBindable {
 				}
 			}
 			
+			// 滑铲中起跳问题
+			if (jumpStart && slideDuration > 0) {
+				if (!canSlideReset()) {
+					jumpStart = false;
+				}
+			}
+			
 			// 缓解跳不起来的情况
 			if (jumpPressDuration == 10) {
 				jumpPressDuration = -1;
@@ -743,12 +750,12 @@ public class Megaman extends Foe implements IInputBindable {
 			if (startSlide) {
 				setCurrentPattern("slide");
 				this.slideDuration = 0;
-			} else if (this.slideDuration == 72 || inAir ||
+			} else if (this.slideDuration >= 72 || inAir ||
 					((box.orientation && box.rightTouched || !box.orientation && box.leftTouched)) && this.slideDuration >= 24) {
-				// TODO 有什么情况阻止滑铲呢
-				
-				setCurrentPattern("normal");
-				this.slideDuration = -1;
+				if (canSlideReset()) {
+					setCurrentPattern("normal");
+					this.slideDuration = -1;
+				}
 			} else if (this.slideDuration >= 0) {
 				this.slideDuration ++;
 			}
@@ -858,6 +865,33 @@ public class Megaman extends Foe implements IInputBindable {
 		}
 		box.setVelocityY(jumpVel);
 		
+	}
+	
+	/**
+	 * <p>查看当滑铲结束时 / 或者起跳造成状态改变的, 能否恢复成普通状态.
+	 * (恢复成攀爬状态不在这里判断)
+	 * <p>需要确定是否有足够的空间装下恢复状态的角色.
+	 * <p>恢复需要滑铲状态的 x 范围和普通状态的 y 范围.
+	 * </p>
+	 * @return
+	 */
+	private boolean canSlideReset() {
+		int anchorX = box.anchorX;
+		int anchorY = box.anchorY;
+		
+		// patterns.put("normal", new int[] {-27313, 0, 54613, 98304});
+		int[] normalPattern = patterns.get("normal");
+		int[] slidePattern = patterns.get("slide");
+		int pxStart = anchorX + slidePattern[0];
+		int pyStart = anchorY + normalPattern[1];
+		int pWidth = slidePattern[2];
+		int pHeight = normalPattern[3];
+		
+		if (runtime.world.isBoxOverlap(pxStart, pyStart, pWidth, pHeight)) {
+			return false;
+		}
+		
+		return true;
 	}
 	
 	/* **********
