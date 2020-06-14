@@ -16,6 +16,7 @@ import com.badlogic.gdx.utils.JsonValue.ValueType;
 import com.badlogic.gdx.utils.ObjectMap;
 
 import zdream.rockchronicle.core.GameRuntime;
+import zdream.rockchronicle.core.foe.AttackEvent;
 import zdream.rockchronicle.core.foe.Box;
 import zdream.rockchronicle.core.foe.BoxOccupation;
 import zdream.rockchronicle.core.foe.Foe;
@@ -956,14 +957,22 @@ public class Megaman extends Foe implements IInputBindable {
 	}
 	
 	private void recieveDamage(FoeEvent eve) {
-		int camp = eve.value.getInt("camp");
-		if (camp != this.camp) {
+		AttackEvent ae = AttackEvent.from(eve, runtime);
+		
+		recieveAttackEvent(ae);
+		if ("received".equals(ae.recieveResponse)) {
+			eve.value.get("recieved").set(true);
+		}
+	}
+	
+	@Override
+	public void recieveAttackEvent(AttackEvent event) {
+		if (event.attackCamp != this.camp) {
 			// 确定受伤啦
-			int damage = eve.value.getInt("damage");
-			int level = eve.value.getInt("level");
+			int damage = event.damage;
 			
-			if (defenseLevel < level) {
-				eve.value.get("recieved").set(true);
+			if (defenseLevel < event.damageLevel) {
+				event.recieveResponse = "recieved";
 				
 				hp -= damage;
 				stiffness = stiffnessDuration;

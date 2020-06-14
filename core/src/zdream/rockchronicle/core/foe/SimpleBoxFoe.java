@@ -1,12 +1,9 @@
 package zdream.rockchronicle.core.foe;
 
 import static zdream.rockchronicle.core.foe.Box.p2block;
-
-import static zdream.rockchronicle.core.world.Ticker.*;
+import static zdream.rockchronicle.core.world.Ticker.WORLD_RUNNING;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.JsonValue.ValueType;
 
 import zdream.rockchronicle.core.GameRuntime;
 import zdream.rockchronicle.core.world.Ticker;
@@ -179,17 +176,9 @@ public abstract class SimpleBoxFoe extends Foe {
 		}
 	}
 
-	protected FoeEvent createDamageEvent() {
-		FoeEvent damageEvent = new FoeEvent("applyDamage");
-		JsonValue v = new JsonValue(ValueType.object);
-		v.addChild("recieved", new JsonValue(false));
-		v.addChild("camp", new JsonValue(this.camp));
-		v.addChild("level", new JsonValue(damageLevel));
-		v.addChild("damage", new JsonValue(damage));
-		v.addChild("attacker", new JsonValue(this.name));
-		v.addChild("tags", new JsonValue(ValueType.array));
-		damageEvent.value = v;
-		return damageEvent;
+	protected AttackEvent createDamageEvent() {
+		AttackEvent event = new AttackEvent(camp, damage, damageLevel, this);
+		return event;
 	}
 	
 	protected boolean checkCollision(Box box) {
@@ -197,8 +186,8 @@ public abstract class SimpleBoxFoe extends Foe {
 		
 		Foe target = runtime.findEntry(targetId);
 		if (needAttack(target)) {
-			FoeEvent eve = createDamageEvent();
-			target.publishNow(eve);
+			AttackEvent event = createDamageEvent();
+			target.recieveAttackEvent(event);
 			attackCount++;
 		}
 		
@@ -245,15 +234,29 @@ public abstract class SimpleBoxFoe extends Foe {
 
 	}
 	
+	/**
+	 * 兼容方法
+	 * @param eve
+	 */
 	private void recieveDamage(FoeEvent eve) {
-		int camp = eve.value.getInt("camp");
+		AttackEvent ae = AttackEvent.from(eve, runtime);
+		
+		recieveAttackEvent(ae);
+		if ("received".equals(ae.recieveResponse)) {
+			eve.value.get("recieved").set(true);
+		}
+	}
+	
+	@Override
+	public void recieveAttackEvent(AttackEvent event) {
+		int camp = event.attackCamp;
 		if (camp != this.camp) {
 			// 确定受伤啦
-			int damage = eve.value.getInt("damage");
-			int level = eve.value.getInt("level");
+			int damage = event.damage;
+			int level = event.damageLevel;
 			
-			if (onDamageRecieved(damage, level, eve)) {
-				eve.value.get("recieved").set(true);
+			if (onDamageRecieved(damage, level, event)) {
+				event.recieveResponse = "received";
 				
 				hp -= damage;
 				immuseRemain = immuseDuration;
@@ -272,7 +275,7 @@ public abstract class SimpleBoxFoe extends Foe {
 	 * @return
 	 *   返回 false 可以取消这次伤害
 	 */
-	protected boolean onDamageRecieved(int damage, int level, FoeEvent eve) {
+	protected boolean onDamageRecieved(int damage, int level, AttackEvent eve) {
 		return level > defenseLevel;
 	}
 	

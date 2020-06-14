@@ -340,6 +340,13 @@ public abstract class Foe {
 		runtime.removeBox(box);
 	}
 	
+	/**
+	 * 由攻击方直接调用
+	 */
+	public void recieveAttackEvent(AttackEvent event) {
+		
+	}
+	
 	/* **********
 	 *   绘画   *
 	 ********** */

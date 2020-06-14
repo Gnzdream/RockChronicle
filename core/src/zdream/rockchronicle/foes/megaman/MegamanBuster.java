@@ -1,19 +1,17 @@
 package zdream.rockchronicle.foes.megaman;
 
+import static zdream.rockchronicle.core.world.Ticker.WORLD_PAUSE;
+
 import java.util.function.Predicate;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.JsonValue.ValueType;
 
 import zdream.rockchronicle.core.GameRuntime;
+import zdream.rockchronicle.core.foe.AttackEvent;
 import zdream.rockchronicle.core.foe.Box;
 import zdream.rockchronicle.core.foe.Foe;
-import zdream.rockchronicle.core.foe.FoeEvent;
 import zdream.rockchronicle.core.foe.ShapePainter;
 import zdream.rockchronicle.core.world.Ticker;
-
-import static zdream.rockchronicle.core.world.Ticker.*;
 
 /**
  * <p>洛克人的子弹
@@ -139,7 +137,7 @@ public class MegamanBuster extends Foe {
 	
 	class Check implements Predicate<Box> {
 		
-		FoeEvent eve;
+		AttackEvent eve;
 		
 		@Override
 		public boolean test(Box box) {
@@ -149,8 +147,8 @@ public class MegamanBuster extends Foe {
 			if (target.camp != 1) {
 				switch (target.type) {
 				case "leader": case "foe": case "elite": {
-					target.publishNow(eve);
-					if (eve.value.getBoolean("recieved")) {
+					target.recieveAttackEvent(eve);
+					if (eve.recieveResponse != null) { // TODO 被反弹的等等
 						MegamanBuster.this.destroy();
 						return false;
 					}
@@ -166,13 +164,7 @@ public class MegamanBuster extends Foe {
 		}
 
 		public void reset() {
-			eve = new FoeEvent("applyDamage");
-			JsonValue v = new JsonValue(ValueType.object);
-			v.addChild("damage", new JsonValue(256));
-			v.addChild("level", new JsonValue(10));
-			v.addChild("camp", new JsonValue(MegamanBuster.this.camp));
-			v.addChild("recieved", new JsonValue(false));
-			eve.value = v;
+			eve = new AttackEvent(MegamanBuster.this.camp, 256, 10, MegamanBuster.this);
 		}
 		
 	}

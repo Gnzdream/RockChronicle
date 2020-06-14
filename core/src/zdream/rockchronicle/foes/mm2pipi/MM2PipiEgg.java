@@ -1,8 +1,8 @@
 package zdream.rockchronicle.foes.mm2pipi;
 
 import zdream.rockchronicle.core.GameRuntime;
+import zdream.rockchronicle.core.foe.AttackEvent;
 import zdream.rockchronicle.core.foe.Foe;
-import zdream.rockchronicle.core.foe.FoeEvent;
 import zdream.rockchronicle.core.foe.SimpleBoxFoe;
 import zdream.rockchronicle.core.region.ITerrainStatic;
 
@@ -90,11 +90,9 @@ public class MM2PipiEgg extends SimpleBoxFoe {
 	}
 	
 	@Override
-	protected FoeEvent createDamageEvent() {
-		FoeEvent event = super.createDamageEvent();
-		
-		event.value.get("camp").set(3, null);
-		
+	protected AttackEvent createDamageEvent() {
+		AttackEvent event = super.createDamageEvent();
+		event.attackCamp = 3;
 		return event;
 	}
 	
