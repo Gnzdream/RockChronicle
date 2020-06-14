@@ -1009,8 +1009,12 @@ public class Megaman extends Foe implements IInputBindable {
 				event.recieveResponse = "recieved";
 				
 				hp -= damage;
-				stiffness = stiffnessDuration;
-				immuneRemain = immuneDuration;
+				if (damage != 0) {
+					stiffness = stiffnessDuration;
+					immuneRemain = immuneDuration;
+				} else {
+					immuneRemain = Math.max(immuneDuration - stiffnessDuration, 0);
+				}
 				defenseLevel = 10;
 				slideDuration = -1;
 				climbing = 0;

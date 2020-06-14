@@ -17,10 +17,11 @@
 				"red_2",
 				"red_3",
 				"red_4",
+				"red_4",
 				"red_5",
 				"red_6"
 			],
-			"step":0.666667
+			"step":0.1
 		},
 		{
 			"state":"red_disappear",
@@ -28,11 +29,12 @@
 			[
 				"red_5",
 				"red_4",
+				"red_4",
 				"red_3",
 				"red_2",
 				"red_1"
 			],
-			"step":0.666667
+			"step":0.1
 		}
 	],
 	"textures":
