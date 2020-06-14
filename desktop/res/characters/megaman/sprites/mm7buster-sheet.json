@@ -1,0 +1,26 @@
+{
+	"image":"mm7buster.gif",
+	"default":"normal",
+	"select":
+	[
+		{
+			"state":"normal",
+			"sequence":
+			[
+				"normal"
+			]
+		}
+	],
+	"textures":
+	[
+		{
+			"name":"normal",
+			"x":152,
+			"y":24,
+			"w":8,
+			"h":7,
+			"offx":-4,
+			"offy":-3
+		}
+	]
+}

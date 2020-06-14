@@ -1,5 +1,6 @@
 package zdream.rockchronicle.foes.megaman;
 
+import static zdream.rockchronicle.core.foe.Box.p2block;
 import static zdream.rockchronicle.core.world.Ticker.WORLD_PAUSE;
 
 import java.util.function.Predicate;
@@ -11,6 +12,7 @@ import zdream.rockchronicle.core.foe.AttackEvent;
 import zdream.rockchronicle.core.foe.Box;
 import zdream.rockchronicle.core.foe.Foe;
 import zdream.rockchronicle.core.foe.ShapePainter;
+import zdream.rockchronicle.core.foe.SingleBoxSpritePainter;
 import zdream.rockchronicle.core.world.Ticker;
 
 /**
@@ -37,16 +39,21 @@ public class MegamanBuster extends Foe {
 	}
 	
 	ShapePainter painter;
+	Painter sPainter;
 	
 	@Override
 	public void init(GameRuntime runtime) {
 		super.init(runtime);
 		putPainter(painter = new ShapePainter(box, Color.RED));
+		
+		sPainter = new Painter(this);
+		putPainter(sPainter);
 	}
 	
 	@Override
 	public void onDispose() {
 		removePainter(painter);
+		removePainter(sPainter);
 		super.onDispose();
 	}
 	
@@ -169,6 +176,41 @@ public class MegamanBuster extends Foe {
 		
 	}
 	Check ch = new Check();
+	
+	static class Painter extends SingleBoxSpritePainter {
+		final MegamanBuster foe;
+		
+		public Painter(MegamanBuster foe) {
+			super(new String[] {"res/characters/megaman/sprites/mm7buster-sheet.json"});
+			this.foe = foe;
+		}
+
+		@Override
+		public int zIndex() {
+			return 657;
+		}
+
+		@Override
+		public boolean getOrientation() {
+			return foe.box.orientation;
+		}
+
+		@Override
+		public float getBx() {
+			return p2block(foe.box.anchorX);
+		}
+
+		@Override
+		public float getBy() {
+			return p2block(foe.box.anchorY);
+		}
+		
+		@Override
+		public int getImmune() {
+			return 0;
+		}
+		
+	}
 	
 
 }

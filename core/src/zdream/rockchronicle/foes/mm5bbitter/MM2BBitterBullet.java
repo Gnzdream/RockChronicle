@@ -12,6 +12,7 @@ public class MM2BBitterBullet extends SimpleBoxFoe {
 		box.flush();
 
 		this.damage = 256 * 4;
+		this.maxAge = 120 * 3; // 最多活 3 秒
 	}
 	
 	/**

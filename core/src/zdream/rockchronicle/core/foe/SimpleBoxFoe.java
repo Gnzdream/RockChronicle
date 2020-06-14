@@ -61,9 +61,11 @@ public abstract class SimpleBoxFoe extends Foe {
 		if (pause == WORLD_RUNNING) {
 			stepIfNotPause();
 			
-			handleRemain();
-			handleImmuse();
-			handleAttack();
+			boolean destroyed = handleRemain();
+			if (!destroyed) {
+				handleImmuse();
+				handleAttack();
+			}
 			
 			if (painter != null) {
 				painter.tick();
@@ -100,6 +102,10 @@ public abstract class SimpleBoxFoe extends Foe {
 	 */
 	public int outsideDuration;
 	public int age = 0;
+	/**
+	 * 最大生命时长. 超过该时长, foe 自动销毁. 单位: 步
+	 */
+	public int maxAge;
 
 	@Override
 	public Box[] getBoxes() {
@@ -124,6 +130,10 @@ public abstract class SimpleBoxFoe extends Foe {
 				destroy();
 				return true;
 			}
+		}
+		if (maxAge > 0 && age > maxAge) {
+			destroy();
+			return true;
 		}
 		return false;
 	}
@@ -315,6 +325,7 @@ public abstract class SimpleBoxFoe extends Foe {
 			case "foe": return 505;
 			case "elite": return 555;
 			case "leader": return 605;
+			case "bullet": return 655;
 			default: return 601;
 			}
 		}

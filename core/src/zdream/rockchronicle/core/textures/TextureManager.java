@@ -36,6 +36,8 @@ public class TextureManager {
 		
 		// texture
 		resourcePaths.add("res/characters/megaman/sprites/megaman7sheet.json");
+		resourcePaths.add("res/characters/megaman/sprites/mm7buster-sheet.json");
+		
 		resourcePaths.add("res/characters/mm2birds/sprites/mm2birds_sheet.json");
 		resourcePaths.add("res/characters/mm2birds/sprites/mm2pipi_egg_sheet.json");
 		resourcePaths.add("res/characters/mm2birds/sprites/mm2pipi_chicks_sheet.json");

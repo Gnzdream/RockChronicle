@@ -12,6 +12,7 @@ public class MM2ShotmanBullet extends SimpleBoxFoe {
 		box.flush();
 
 		this.damage = 256 * 2;
+		this.maxAge = 120 * 3; // 最多活 3 秒
 	}
 	
 	/**
