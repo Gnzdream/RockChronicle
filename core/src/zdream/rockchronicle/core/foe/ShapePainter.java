@@ -16,7 +16,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
  * @date
  *   2019-05-09 (create)
  */
-public class ShapePainter implements IFoePainter {
+public class ShapePainter implements IPainter {
 	
 	private final Box box;
 	private final Color color;

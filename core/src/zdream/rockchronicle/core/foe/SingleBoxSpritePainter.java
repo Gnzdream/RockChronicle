@@ -11,7 +11,7 @@ import zdream.rockchronicle.core.textures.TextureSheet;
 import zdream.rockchronicle.core.textures.TextureSheetEntry;
 import zdream.rockchronicle.core.textures.Textures;
 
-public abstract class SingleBoxSpritePainter implements IFoePainter {
+public abstract class SingleBoxSpritePainter implements IPainter {
 
 	public SingleBoxSpritePainter(String[] paths) {
 		

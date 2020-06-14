@@ -31,6 +31,10 @@ public class TextureManager {
 		FileHandleResolver resolver = new LocalFileHandleResolver();
 		asset = new AssetManager(resolver);
 		
+		// misc
+		resourcePaths.add("res/misc/base_misc_sheet.json");
+		
+		// texture
 		resourcePaths.add("res/characters/megaman/sprites/megaman7sheet.json");
 		resourcePaths.add("res/characters/mm2birds/sprites/mm2birds_sheet.json");
 		resourcePaths.add("res/characters/mm2birds/sprites/mm2pipi_egg_sheet.json");

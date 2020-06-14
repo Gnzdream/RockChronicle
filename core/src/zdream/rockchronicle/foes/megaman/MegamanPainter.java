@@ -27,8 +27,12 @@ public class MegamanPainter extends SingleBoxSpritePainter {
 		
 		// 是否硬直
 		if (mm.stiffness > 0) {
-			motion = "stiffness";
-			setState("stiffness");
+			if (mm.slideDuration > 0) {
+				// TODO setState("slide");
+			} else {
+				motion = "stiffness";
+				setState("stiffness");
+			}
 			super.tick();
 			return;
 		}

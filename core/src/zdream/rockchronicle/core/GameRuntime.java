@@ -5,7 +5,7 @@ import com.badlogic.gdx.utils.Array;
 import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.foe.Box;
 import zdream.rockchronicle.core.foe.Foe;
-import zdream.rockchronicle.core.foe.IFoePainter;
+import zdream.rockchronicle.core.foe.IPainter;
 import zdream.rockchronicle.core.input.IInputBindable;
 import zdream.rockchronicle.core.region.Gate;
 import zdream.rockchronicle.core.region.Region;
@@ -162,7 +162,7 @@ public class GameRuntime {
 	
 	public Array<Foe> foes = new Array<>();
 	public Array<Box> boxes = new Array<>();
-	public Array<IFoePainter> painters = new Array<>();
+	public Array<IPainter> painters = new Array<>();
 	private final Array<Foe> foesWaitingForAdd = new Array<>();
 	private final Array<Foe> foesWaitingForRemove = new Array<>();
 	public Foe player1;
@@ -237,11 +237,11 @@ public class GameRuntime {
 		boxes.removeValue(box, true);
 	}
 
-	public void addPainter(IFoePainter painter) {
+	public void addPainter(IPainter painter) {
 		painters.add(painter);
 	}
 
-	public void removePainter(IFoePainter painter) {
+	public void removePainter(IPainter painter) {
 		painters.removeValue(painter, true);
 	}
 	

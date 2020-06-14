@@ -351,11 +351,11 @@ public abstract class Foe {
 	 *   绘画   *
 	 ********** */
 
-	public void putPainter(IFoePainter painter) {
+	public void putPainter(IPainter painter) {
 		runtime.addPainter(painter);
 	}
 	
-	public void removePainter(IFoePainter painter) {
+	public void removePainter(IPainter painter) {
 		runtime.removePainter(painter);
 	}
 	

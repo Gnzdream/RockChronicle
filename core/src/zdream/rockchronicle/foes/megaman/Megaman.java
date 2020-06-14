@@ -486,6 +486,10 @@ public class Megaman extends Foe implements IInputBindable {
 				break STEP1;
 			}
 			
+			if (climbing == 0) {
+				break STEP1;
+			}
+			
 			// 到达这里说明 climbing > 0
 			
 			// 检测是否在攀登状态. 取消攀登状态的可能有以下情况: 
@@ -726,8 +730,10 @@ public class Megaman extends Foe implements IInputBindable {
 		
 		// 5. 执行左右移动
 		if (stiffness != 0) {
-			// 在击退 / 硬直状态下
-			if (stopInstant) {
+			// 如果滑铲状态还在 (受伤时滑铲无法取消的情况)
+			if (slideDuration > 0 && !canSlideReset()) {
+				vx = 0;
+			} else if (stopInstant) { // 在击退 / 硬直状态下
 				if (box.orientation) {
 					vx = -parryVel;
 				} else {
@@ -750,14 +756,16 @@ public class Megaman extends Foe implements IInputBindable {
 			if (startSlide) {
 				setCurrentPattern("slide");
 				this.slideDuration = 0;
-			} else if (this.slideDuration >= 72 || inAir ||
-					((box.orientation && box.rightTouched || !box.orientation && box.leftTouched)) && this.slideDuration >= 24) {
-				if (canSlideReset()) {
-					setCurrentPattern("normal");
-					this.slideDuration = -1;
-				}
 			} else if (this.slideDuration >= 0) {
-				this.slideDuration ++;
+				if (this.slideDuration >= 72 || inAir ||
+					((box.orientation && box.rightTouched || !box.orientation && box.leftTouched)) && this.slideDuration >= 24) {
+					if (canSlideReset()) {
+						setCurrentPattern("normal");
+						this.slideDuration = -1;
+					}
+				} else {
+					this.slideDuration ++;
+				}
 			}
 			
 			// 正常情况下, 每秒增加 horizontalVelDelta 的水平速度, horizontalVelMax 为最值.
@@ -985,8 +993,11 @@ public class Megaman extends Foe implements IInputBindable {
 		}
 		if (immuneRemain == 0) {
 			defenseLevel = 0;
+			
 			// debug
-			hp = hpMax;
+			if (hp < hpMax) {
+				hp ++;
+			}
 		}
 	}
 	
@@ -1016,9 +1027,14 @@ public class Megaman extends Foe implements IInputBindable {
 					immuneRemain = Math.max(immuneDuration - stiffnessDuration, 0);
 				}
 				defenseLevel = 10;
-				slideDuration = -1;
 				climbing = 0;
-				setCurrentPattern("normal"); // TODO 不计滑铲时无法恢复的情况
+				
+				if (slideDuration == -1 || slideDuration > 0 && canSlideReset()) {
+					slideDuration = -1;
+					setCurrentPattern("normal");
+				} else {
+					slideDuration = 72;
+				}
 				
 				if (hp <= 0) {
 					System.out.println("Megaman -- destroy");

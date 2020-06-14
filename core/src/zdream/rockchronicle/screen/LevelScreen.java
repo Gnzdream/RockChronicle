@@ -12,7 +12,8 @@ import com.badlogic.gdx.utils.Array;
 
 import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.GameRuntime;
-import zdream.rockchronicle.core.foe.IFoePainter;
+import zdream.rockchronicle.core.foe.IPainter;
+import zdream.rockchronicle.core.misc.MegamanHealthMiscPainter;
 import zdream.rockchronicle.core.region.Region;
 import zdream.rockchronicle.foes.megaman.Megaman;
 import zdream.rockchronicle.foes.mm5bbitter.MM5BBitter;
@@ -31,13 +32,14 @@ public class LevelScreen implements Screen {
 	 * 一般呈现的物品浮于世界镜头之上
 	 */
 	OrthographicCamera symbolCamera;
+	MegamanHealthMiscPainter symbolPainter;
 	
 	SpriteBatch batch = new SpriteBatch();
 	
 	/**
 	 * 绘画降序排列
 	 */
-	Comparator<IFoePainter> comparator = (foe1, foe2) -> foe1.zIndex() - foe2.zIndex();
+	Comparator<IPainter> comparator = (foe1, foe2) -> foe1.zIndex() - foe2.zIndex();
 	
 	public LevelScreen() {
 		app = RockChronicle.INSTANCE;
@@ -51,6 +53,7 @@ public class LevelScreen implements Screen {
 		
 		symbolCamera = new OrthographicCamera();
 		symbolCamera.setToOrtho(false, app.widthInPixel, app.heightInPixel);
+		symbolPainter = new MegamanHealthMiscPainter();
 	}
 	
 	Megaman mm;
@@ -124,7 +127,7 @@ public class LevelScreen implements Screen {
 		runtime.scene.renderMap();
 		
 		// 画所有 Foe
-		Array<IFoePainter> painters = runtime.painters;
+		Array<IPainter> painters = runtime.painters;
 		painters.sort(comparator);
 		for (int i = 0; i < painters.size; i++) {
 			painters.get(i).draw(batch, worldCamera);
@@ -184,6 +187,8 @@ public class LevelScreen implements Screen {
 		app.font.setColor(Color.WHITE);
 		app.font.draw(app.batch, debugText, 10, 40);
 		app.batch.end();
+		
+		symbolPainter.draw(app.batch, symbolCamera);
 	}
 	
 	// 测试帧率的数据

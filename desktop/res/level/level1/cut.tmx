@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.4" tiledversion="2020.06.12" orientation="orthogonal" renderorder="right-up" width="52" height="44" tilewidth="24" tileheight="24" infinite="0" nextlayerid="9" nextobjectid="16">
+<map version="1.4" tiledversion="2020.06.12" orientation="orthogonal" renderorder="right-up" width="52" height="44" tilewidth="24" tileheight="24" infinite="0" nextlayerid="9" nextobjectid="17">
  <tileset firstgid="1" source="mm1cuttiles.tsx"/>
  <tileset firstgid="201" name="symbol" tilewidth="24" tileheight="24" tilecount="100" columns="10">
   <image source="../symbol/symbol.png" width="240" height="240"/>
@@ -68,6 +68,13 @@
   <object id="15" name="E-7" x="852" y="816">
    <properties>
     <property name="def" value="E-4"/>
+    <property name="type" value="foe"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="16" name="E-8" x="916" y="240">
+   <properties>
+    <property name="def" value="E-1"/>
     <property name="type" value="foe"/>
    </properties>
    <point/>
