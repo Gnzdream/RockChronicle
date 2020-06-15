@@ -6,6 +6,7 @@ import static zdream.rockchronicle.core.world.Ticker.STEPS_PER_SECOND;
 
 import java.util.function.Predicate;
 
+import com.badlogic.gdx.utils.IntIntMap;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
 
@@ -20,7 +21,7 @@ import zdream.rockchronicle.core.foe.SingleBoxSpritePainter;
  * <p>
  * <li>不移动, 且位置固定的怪
  * <li>原版伤害4 , 这里改成: 探出头的过程中碰撞伤害 4, 等级 2, 其它时段无碰撞伤害.
- * TODO 在除了藏起来的状态 (stage = 0 或 5), 其它状态炮台都是一个实体, 即不能通过.
+ * 在除了藏起来的状态 (stage = 0 或 5), 其它状态炮台都是一个实体, 即不能通过.
  * <li>有敌人在面前时探出头打一枪. 速度比原版快一点
  * <li>HP:2 (256)
  * <li>侦测: 敌人到达面前, 高为2 长为5 的方形区域, 从普通模式转为激活模式.
@@ -140,6 +141,8 @@ public class MM5BBitter extends SimpleBoxFoe {
 				stage = 1;
 				stageDuration = 0;
 				damage = 4 * 256;
+				box.terrain = new IntIntMap();
+				box.terrain.put(1, 1);
 				painter.setState("red_appear");
 				setCurrentPattern("appear1");
 			}
@@ -188,6 +191,7 @@ public class MM5BBitter extends SimpleBoxFoe {
 				setCurrentPattern("normal");
 				stage = 5;
 				stageDuration = 0;
+				box.terrain = null;
 			}
 		} break;
 

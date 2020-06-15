@@ -67,7 +67,7 @@ public class MM2PipiEgg extends SimpleBoxFoe {
 			}
 			
 			box.setVelocityY(dropVelocity);
-			runtime.world.submitMotion(box, false, ITerrainStatic.TERRAIN_EMPTY);
+			runtime.world.submitMotion(box, false, this.camp, ITerrainStatic.TERRAIN_EMPTY);
 		}
 	}
 
