@@ -249,6 +249,22 @@ public class LevelWorld implements ITerrainStatic {
 		}
 	}
 	
+	private int[] zoneArray(int px, int py, int pWidth, int pHeight) {
+		int maxZoneX = zoneWidth - 1;
+		int maxZoneY = zoneHeight - 1;
+		
+		int bxStart = blockRight(px);
+		int bxEnd = blockLeft(px + pWidth);
+		int byStart = blockRight(py);
+		int byEnd = blockLeft(py + pHeight);
+		
+		int zxStart = (bxStart < 0) ? 0 : min(bxStart / 5 + 1, maxZoneX);
+		int zxEnd = (bxEnd < 0) ? 0 : min(bxEnd / 5 + 1, maxZoneX);
+		int zyStart = (byStart < 0) ? 0 : min(byStart / 5 + 1, maxZoneY);
+		int zyEnd = (byEnd < 0) ? 0 : min(byEnd / 5 + 1, maxZoneY);
+		return new int[] { zxStart, zxEnd, zyStart, zyEnd };
+	}
+	
 	public void notifyBoxUpdated(Box box) {
 		updatedBox.put(box.id, box);
 	}
@@ -873,8 +889,6 @@ public class LevelWorld implements ITerrainStatic {
 	
 	/**
 	 * 查看与指定的盒子发生碰撞的盒子, 并逐个进行判断.
-	 * @param box
-	 *   指定的碰撞盒子
 	 * @param test
 	 *   对碰撞的盒子进行判断. 返回 true 则继续判断后面的盒子, 否则停止
 	 * @param touched
@@ -887,32 +901,77 @@ public class LevelWorld implements ITerrainStatic {
 		int pyBottom = py;
 		int pyTop = py + pHeight;
 		
-		Array<Box> boxes = this.boxes;
-		for (int i = 0; i < boxes.size; i++) {
-			Box other = boxes.get(i);
-			if (ignoreIds == null || !ignoreIds.contains(other.id)) {
-				int oxleft = other.posX;
-				int oxright = oxleft + other.posWidth;
-				int oybottom = other.posY;
-				int oytop = oybottom + other.posHeight;
-				
-				boolean b = (touched) ?
-						(oxleft <= pxRight &&
-						oxright >= pxLeft &&
-						oybottom <= pyTop &&
-						oytop >= pyBottom) :
-						(oxleft < pxRight &&
-						oxright > pxLeft &&
-						oybottom < pyTop &&
-						oytop > pyBottom); // rectagle.overlaps(otherRect)
-				if (!b) {
-					continue;
+		if (boxes.size < 20) {
+			// 当判断的盒子只有不到 20 个, 原来的判断方法就适用.
+			for (int i = 0; i < boxes.size; i++) {
+				Box other = boxes.get(i);
+				if (ignoreIds == null || !ignoreIds.contains(other.id)) {
+					int oxleft = other.posX;
+					int oxright = oxleft + other.posWidth;
+					int oybottom = other.posY;
+					int oytop = oybottom + other.posHeight;
+					
+					boolean b = (touched) ?
+							(oxleft <= pxRight &&
+							oxright >= pxLeft &&
+							oybottom <= pyTop &&
+							oytop >= pyBottom) :
+							(oxleft < pxRight &&
+							oxright > pxLeft &&
+							oybottom < pyTop &&
+							oytop > pyBottom); // rectagle.overlaps(otherRect)
+					if (!b) {
+						continue;
+					}
+					if (!test.test(other)) {
+						return;
+					}
 				}
-				if (!test.test(other)) {
-					return;
+			}
+		} else {
+			// 分区方法
+			IntMap<Box> boxes = new IntMap<>();
+			
+			int[] array = zoneArray(pxLeft, pyBottom, pWidth, pHeight);
+			for (int x = array[0]; x <= array[1]; x++) {
+				for (int y = array[2]; y <= array[3]; y++) {
+					int zoneIndex = x + y * zoneWidth;
+					Array<Box> bs = zone[zoneIndex];
+					for (int i = 0; i < bs.size; i++) {
+						Box box = bs.get(i);
+						boxes.put(box.id, box);
+					}
+				}
+			}
+			
+			for (Iterator<Entry<Box>> it = boxes.iterator(); it.hasNext();) {
+				Entry<Box> entry = it.next();
+				Box other = entry.value;
+				if (ignoreIds == null || !ignoreIds.contains(other.id)) {
+					int oxleft = other.posX;
+					int oxright = oxleft + other.posWidth;
+					int oybottom = other.posY;
+					int oytop = oybottom + other.posHeight;
+					
+					boolean b = (touched) ?
+							(oxleft <= pxRight &&
+							oxright >= pxLeft &&
+							oybottom <= pyTop &&
+							oytop >= pyBottom) :
+							(oxleft < pxRight &&
+							oxright > pxLeft &&
+							oybottom < pyTop &&
+							oytop > pyBottom); // rectagle.overlaps(otherRect)
+					if (!b) {
+						continue;
+					}
+					if (!test.test(other)) {
+						return;
+					}
 				}
 			}
 		}
+		
 	}
 	
 	/**
