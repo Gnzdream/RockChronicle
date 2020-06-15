@@ -1,5 +1,10 @@
 package zdream.rockchronicle.core.foe;
 
+import com.badlogic.gdx.utils.IntIntMap;
+
+import zdream.rockchronicle.core.world.LevelWorld;
+import zdream.rockchronicle.core.world.Ticker;
+
 /**
  * 从 06-08 开始, 角色的位置由 int 代替原来的 float.
  * 每一格的长宽为 65536. 绘画的单位仍然不变, 为 1.
@@ -17,6 +22,7 @@ public class Box {
 	public static final int BLOCK_MASK = 0xFFFF;
 	
 	private static int idCount = 1;
+	private LevelWorld world;
 	
 	/**
 	 * @param parentId
@@ -27,8 +33,20 @@ public class Box {
 		this.parentId = parentId;
 	}
 	
+	void setWorld(LevelWorld world) {
+		this.world = world;
+	}
+	
 	public final int id;
 	public final int parentId;
+	
+	/**
+	 * <p>原本每个盒子都是透明体. 这个参数
+	 * <p>这里可以为每个盒子设置, 对哪些 camp 是实体 (1), 向上平台 (2), 向下平台 (4).
+	 * key: camp, value: 地形体. 6 是既是向上平台又是向下平台. (2 & 4 = 6)
+	 * </p>
+	 */
+	public IntIntMap terrain;
 	
 	/*
 	 * 静态参数部分
@@ -56,6 +74,13 @@ public class Box {
 	public int posX, posY, posWidth, posHeight;
 	private final BoxOccupation occupation = new BoxOccupation();
 	
+	private void boxUpdated() {
+		dirt = true;
+		if (world != null) {
+			world.notifyBoxUpdated(this);
+		}
+	}
+	
 	/**
 	 * 设置锚点位置
 	 * @param x
@@ -66,7 +91,7 @@ public class Box {
 	public void setAnchor(int x, int y) {
 		anchorX = x;
 		anchorY = y;
-		dirt = true;
+		boxUpdated();
 	}
 	
 	/**
@@ -76,7 +101,7 @@ public class Box {
 	 */
 	public void setAnchorX(int x) {
 		anchorX = x;
-		dirt = true;
+		boxUpdated();
 	}
 	
 	/**
@@ -86,7 +111,7 @@ public class Box {
 	 */
 	public void setAnchorY(int y) {
 		anchorY = y;
-		dirt = true;
+		boxUpdated();
 	}
 	
 	/**
@@ -99,7 +124,7 @@ public class Box {
 	public void addAnchor(int dx, int dy) {
 		anchorX += dx;
 		anchorY += dy;
-		dirt = true;
+		boxUpdated();
 	}
 	
 	/**
@@ -109,7 +134,7 @@ public class Box {
 	 */
 	public void addAnchorX(int dx) {
 		anchorX += dx;
-		dirt = true;
+		boxUpdated();
 	}
 	
 	/**
@@ -119,7 +144,7 @@ public class Box {
 	 */
 	public void addAnchorY(int dy) {
 		anchorY += dy;
-		dirt = true;
+		boxUpdated();
 	}
 	
 	/**
@@ -130,7 +155,7 @@ public class Box {
 		boxY = y;
 		boxWidth = width;
 		boxHeight = height;
-		dirt = true;
+		boxUpdated();
 	}
 	
 	/**

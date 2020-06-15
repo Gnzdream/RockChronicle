@@ -108,7 +108,7 @@ public class MM2Pipi extends SimpleBoxFoe {
 		int py = box.anchorY;
 		int threshold = Box.P_PER_BLOCK * 10;
 		
-		Array<Foe> foes = runtime.foes;
+		Array<Foe> foes = runtime.world.foes;
 		for (int i = 0; i < foes.size; i++) {
 			Foe foe = foes.get(i);
 			

@@ -89,7 +89,7 @@ public class MM2PipiChick extends SimpleBoxFoe {
 		int targetPx = 0, targetPy = 0;
 		int minDistance = Integer.MAX_VALUE;
 		
-		Array<Foe> foes = runtime.foes;
+		Array<Foe> foes = runtime.world.foes;
 		for (int i = 0; i < foes.size; i++) {
 			Foe foe = foes.get(i);
 			

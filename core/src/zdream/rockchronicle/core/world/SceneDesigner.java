@@ -117,7 +117,7 @@ public class SceneDesigner {
 	public void doShift(Gate gate) {
 		param = new RoomShiftParam(gate);
 		
-		param.entries.add(runtime.player1);
+		param.entries.add(runtime.world.player1);
 		param.entriesPos = new int[param.entries.size][];
 		param.phase2EntryWidth = new int[param.entries.size];
 		
@@ -412,17 +412,29 @@ public class SceneDesigner {
 		IntSet set = new IntSet(param.entries.size);
 		param.entries.forEach(ch -> set.add(ch.id));
 		
-		Foe[] foes = runtime.foes.toArray(Foe.class);
+		Foe[] foes = runtime.world.foes.toArray(Foe.class);
+		Array<Foe> still = new Array<>();
 		for (int i = 0; i < foes.length; i++) {
 			Foe foe = foes[i];
 			if (!set.contains(foe.id)) {
 				runtime.destroyFoeNow(foe);
+			} else {
+				still.add(foe);
 			}
 		}
 		
 		Room srcRoom = param.gate.srcRoom;
 		Room destRoom = param.gate.destRoom;
 		runtime.setCurrentRoom(destRoom);
+		
+		// 分区补充
+		for (int i = 0; i < still.size; i++) {
+			Foe foe = still.get(i);
+			Box[] boxes = foe.getBoxes();
+			for (int j = 0; j < boxes.length; j++) {
+				runtime.world.putBoxToZone(boxes[j]);
+			}
+		}
 		
 		// 设置角色位置
 		int pDeltaX = block2P(destRoom.offsetx - srcRoom.offsetx);
@@ -463,7 +475,7 @@ public class SceneDesigner {
 	public void updateCamera() {
 		if (!durationShift()) {
 			// 根据玩家位置改变镜头
-			Foe entry = runtime.player1;
+			Foe entry = runtime.world.player1;
 			if (entry != null) {
 				Box box = entry.getBoxes()[0];
 				centerPoint.x = p2block(box.anchorX);

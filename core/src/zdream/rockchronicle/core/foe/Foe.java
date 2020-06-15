@@ -91,7 +91,9 @@ public abstract class Foe {
 		this.runtime = runtime;
 		Box[] boxes = getBoxes();
 		for (int i = 0; i < boxes.length; i++) {
-			putBoxOnWorld(boxes[i]);
+			Box box = boxes[i];
+			box.setWorld(runtime.world);
+			putBoxOnWorld(box);
 		}
 	}
 	

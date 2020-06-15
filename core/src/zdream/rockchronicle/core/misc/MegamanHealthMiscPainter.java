@@ -122,7 +122,7 @@ public class MegamanHealthMiscPainter implements IPainter {
 	}
 	
 	private Megaman findMegaman() {
-		Foe foe = app.runtime.player1;
+		Foe foe = app.runtime.world.player1;
 		
 		if (foe instanceof Megaman) {
 			return (Megaman) foe;

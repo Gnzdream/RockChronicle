@@ -4,10 +4,18 @@ import static zdream.rockchronicle.core.foe.Box.P_PER_BLOCK;
 import static zdream.rockchronicle.core.foe.Box.block2P;
 import static zdream.rockchronicle.core.foe.Box.blockLeft;
 import static zdream.rockchronicle.core.foe.Box.blockRight;
+import static zdream.rockchronicle.core.region.Gate.DIRECTION_BOTTOM;
+import static zdream.rockchronicle.core.region.Gate.DIRECTION_LEFT;
+import static zdream.rockchronicle.core.region.Gate.DIRECTION_RIGHT;
+import static zdream.rockchronicle.core.region.Gate.DIRECTION_TOP;
+import static java.lang.Math.*;
 
+import java.util.Iterator;
 import java.util.function.Predicate;
 
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.IntMap;
+import com.badlogic.gdx.utils.IntMap.Entry;
 import com.badlogic.gdx.utils.IntSet;
 
 import zdream.rockchronicle.core.GameRuntime;
@@ -21,7 +29,6 @@ import zdream.rockchronicle.core.region.Region;
 import zdream.rockchronicle.core.region.RegionBuilder;
 import zdream.rockchronicle.core.region.RegionPoint;
 import zdream.rockchronicle.core.region.Room;
-import static zdream.rockchronicle.core.region.Gate.*;
 
 public class LevelWorld implements ITerrainStatic {
 	
@@ -33,6 +40,256 @@ public class LevelWorld implements ITerrainStatic {
 	
 	public void init() {
 		regionBuilder.init();
+	}
+	
+	/* **********
+	 *    Foe   *
+	 ********** */
+	
+	public Array<Foe> foes = new Array<>();
+	public Array<Box> boxes = new Array<>();
+	private final Array<Foe> foesWaitingForAdd = new Array<>();
+	private final Array<Foe> foesWaitingForRemove = new Array<>();
+	public Foe player1;
+	
+	public void tick(byte pause) {
+		// 移动部分
+		for (int i = 0; i < foes.size; i++) {
+			try {
+				foes.get(i).step(pause);
+			} catch (RuntimeException e) {
+				e.printStackTrace();
+			}
+			
+			boxesUpdate();
+		}
+		
+		// 进行删增工作
+		handleFoeAddAndRemove();
+		
+		// 确定状态部分
+		for (int i = 0; i < foes.size; i++) {
+			try {
+				foes.get(i).submit(pause);
+			} catch (RuntimeException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	/**
+	 * 用 id 来寻找角色.
+	 * @param id
+	 * @return
+	 *   可能为 null
+	 */
+	public Foe findEntry(int id) {
+		for (int i = 0; i < foes.size; i++) {
+			Foe entry = foes.get(i);
+			if (entry.id == id) {
+				return entry;
+			}
+		}
+		for (int i = 0; i < foesWaitingForAdd.size; i++) {
+			Foe entry = foesWaitingForAdd.get(i);
+			if (entry.id == id) {
+				return entry;
+			}
+		}
+		return null;
+	}
+	
+	public void setPlayer1(Foe entry) {
+		this.player1 = entry;
+		addFoe(entry);
+	}
+	
+	public void addFoe(Foe entry) {
+		if (entry != null)
+			foesWaitingForAdd.add(entry);
+	}
+	
+	public void removeFoe(Foe entry) {
+		if (entry != null)
+			foesWaitingForRemove.add(entry);
+	}
+	
+	public void destroyFoeNow(Foe entry) {
+		entry.onDispose();
+		foes.removeValue(entry, true);
+	}
+	
+	private void handleFoeAddAndRemove() {
+		foesWaitingForRemove.forEach((foe) -> foe.onDispose());
+		foes.removeAll(foesWaitingForRemove, true);
+		foesWaitingForRemove.clear();
+		
+		if (foesWaitingForAdd.size > 0) {
+			Foe[] foeadds = foesWaitingForAdd.toArray(Foe.class);
+			
+			for (int i = 0; i < foeadds.length; i++) {
+				Foe foeadd = foeadds[i];
+				foeadd.init(runtime);
+				foes.add(foeadd);
+				foesWaitingForAdd.removeValue(foeadd, true);
+			}
+		}
+	}
+	
+	/**
+	 * 这个由 addBox 和在房间切换时, 原有的 box 添加时调用. 一般不直接调用该方法.
+	 * @param box
+	 */
+	public void putBoxToZone(Box box) {
+		// 将 Box 放入分区
+		int[] array = boxZone(box);
+		for (int x = array[0]; x <= array[1]; x++) {
+			for (int y = array[2]; y <= array[3]; y++) {
+				int zoneIndex = x + y * zoneWidth;
+				zone[zoneIndex].add(box);
+			}
+		}
+		boxBelong.put(box.id, array);
+	}
+
+	public void addBox(Box box) {
+		boxes.add(box);
+		putBoxToZone(box);
+	}
+
+	public void removeBox(Box box) {
+		boxes.removeValue(box, true);
+		updatedBox.remove(box.id);
+		
+		// Box 移出分区
+		int[] array = boxBelong.remove(box.id);
+		for (int x = array[0]; x <= array[1]; x++) {
+			for (int y = array[2]; y <= array[3]; y++) {
+				int zoneIndex = x + y * zoneWidth;
+				zone[zoneIndex].removeValue(box, true);
+			}
+		}
+	}
+	
+	public void roomShiftingStarted() {
+		foesWaitingForAdd.clear();
+	}
+	
+	public void roomShiftingFinished() {
+		// do-nothing
+	}
+	
+	/*
+	 * Box 分区部分
+	 * 
+	 * 一般每 5x5 的区域设置一个分区, 房间外也算.
+	 * 例如, 标准房间大小 25x14, 横坐标分区:
+	 * <0, [0-5), [5-10), [10-15), [15-20), [20-25), >=25, 共 7 个段;
+	 * 纵坐标分区:
+	 * <0, [0-5), [5-10), >=10, 共 4 个段;
+	 * 
+	 * 因此, 整个房间分成 7x4=28 个分区.
+	 * 第一个分区: zone[0] { x < 0, y < 0 };
+	 * 第二个分区: zone[1] { x 属于 [0, 5) , y < 0 };
+	 * ...
+	 * 第七个分区: zone[6] { x >= 25 , y < 0 };
+	 * 第八个分区: zone[7] { x < 0 , y 属于 [0, 5) };
+	 * ...
+	 */
+	private IntMap<Box> updatedBox = new IntMap<>();
+	private int zoneWidth, zoneHeight;
+	private Array<Box>[] zone;
+	/**
+	 * int[4], 分别为 zoneXStart, zoneXEnd, zoneYStart, zoneYEnd
+	 */
+	private IntMap<int[]> boxBelong = new IntMap<>();
+
+	/**
+	 * 这是个 debug 方法
+	 * @return
+	 */
+	public int zoneSum() {
+		if (zone == null) {
+			return -1;
+		}
+		int sum = 0;
+		for (int i = 0; i < zone.length; i++) {
+			sum += zone[i].size;
+		}
+		return sum;
+	}
+	
+	/**
+	 * 计算一个 box 所属的分区
+	 * @return
+	 */
+	private int[] boxZone(Box box) {
+		return hasBoxZoneUpdated(box, null);
+	}
+	
+	/**
+	 * 如果计算出来, box 的分区没有变化, 返回 null.
+	 * @param box
+	 */
+	private int[] hasBoxZoneUpdated(Box box, int[] oldArray) {
+		BoxOccupation occ = box.getOccupation();
+//		IntArray array = new IntArray();
+		int maxZoneX = zoneWidth - 1;
+		int maxZoneY = zoneHeight - 1;
+		int zxStart = (occ.xleft < 0) ? 0 : min(occ.xleft / 5 + 1, maxZoneX);
+		int zxEnd = (occ.xright < 0) ? 0 : min(occ.xright / 5 + 1, maxZoneX);
+		int zyStart = (occ.ybottom < 0) ? 0 : min(occ.ybottom / 5 + 1, maxZoneY);
+		int zyEnd = (occ.ytop < 0) ? 0 : min(occ.ytop / 5 + 1, maxZoneY);
+		
+		if (oldArray == null || oldArray[0] != zxStart || oldArray[1] != zxEnd
+				|| oldArray[2] != zyStart || oldArray[3] != zyEnd) {
+			return new int[] { zxStart, zxEnd, zyStart, zyEnd };
+		} else {
+			return null;
+		}
+	}
+	
+	public void notifyBoxUpdated(Box box) {
+		updatedBox.put(box.id, box);
+	}
+	
+	private void boxesUpdate() {
+		if (updatedBox.size == 0) {
+			return;
+		}
+		
+		for (Iterator<Entry<Box>> it = updatedBox.iterator(); it.hasNext();) {
+			Entry<Box> entry = it.next();
+			entry.value.flush();
+			
+			// TODO 重新放置 box 的分区
+			Box box = entry.value;
+			int[] array = boxBelong.get(box.id);
+			int[] newArray = hasBoxZoneUpdated(box, array);
+			if (newArray != null) {
+				// 分区发生变化
+				// 去掉原来的分区
+				for (int x = array[0]; x <= array[1]; x++) {
+					for (int y = array[2]; y <= array[3]; y++) {
+						int zoneIndex = x + y * zoneWidth;
+						zone[zoneIndex].removeValue(box, true);
+					}
+				}
+				
+				// 补充新分区
+				for (int x = newArray[0]; x <= newArray[1]; x++) {
+					for (int y = newArray[2]; y <= newArray[3]; y++) {
+						int zoneIndex = x + y * zoneWidth;
+						zone[zoneIndex].add(box);
+					}
+				}
+				array[0] = newArray[0];
+				array[1] = newArray[1];
+				array[2] = newArray[2];
+				array[3] = newArray[3];
+			}
+		}
+		updatedBox.clear();
 	}
 	
 	/* **********
@@ -561,6 +818,7 @@ public class LevelWorld implements ITerrainStatic {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void onRoomChanged() {
 		Room room = getCurrentRoom();
 		
@@ -586,6 +844,31 @@ public class LevelWorld implements ITerrainStatic {
 				regionBuilder.createGate(room, destRoom, p, point);
 			}
 		}
+		
+		// 新部分, 扫描房间大小, 建立 Box 分区
+		// 房间大小, 单位: 块
+		// 房间切换后, onRoomUpdated 最先调用, 随后是 addFoe.
+		zoneWidth = room.width / 5 + 2;
+		zoneHeight = room.height / 5 + 2;
+		final int zoneLen = zoneWidth * zoneHeight;
+		Array<Box>[] oldZone = zone;
+		if (oldZone == null) {
+			zone = new Array[zoneLen];
+			for (int i = 0; i < zone.length; i++) {
+				zone[i] = new Array<>();
+			}
+		} else {
+			final int copyedLen = Math.min(oldZone.length, zoneLen);
+			zone = new Array[zoneLen];
+			for (int i = 0; i < copyedLen; i++) {
+				zone[i] = oldZone[i];
+				zone[i].clear();
+			}
+			for (int i = copyedLen; i < zoneLen; i++) {
+				zone[i] = new Array<>();
+			}
+		}
+		boxBelong.clear();
 	}
 	
 	/**
@@ -604,7 +887,7 @@ public class LevelWorld implements ITerrainStatic {
 		int pyBottom = py;
 		int pyTop = py + pHeight;
 		
-		Array<Box> boxes = runtime.boxes;
+		Array<Box> boxes = this.boxes;
 		for (int i = 0; i < boxes.size; i++) {
 			Box other = boxes.get(i);
 			if (ignoreIds == null || !ignoreIds.contains(other.id)) {

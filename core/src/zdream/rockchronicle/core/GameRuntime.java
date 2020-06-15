@@ -53,37 +53,18 @@ public class GameRuntime {
 			if (gate != null) {
 				scene.doShift(gate);
 			}
-			
-			// pause 需要更新
-			pause = ticker.pause;
 		}
 		
-		// 移动部分
-		for (int i = 0; i < foes.size; i++) {
-			try {
-				foes.get(i).step(pause);
-			} catch (RuntimeException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		// 进行删增工作
-		handleFoeAddAndRemove();
-		
-		// 确定状态部分
-		for (int i = 0; i < foes.size; i++) {
-			try {
-				foes.get(i).submit(pause);
-			} catch (RuntimeException e) {
-				e.printStackTrace();
-			}
-		}
+		// pause 可能已经被更新过了
+		world.tick(ticker.pause);
 	}
 	
 	@Override
 	public String toString() {
-		return String.format("Foe: %d, Box: %d, Painter: %d",
-				foes.size, boxes.size, painters.size);
+		int zoneSum = world.zoneSum();
+		
+		return String.format("Foe: %d, Box: %d, Painter: %d, 区块: %d",
+				world.foes.size, world.boxes.size, painters.size, zoneSum);
 	}
 	
 	/* **********
@@ -110,8 +91,9 @@ public class GameRuntime {
 	 * @param room
 	 */
 	public void setCurrentRoom(int room) {
-		world.setCurrentRoom(room);
-		this.scene.onRoomChanged();
+		// 下面顺序不能调换
+		world.setCurrentRoom(room); // 一定要先 world (管理 box 的)
+		this.scene.onRoomChanged(); // 然后再 scene (添加 box 的)
 	}
 
 	public void setCurrentRoom(Room destRoom) {
@@ -127,18 +109,19 @@ public class GameRuntime {
 	
 	public void roomShiftingStarted() {
 		ticker.roomShifting();
-		foesWaitingForAdd.clear();
+		world.roomShiftingStarted();
 	}
 	
 	public void roomShiftingFinished() {
 		ticker.worldResume();
+		world.roomShiftingFinished();
 	}
 	
 	/**
 	 * 查看是否发生房间切换 (房间的大门触发)
 	 */
 	private Gate checkGateTriggered() {
-		Foe c1 = player1;
+		Foe c1 = world.player1;
 		if (c1 == null) {
 			return null;
 		}
@@ -160,12 +143,7 @@ public class GameRuntime {
 	 *   角色   *
 	 ********** */
 	
-	public Array<Foe> foes = new Array<>();
-	public Array<Box> boxes = new Array<>();
 	public Array<IPainter> painters = new Array<>();
-	private final Array<Foe> foesWaitingForAdd = new Array<>();
-	private final Array<Foe> foesWaitingForRemove = new Array<>();
-	public Foe player1;
 	
 	/**
 	 * 用 id 来寻找角色.
@@ -174,67 +152,34 @@ public class GameRuntime {
 	 *   可能为 null
 	 */
 	public Foe findEntry(int id) {
-		for (int i = 0; i < foes.size; i++) {
-			Foe entry = foes.get(i);
-			if (entry.id == id) {
-				return entry;
-			}
-		}
-		for (int i = 0; i < foesWaitingForAdd.size; i++) {
-			Foe entry = foesWaitingForAdd.get(i);
-			if (entry.id == id) {
-				return entry;
-			}
-		}
-		return null;
+		return world.findEntry(id);
 	}
 	
 	public void setPlayer1(Foe entry) {
-		this.player1 = entry;
+		world.setPlayer1(entry);
 		if (entry instanceof IInputBindable) {
 			((IInputBindable) entry).bindController(RockChronicle.INSTANCE.input.p1);
 		}
-		addFoe(entry);
 	}
 	
 	public void addFoe(Foe entry) {
-		if (entry != null)
-			foesWaitingForAdd.add(entry);
+		world.addFoe(entry);
 	}
 	
 	public void removeFoe(Foe entry) {
-		if (entry != null)
-			foesWaitingForRemove.add(entry);
+		world.removeFoe(entry);
 	}
 	
 	public void destroyFoeNow(Foe entry) {
-		entry.onDispose();
-		foes.removeValue(entry, true);
-	}
-	
-	private void handleFoeAddAndRemove() {
-		foesWaitingForRemove.forEach((foe) -> foe.onDispose());
-		foes.removeAll(foesWaitingForRemove, true);
-		foesWaitingForRemove.clear();
-		
-		if (foesWaitingForAdd.size > 0) {
-			Foe[] foeadds = foesWaitingForAdd.toArray(Foe.class);
-			
-			for (int i = 0; i < foeadds.length; i++) {
-				Foe foeadd = foeadds[i];
-				foeadd.init(this);
-				foes.add(foeadd);
-				foesWaitingForAdd.removeValue(foeadd, true);
-			}
-		}
+		world.destroyFoeNow(entry);
 	}
 
 	public void addBox(Box box) {
-		boxes.add(box);
+		world.addBox(box);
 	}
 
 	public void removeBox(Box box) {
-		boxes.removeValue(box, true);
+		world.removeBox(box);
 	}
 
 	public void addPainter(IPainter painter) {
