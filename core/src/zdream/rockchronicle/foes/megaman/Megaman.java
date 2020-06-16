@@ -731,10 +731,16 @@ public class Megaman extends Foe implements IInputBindable {
 		}
 		
 		// 5. 执行左右移动
-		if (stiffness != 0) {
+		if (stiffness != 0)  STIFFNESS: {
 			// 如果滑铲状态还在 (受伤时滑铲无法取消的情况)
-			if (slideDuration > 0 && !canSlideReset()) {
-				vx = 0;
+			if (slideDuration > 0) {
+				if (canSlideReset()) {
+					slideDuration = -1;
+					setCurrentPattern("normal");
+				} else {
+					vx = 0;
+					break STIFFNESS;
+				}
 			} else if (stopInstant) { // 在击退 / 硬直状态下
 				if (box.orientation) {
 					vx = -parryVel;
@@ -756,8 +762,8 @@ public class Megaman extends Foe implements IInputBindable {
 		} else {
 			// 处理滑铲
 			if (startSlide) {
-				setCurrentPattern("slide");
-				this.slideDuration = 0;
+				// 开始滑铲时要判断是否有空间. 没空间的话, 调用该方法也不会启动滑铲
+				slideStart();
 			} else if (this.slideDuration >= 0) {
 				if (this.slideDuration >= 72 || inAir ||
 					((box.orientation && box.rightTouched || !box.orientation && box.leftTouched)) && this.slideDuration >= 24) {
@@ -876,6 +882,40 @@ public class Megaman extends Foe implements IInputBindable {
 		box.setVelocityY(jumpVel);
 		
 	}
+
+	/**
+	 * 看看是否有空间供洛克滑铲, 即水平空间是否足够.
+	 * 否则滑铲不会生效
+	 * @return
+	 */
+	private boolean slideStart() {
+		int anchorX = box.anchorX; // 原 x
+		int anchorY = box.anchorY; // 原 y
+		
+		int[] slidePattern = patterns.get("slide");
+		int pxStart = anchorX + slidePattern[0];
+		int pyStart = anchorY + slidePattern[1];
+		int pWidth = slidePattern[2];
+		int pHeight = slidePattern[3];
+		
+		IntSet set = IntSet.with(this.id);
+		if (runtime.world.isBoxOverlap(pxStart, pyStart, pWidth, pHeight, camp, set)) {
+			
+			String oldPattern = this.currentPattern;
+			setCurrentPattern("slide");
+			boolean success = runtime.world.glitchFix(box, camp, true, true, false, false);
+			if (!success) {
+				setCurrentPattern(oldPattern);
+				box.setAnchor(anchorX, anchorY);
+				return false;
+			}
+		} else {
+			setCurrentPattern("slide");
+		}
+		
+		this.slideDuration = 0;
+		return true;
+	}
 	
 	/**
 	 * <p>查看当滑铲结束时 / 或者起跳造成状态改变的, 能否恢复成普通状态.
@@ -897,7 +937,7 @@ public class Megaman extends Foe implements IInputBindable {
 		int pWidth = slidePattern[2];
 		int pHeight = normalPattern[3];
 		
-		IntSet set = IntSet.with(box.id);
+		IntSet set = IntSet.with(this.id);
 		if (runtime.world.isBoxOverlap(pxStart, pyStart, pWidth, pHeight, camp, set)) {
 			return false;
 		}

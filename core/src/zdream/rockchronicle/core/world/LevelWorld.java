@@ -928,11 +928,13 @@ public class LevelWorld implements ITerrainStatic {
 	}
 	
 	public boolean isBoxOverlap(Box box, byte camp) {
-		return isBoxOverlap(box.posX, box.posY, box.posWidth, box.posHeight, camp, null);
+		return isBoxOverlap(box.posX, box.posY, box.posWidth, box.posHeight, camp, IntSet.with(box.parentId));
 	}
 	
 	/**
 	 * 判断是否和地形或地形盒子 Foe 重合
+	 * @param ignoreIds
+	 *   是 Foe.id 不是 box.id
 	 * @return
 	 *   重合了返回 false
 	 */
@@ -975,7 +977,7 @@ public class LevelWorld implements ITerrainStatic {
 					if (t == 0) {
 						continue;
 					}
-					if (ignoreIds != null && ignoreIds.contains(checkBox.id)) {
+					if (ignoreIds != null && ignoreIds.contains(checkBox.parentId)) {
 						continue;
 					}
 					
@@ -1012,6 +1014,10 @@ public class LevelWorld implements ITerrainStatic {
 				|| pRoomHeight < pyStart;
 	}
 	
+	public boolean glitchFix(Box box, byte camp) {
+		return glitchFix(box, camp, true, true, true, true);
+	}
+	
 	/**
 	 * <p>盒子的位置重合修正.
 	 * <p>由于一系列原因导致盒子与不能重合的物体重合了 (比如地形、不穿透刚体等).
@@ -1024,7 +1030,8 @@ public class LevelWorld implements ITerrainStatic {
 	 * @return
 	 *   当出现无法修复的情况, 返回 false
 	 */
-	public boolean glitchFix(Box box, byte camp) {
+	public boolean glitchFix(Box box, byte camp,
+			boolean leftAllowed, boolean rightAllowed, boolean upAllowed, boolean downAllowed) {
 		// 判断重合
 		BoxOccupation occ = box.getOccupation();
 		int bxstart = occ.xleft;
@@ -1107,15 +1114,24 @@ public class LevelWorld implements ITerrainStatic {
 					// 到这里就说明重合了
 					plDelta = max(box.posX - (checkBox.posX - box.posWidth), plDelta);
 					prDelta = max(checkBox.posX + checkBox.posWidth - box.posX, prDelta);
-					pdDelta = max(box.posY - (checkBox.posY - box.posHeight), pdDelta);
 					puDelta = max(checkBox.posY + checkBox.posHeight - box.posY, puDelta);
+					pdDelta = max(box.posY - (checkBox.posY - box.posHeight), pdDelta);
 				}
 			}
 		}
 		
+		if (plDelta == 0 && prDelta == 0 && puDelta == 0 && pdDelta == 0) {
+			return true;
+		}
+		if (!leftAllowed && !rightAllowed && !upAllowed && !downAllowed) {
+			return false;
+		}
+		
 		// 按左右上下取最小值
-		boolean l = plDelta < P_PER_BLOCK, r = prDelta < P_PER_BLOCK,
-				u = puDelta < P_PER_BLOCK, d = pdDelta < P_PER_BLOCK;
+		boolean l = leftAllowed && plDelta < P_PER_BLOCK,
+				r = rightAllowed && prDelta < P_PER_BLOCK,
+				u = upAllowed && puDelta < P_PER_BLOCK,
+				d = downAllowed && pdDelta < P_PER_BLOCK;
 		int loopCount = l ? 1 : 0;
 		loopCount = r ? loopCount + 1 : loopCount;
 		loopCount = u ? loopCount + 1 : loopCount;
@@ -1124,6 +1140,7 @@ public class LevelWorld implements ITerrainStatic {
 		int delta ; // 记录移动的数量
 		// 尝试移动之后
 		int pxStart, pyStart;
+		
 		for (int i = 0; i < loopCount; i++) {
 			int choose = 0; // 1:左, 2:右, 3:上, 4:下
 			delta = P_PER_BLOCK;
@@ -1190,7 +1207,7 @@ public class LevelWorld implements ITerrainStatic {
 			}
 		}
 		
-		return true;
+		return false;
 	}
 	
 	class TerrainParam {
@@ -1262,6 +1279,8 @@ public class LevelWorld implements ITerrainStatic {
 	 *   对碰撞的盒子进行判断. 返回 true 则继续判断后面的盒子, 否则停止
 	 * @param touched
 	 *   如果为 true, 贴边的也算
+	 * @param ignoreIds
+	 *   是 Foe.id 不是 box.id
 	 */
 	public void overlaps(int px, int py, int pWidth, int pHeight,
 			Predicate<Box> test, boolean touched, IntSet ignoreIds) {
@@ -1274,7 +1293,7 @@ public class LevelWorld implements ITerrainStatic {
 			// 当判断的盒子只有不到 20 个, 原来的判断方法就适用.
 			for (int i = 0; i < boxes.size; i++) {
 				Box other = boxes.get(i);
-				if (ignoreIds == null || !ignoreIds.contains(other.id)) {
+				if (ignoreIds == null || !ignoreIds.contains(other.parentId)) {
 					int oxleft = other.posX;
 					int oxright = oxleft + other.posWidth;
 					int oybottom = other.posY;
@@ -1316,7 +1335,7 @@ public class LevelWorld implements ITerrainStatic {
 			for (Iterator<Entry<Box>> it = boxes.iterator(); it.hasNext();) {
 				Entry<Box> entry = it.next();
 				Box other = entry.value;
-				if (ignoreIds == null || !ignoreIds.contains(other.id)) {
+				if (ignoreIds == null || !ignoreIds.contains(other.parentId)) {
 					int oxleft = other.posX;
 					int oxright = oxleft + other.posWidth;
 					int oybottom = other.posY;
@@ -1354,7 +1373,7 @@ public class LevelWorld implements ITerrainStatic {
 	 */
 	public void overlaps(Box box, Predicate<Box> test, boolean touched) {
 		this.overlaps(box.posX, box.posY, box.posWidth, box.posHeight,
-				test, touched, IntSet.with(box.id));
+				test, touched, IntSet.with(box.parentId));
 	}
 	
 	/* **********
