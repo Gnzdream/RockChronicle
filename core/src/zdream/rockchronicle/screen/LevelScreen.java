@@ -13,10 +13,14 @@ import com.badlogic.gdx.utils.Array;
 import zdream.rockchronicle.RockChronicle;
 import zdream.rockchronicle.core.GameRuntime;
 import zdream.rockchronicle.core.foe.IPainter;
+import zdream.rockchronicle.core.input.IControlListener;
+import zdream.rockchronicle.core.input.PlayerInput;
 import zdream.rockchronicle.core.misc.MegamanHealthMiscPainter;
 import zdream.rockchronicle.core.region.Region;
 import zdream.rockchronicle.foes.megaman.Megaman;
 import zdream.rockchronicle.foes.mm5bbitter.MM5BBitter;
+
+import static zdream.rockchronicle.core.input.InputCenter.*;
 
 public class LevelScreen implements Screen {
 	
@@ -63,6 +67,10 @@ public class LevelScreen implements Screen {
 		GameRuntime runtime = app.runtime;
 		Region region = runtime.world.curRegion;
 		
+		// 主要控制
+		app.input.p1.addControlListener(new int[] { MAP_START, MAP_BACK }, menuL);
+		
+		// 玩家控制角色
 		mm = new Megaman(region.spawnx + 0.5f, region.spawny);
 		runtime.setPlayer1(mm);
 		mm.getBoxes()[0].orientation = true;
@@ -181,7 +189,7 @@ public class LevelScreen implements Screen {
 //		displayHp = (displayHp > 256) ? displayHp / 256 : (displayHp > 256) ? 1 : 0;
 		
 		String debugText = String.format("帧率: %d, 时间: %d\n%s",
-				lastFrameCount, app.runtime.ticker.count, app.runtime);
+				lastFrameCount, app.runtime.ticker.runCount, app.runtime);
 		app.font.setColor(Color.BLACK);
 		app.font.draw(app.batch, debugText, 12, 38);
 		app.font.setColor(Color.WHITE);
@@ -204,12 +212,14 @@ public class LevelScreen implements Screen {
 
 	@Override
 	public void pause() {
-//		app.runtime.pauseWorld(); // TODO 应该是游戏整体暂停, 而非只有世界暂停
+		// 应该是游戏整体暂停, 而非只有世界暂停
+		app.runtime.worldPause();
 	}
 
 	@Override
 	public void resume() {
-//		app.runtime.resumeWorld(); // TODO 应该是游戏整体复苏, 而非只有世界复苏
+		// 现在需要按 MAP_BACK （一般是 ESC 键）恢复
+		// app.runtime.worldResume(); 
 	}
 
 	@Override
@@ -221,5 +231,27 @@ public class LevelScreen implements Screen {
 	public void dispose() {
 		// 仅处理资源回收. 请把逻辑相关的收尾工作放在 willDispose 方法中
 	}
+	
+	class MenuControlListener implements IControlListener {
+
+		@Override
+		public void onKeyPressed(int mapkey, PlayerInput in) {
+			switch (mapkey) {
+			case MAP_START:
+				app.runtime.worldPause();
+				break;
+			case MAP_BACK:
+				app.runtime.worldResume(); 
+				break;
+			default:
+				break;
+			}
+		}
+
+		@Override
+		public void onKeyReleased(int mapkey, PlayerInput in) {}
+		
+	}
+	MenuControlListener menuL = new MenuControlListener();
 
 }

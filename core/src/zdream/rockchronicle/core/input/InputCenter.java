@@ -15,10 +15,14 @@ import zdream.rockchronicle.RockChronicle;
  */
 public class InputCenter {
 	
-	/*
-	 * 键位映射部分
+	/**
+	 * <p>键位映射部分
 	 * 
 	 * 需要映射的键位是这些 (下面会罗列游戏中有意义的操作键, 以及默认映射的键盘键位以及 XBox 360 手柄键位 [未完成])
+	 * 
+	 * <p>
+	 * <li>MAP_START : 启动、游戏内菜单
+	 * </li></p>
 	 */
 	public static final int
 			MAP_UP = 0x0001,

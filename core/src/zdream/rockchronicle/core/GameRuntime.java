@@ -139,6 +139,14 @@ public class GameRuntime {
 	
 	public SceneDesigner scene = new SceneDesigner(this);
 
+	public void worldPause() {
+		ticker.worldPause();
+	}
+
+	public void worldResume() {
+		ticker.worldResume();
+	}
+
 	/* **********
 	 *   角色   *
 	 ********** */
