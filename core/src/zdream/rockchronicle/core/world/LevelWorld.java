@@ -404,8 +404,8 @@ public class LevelWorld implements ITerrainStatic {
 	/**
 	 * @see #freshBox(Box, boolean, byte)
 	 */
-	public Box freshBox(Box box, boolean climbable) {
-		return freshBox(box, climbable, TERRAIN_SOLID);
+	public Box freshBox(Box box, boolean climbable, byte camp) {
+		return freshBox(box, climbable, camp, TERRAIN_SOLID);
 	}
 	
 	/**
@@ -421,16 +421,10 @@ public class LevelWorld implements ITerrainStatic {
 	 * @param xOutsideTerrain
 	 *   横坐标出界后返回的地形
 	 */
-	public Box freshBox(Box box, boolean climbable, byte xOutsideTerrain) {
+	public Box freshBox(Box box, boolean climbable, byte camp, byte xOutsideTerrain) {
 		box.flush();
 		BoxOccupation occ = box.getOccupation();
 		Room room = getCurrentRoom();
-		
-		// 四边, 单位: p
-//		int pxLeft = box.posX;
-//		int pxRight = pxLeft + box.posWidth;
-//		int pyBottom = box.posY;
-//		int pyTop = pyBottom + box.posHeight;
 		
 		// 盒子左右边所在的格子, 单位: 块
 		int ibxLeft = Math.max(occ.xleft, 0);
@@ -441,6 +435,7 @@ public class LevelWorld implements ITerrainStatic {
 		
 		// TODO 这里还是不考虑斜边
 		
+		// 1. 地形判断
 		// 左右
 		box.leftTouched = false;
 		box.rightTouched = false;
@@ -489,6 +484,89 @@ public class LevelWorld implements ITerrainStatic {
 						box.topTouched = true; break;
 					}
 				}
+			}
+		}
+		
+		// 2. 地形盒子判断
+		int maxZoneX = zoneWidth - 1;
+		int maxZoneY = zoneHeight - 1;
+		int zxStart = (occ.xleft < 0) ? 0 : min(occ.xleft / 5 + 1, maxZoneX);
+		int zxEnd = (occ.xright < 0) ? 0 : min(occ.xright / 5 + 1, maxZoneX);
+		int zyStart = (occ.ybottom < 0) ? 0 : min(occ.ybottom / 5 + 1, maxZoneY);
+		int zyEnd = (occ.ytop < 0) ? 0 : min(occ.ytop / 5 + 1, maxZoneY);
+		for (int x = zxStart; x <= zxEnd; x++) {
+			for (int y = zyStart; y <= zyEnd; y++) {
+				int zoneIndex = x + y * zoneWidth;
+				Array<Box> boxes = zone[zoneIndex];
+				for (int i = 0; i < boxes.size; i++) {
+					Box checkBox = boxes.get(i);
+					if (checkBox.terrain == null || checkBox == box) {
+						continue;
+					}
+					int t = checkBox.terrain.get(camp, 0);
+					if (t == 0) {
+						continue;
+					}
+					
+					if ((t & 2) != 0) {
+						if (box.posY < checkBox.posY + checkBox.posHeight && box.posY + box.posHeight > checkBox.posY) {
+							// 左右碰撞
+							if (box.posX == checkBox.posX + checkBox.posWidth) {
+								box.leftTouched = true;
+							} else if (box.posX + box.posWidth == checkBox.posX) {
+								box.rightTouched = true;
+							}
+						} else if (box.posX < checkBox.posX + checkBox.posWidth && box.posX + box.posWidth > checkBox.posX) {
+							// 上下碰撞
+							if (box.posY == checkBox.posY + checkBox.posHeight) {
+								box.bottomTouched = true;
+							} else if (box.posY + box.posHeight == checkBox.posY) {
+								box.topTouched = true;
+							}
+						}
+					} else if ((t & 1) != 0) {
+						if (box.posX > checkBox.posX + checkBox.posWidth
+								|| box.posX + box.posWidth < checkBox.posX
+								|| box.posY > checkBox.posY + checkBox.posHeight
+								|| box.posY + box.posHeight < checkBox.posY) {
+							// 右重叠部分了
+							// 这里就说明 glitch 了
+							System.err.println("glitch");
+							box.leftTouched = box.rightTouched = box.bottomTouched = box.topTouched = true;
+						} else {
+							if (box.posY < checkBox.posY + checkBox.posHeight && box.posY + box.posHeight > checkBox.posY) {
+								// 左右碰撞
+								if (box.posX == checkBox.posX + checkBox.posWidth) {
+									box.leftTouched = true;
+								} else if (box.posX + box.posWidth == checkBox.posX) {
+									box.rightTouched = true;
+								}
+							} else if (box.posX < checkBox.posX + checkBox.posWidth && box.posX + box.posWidth > checkBox.posX) {
+								// 上下碰撞
+								if (box.posY == checkBox.posY + checkBox.posHeight) {
+									box.bottomTouched = true;
+								} else if (box.posY + box.posHeight == checkBox.posY) {
+									box.topTouched = true;
+								}
+							}
+						}
+					} else if ((t & 0x10) != 0) {
+						// 可以判断 bottomTouched
+						if (box.posX < checkBox.posX + checkBox.posWidth && box.posX + box.posWidth > checkBox.posX) {
+							if (box.posY == checkBox.posY + checkBox.posHeight) {
+								box.bottomTouched = true;
+							}
+						}
+					} else if ((t & 0x20) != 0) {
+						// 可以判断 topTouched
+						if (box.posX < checkBox.posX + checkBox.posWidth && box.posX + box.posWidth > checkBox.posX) {
+							if (box.posY + box.posHeight == checkBox.posY) {
+								box.bottomTouched = true;
+							}
+						}
+					}
+				}
+				
 			}
 		}
 		
@@ -570,7 +648,8 @@ public class LevelWorld implements ITerrainStatic {
 						if (checkBox.terrain == null || checkBox == box) {
 							continue;
 						}
-						if ((checkBox.terrain.get(camp, 0) & 1) == 0) {
+						int t = checkBox.terrain.get(camp, 0) & 3;
+						if (t == 0) {
 							continue;
 						}
 						
@@ -588,9 +667,16 @@ public class LevelWorld implements ITerrainStatic {
 						}
 						
 						// 到这里就说明重合了
-						vx = max(checkBox.posX + checkBox.posWidth - pxsLeft, vx);
-						if (vx > 0) {
-							vx = 0;
+						int fix = checkBox.posX + checkBox.posWidth - pxsLeft;
+						if ((t & 1) == 1) {
+							vx = max(fix, vx);
+							if (vx > 0) {
+								vx = 0;
+							}
+						} else if ((t & 2) == 2) {
+							if (fix <= 0) {
+								vx = max(fix, vx);
+							}
 						}
 					}
 				}
@@ -636,7 +722,8 @@ public class LevelWorld implements ITerrainStatic {
 						if (checkBox.terrain == null || checkBox == box) {
 							continue;
 						}
-						if ((checkBox.terrain.get(camp, 0) & 1) == 0) {
+						int t = checkBox.terrain.get(camp, 0) & 3;
+						if ((t & 3) == 0) {
 							continue;
 						}
 						
@@ -654,9 +741,16 @@ public class LevelWorld implements ITerrainStatic {
 						}
 						
 						// 到这里就说明重合了
-						vx = min(checkBox.posX - pxsRight, vx);
-						if (vx < 0) {
-							vx = 0;
+						int fix = checkBox.posX - pxsRight;
+						if ((t & 1) == 1) {
+							vx = min(fix, vx);
+							if (vx < 0) {
+								vx = 0;
+							}
+						} else if ((t & 2) == 2) {
+							if (fix >= 0) {
+								vx = min(fix, vx);
+							}
 						}
 					}
 				}
@@ -669,9 +763,10 @@ public class LevelWorld implements ITerrainStatic {
 		}
 		
 		if (vy < 0) {
+			// 1. 地形判断
 			int pysBottom = box.posY; // src
 			int bysBottom = occ.ybottom;
-			int pydBottom = box.posY + vy; // dest
+			int pydBottom = pysBottom + vy; // dest
 			int bydBottom = blockRight(pydBottom);
 			
 			if (bysBottom != bydBottom) { // 跨格子
@@ -689,11 +784,65 @@ public class LevelWorld implements ITerrainStatic {
 					
 					if (barrier) {
 						vy = block2P(bysBottom) - pysBottom;
+						pydBottom = pysBottom + vy;
+						bydBottom = blockRight(pydBottom);
 						break;
 					}
 				}
 			}
+			
+			// 2. 地形盒子判断
+			int maxZoneX = zoneWidth - 1;
+			int maxZoneY = zoneHeight - 1;
+			int zxStart = (occ.xleft < 0) ? 0 : min(occ.xleft / 5 + 1, maxZoneX);
+			int zxEnd = (occ.xright < 0) ? 0 : min(occ.xright / 5 + 1, maxZoneX);
+			int zyStart = (bydBottom < 0) ? 0 : min(bydBottom / 5 + 1, maxZoneY);
+			int zyEnd = (bysBottom < 0) ? 0 : min(bysBottom / 5 + 1, maxZoneY);
+			for (int x = zxStart; x <= zxEnd; x++) {
+				for (int y = zyStart; y <= zyEnd; y++) {
+					int zoneIndex = x + y * zoneWidth;
+					Array<Box> boxes = zone[zoneIndex];
+					for (int i = 0; i < boxes.size; i++) {
+						Box checkBox = boxes.get(i);
+						if (checkBox.terrain == null || checkBox == box) {
+							continue;
+						}
+						int t = checkBox.terrain.get(camp, 0) & 0x13;
+						if (t == 0) {
+							continue;
+						}
+						
+						// TODO checkBox 需要判断, box 扫过的部分和 checkBox 盒子是否有交集
+						// box 扫过的部分 px1:box.posX, py1:pydB, px2:box.posX+box.posWidth, py2:pysB
+						// checkBox px1:ch.posX, py1:ch.posY, px2:ch.posX+ch.posWidth, py2:ch.posY+ch.posHeight
+						
+						// 下面是不重合需要满足的条件
+						// 1px1 >= 2px2 || 1px2 <= 2px1 || 1py1 >= 2py2 || 1py2 <= 2py1;
+						if (box.posX >= checkBox.posX + checkBox.posWidth
+								|| box.posX+box.posWidth <= checkBox.posX
+								|| pydBottom >= checkBox.posY + checkBox.posHeight
+								|| pysBottom <= checkBox.posY) {
+							continue;
+						}
+						
+						// 到这里就说明重合了
+						int fix = checkBox.posY + checkBox.posHeight - pysBottom;
+						if ((t & 1) == 1) {
+							vy = max(fix, vy);
+							if (vy > 0) {
+								vy = 0;
+							}
+						} else if ((t & 0x12) != 0) {
+							if (fix <= 0) {
+								vy = max(fix, vy);
+							}
+						}
+					}
+				}
+			}
+			
 		} else if (vy > 0) {
+			// 1. 地形判断
 			int pysTop = box.posY + box.posHeight; // src
 			int bysTop = occ.ytop;
 			int pydTop = pysTop + vy; // dest
@@ -714,7 +863,59 @@ public class LevelWorld implements ITerrainStatic {
 					
 					if (barrier) {
 						vy = block2P(bydTop) - pysTop;
+						pydTop = pysTop + vy;
+						bydTop = blockLeft(pydTop);
 						break;
+					}
+				}
+			}
+			
+			// 2. 地形盒子判断
+			int maxZoneX = zoneWidth - 1;
+			int maxZoneY = zoneHeight - 1;
+			int zxStart = (occ.xleft < 0) ? 0 : min(occ.xleft / 5 + 1, maxZoneX);
+			int zxEnd = (occ.xright < 0) ? 0 : min(occ.xright / 5 + 1, maxZoneX);
+			int zyStart = (bysTop < 0) ? 0 : min(bysTop / 5 + 1, maxZoneY);
+			int zyEnd = (bydTop < 0) ? 0 : min(bydTop / 5 + 1, maxZoneY);
+			for (int x = zxStart; x <= zxEnd; x++) {
+				for (int y = zyStart; y <= zyEnd; y++) {
+					int zoneIndex = x + y * zoneWidth;
+					Array<Box> boxes = zone[zoneIndex];
+					for (int i = 0; i < boxes.size; i++) {
+						Box checkBox = boxes.get(i);
+						if (checkBox.terrain == null || checkBox == box) {
+							continue;
+						}
+						int t = checkBox.terrain.get(camp, 0) & 0x23;
+						if (t == 0) {
+							continue;
+						}
+						
+						// TODO checkBox 需要判断, box 扫过的部分和 checkBox 盒子是否有交集
+						// box 扫过的部分 px1:box.posX, py1:pysT, px2:box.posX+box.posWidth, py2:pydT
+						// checkBox px1:ch.posX, py1:ch.posY, px2:ch.posX+ch.posWidth, py2:ch.posY+ch.posHeight
+						
+						// 下面是不重合需要满足的条件
+						// 1px1 >= 2px2 || 1px2 <= 2px1 || 1py1 >= 2py2 || 1py2 <= 2py1;
+						if (box.posX >= checkBox.posX + checkBox.posWidth
+								|| box.posX+box.posWidth <= checkBox.posX
+								|| pysTop >= checkBox.posY + checkBox.posHeight
+								|| pydTop <= checkBox.posY) {
+							continue;
+						}
+						
+						// 到这里就说明重合了
+						int fix = checkBox.posY - pysTop;
+						if ((t & 1) == 1) {
+							vy = min(fix, vy);
+							if (vy < 0) {
+								vy = 0;
+							}
+						} else if ((t & 0x22) != 0) {
+							if (fix >= 0) {
+								vy = min(fix, vy);
+							}
+						}
 					}
 				}
 			}
@@ -726,8 +927,8 @@ public class LevelWorld implements ITerrainStatic {
 		}	
 	}
 	
-	public boolean isBoxOverlap(Box box) {
-		return isBoxOverlap(box.posX, box.posY, box.posWidth, box.posHeight);
+	public boolean isBoxOverlap(Box box, byte camp) {
+		return isBoxOverlap(box.posX, box.posY, box.posWidth, box.posHeight, camp, null);
 	}
 	
 	/**
@@ -735,7 +936,7 @@ public class LevelWorld implements ITerrainStatic {
 	 * @return
 	 *   重合了返回 false
 	 */
-	public boolean isBoxOverlap(int pxStart, int pyStart, int pWidth, int pHeight) {
+	public boolean isBoxOverlap(int pxStart, int pyStart, int pWidth, int pHeight, byte camp, IntSet ignoreIds) {
 		int pxEnd = pxStart + pWidth;
 		int pyEnd = pyStart + pHeight;
 		
@@ -754,6 +955,45 @@ public class LevelWorld implements ITerrainStatic {
 				}
 			}
 		}
+		
+		int maxZoneX = zoneWidth - 1;
+		int maxZoneY = zoneHeight - 1;
+		int zxStart = (bxStart < 0) ? 0 : min(bxStart / 5 + 1, maxZoneX);
+		int zxEnd = (bxEnd < 0) ? 0 : min(bxEnd / 5 + 1, maxZoneX);
+		int zyStart = (byStart < 0) ? 0 : min(byStart / 5 + 1, maxZoneY);
+		int zyEnd = (byEnd < 0) ? 0 : min(byEnd / 5 + 1, maxZoneY);
+		for (int x = zxStart; x <= zxEnd; x++) {
+			for (int y = zyStart; y <= zyEnd; y++) {
+				int zoneIndex = x + y * zoneWidth;
+				Array<Box> boxes = zone[zoneIndex];
+				for (int i = 0; i < boxes.size; i++) {
+					Box checkBox = boxes.get(i);
+					if (checkBox.terrain == null) {
+						continue;
+					}
+					int t = checkBox.terrain.get(camp, 0) & 1;
+					if (t == 0) {
+						continue;
+					}
+					if (ignoreIds != null && ignoreIds.contains(checkBox.id)) {
+						continue;
+					}
+					
+					// 下面是不重合需要满足的条件
+					// 1px1 >= 2px2 || 1px2 <= 2px1 || 1py1 >= 2py2 || 1py2 <= 2py1;
+					if (pxStart >= checkBox.posX + checkBox.posWidth
+							|| pxEnd <= checkBox.posX
+							|| pyStart >= checkBox.posY + checkBox.posHeight
+							|| pyEnd <= checkBox.posY) {
+						continue;
+					}
+					
+					// 到这里就说明重合了
+					return true;
+				}
+			}
+		}
+		
 		return false;
 	}
 	
@@ -784,7 +1024,7 @@ public class LevelWorld implements ITerrainStatic {
 	 * @return
 	 *   当出现无法修复的情况, 返回 false
 	 */
-	public boolean glitchFix(Box box) {
+	public boolean glitchFix(Box box, byte camp) {
 		// 判断重合
 		BoxOccupation occ = box.getOccupation();
 		int bxstart = occ.xleft;
@@ -805,35 +1045,74 @@ public class LevelWorld implements ITerrainStatic {
 		}
 		
 		// TODO 除了地形以外的重合判定
-		if (overlaps.size == 0) {
-			return true;
+		int plDelta = 0, prDelta = 0, puDelta = 0, pdDelta = 0;
+		if (overlaps.size != 0) {
+			int rightMax = Integer.MIN_VALUE, leftMin = Integer.MAX_VALUE,
+					topMax = Integer.MIN_VALUE, bottomMin = Integer.MAX_VALUE;
+		
+			// 修正部分
+			// 如果采用左右上下移动, 将最少使用的偏移量. 下面四个参数是记录偏移量的. 单位: p
+			// 四个偏移量超过 1 就不允许
+			for (int i = 0; i < overlaps.size; i++) {
+				TerrainParam t = overlaps.get(i);
+				if (t.terrain == TERRAIN_SOLID) { // TODO 其它实体块
+					int ptLeft = block2P(t.bx);
+					int ptRight = block2P(t.bx + 1);
+					int ptTop = block2P(t.by + 1);
+					int ptBottom = block2P(t.by);
+					
+					rightMax = (ptRight > rightMax) ? ptRight : rightMax;
+					leftMin = (ptLeft < leftMin) ? ptLeft : leftMin;
+					topMax = (ptTop > topMax) ? ptTop : topMax;
+					bottomMin = (ptBottom < bottomMin) ? ptBottom : bottomMin;
+				}
+			}
+			
+			plDelta = Math.abs(box.posX + box.posWidth - leftMin); // 向左推
+			prDelta = Math.abs(box.posX - rightMax); // 向右推
+			puDelta = Math.abs(box.posY - topMax); // 向上推
+			pdDelta = Math.abs(box.posY + box.posHeight - bottomMin); // 向下推
 		}
 		
-		// 修正部分
-		// 如果采用左右上下移动, 将最少使用的偏移量. 下面四个参数是记录偏移量的. 单位: p
-		// 四个偏移量超过 1 就不允许
-		int plDelta, prDelta, puDelta, pdDelta;
-		int rightMax = Integer.MIN_VALUE, leftMin = Integer.MAX_VALUE,
-				topMax = Integer.MIN_VALUE, bottomMin = Integer.MAX_VALUE;
-		for (int i = 0; i < overlaps.size; i++) {
-			TerrainParam t = overlaps.get(i);
-			if (t.terrain == TERRAIN_SOLID) { // TODO 其它实体块
-				int ptLeft = block2P(t.bx);
-				int ptRight = block2P(t.bx + 1);
-				int ptTop = block2P(t.by + 1);
-				int ptBottom = block2P(t.by);
-				
-				rightMax = (ptRight > rightMax) ? ptRight : rightMax;
-				leftMin = (ptLeft < leftMin) ? ptLeft : leftMin;
-				topMax = (ptTop > topMax) ? ptTop : topMax;
-				bottomMin = (ptBottom < bottomMin) ? ptBottom : bottomMin;
+		// 地形盒子
+		int maxZoneX = zoneWidth - 1;
+		int maxZoneY = zoneHeight - 1;
+		int zxStart = (bxstart < 0) ? 0 : min(bxstart / 5 + 1, maxZoneX);
+		int zxEnd = (bxend < 0) ? 0 : min(bxend / 5 + 1, maxZoneX);
+		int zyStart = (bystart < 0) ? 0 : min(bystart / 5 + 1, maxZoneY);
+		int zyEnd = (byend < 0) ? 0 : min(byend / 5 + 1, maxZoneY);
+		for (int x = zxStart; x <= zxEnd; x++) {
+			for (int y = zyStart; y <= zyEnd; y++) {
+				int zoneIndex = x + y * zoneWidth;
+				Array<Box> boxes = zone[zoneIndex];
+				for (int i = 0; i < boxes.size; i++) {
+					Box checkBox = boxes.get(i);
+					if (checkBox.terrain == null || checkBox == box) {
+						continue;
+					}
+					int t = checkBox.terrain.get(camp, 0) & 3;
+					if (t == 0) {
+						continue;
+					}
+					
+					// 下面是不重合需要满足的条件
+					// 1px1 >= 2px2 || 1px2 <= 2px1 || 1py1 >= 2py2 || 1py2 <= 2py1;
+					if (box.posX >= checkBox.posX + checkBox.posWidth
+							|| box.posX + box.posWidth <= checkBox.posX
+							|| box.posY >= checkBox.posY + checkBox.posHeight
+							|| box.posY + box.posHeight <= checkBox.posY) {
+						continue;
+					}
+					
+					// 到这里就说明重合了
+					plDelta = max(box.posX - (checkBox.posX - box.posWidth), plDelta);
+					prDelta = max(checkBox.posX + checkBox.posWidth - box.posX, prDelta);
+					pdDelta = max(box.posY - (checkBox.posY - box.posHeight), pdDelta);
+					puDelta = max(checkBox.posY + checkBox.posHeight - box.posY, puDelta);
+				}
 			}
 		}
 		
-		plDelta = Math.abs(box.posX + box.posWidth - leftMin); // 向左推
-		prDelta = Math.abs(box.posX - rightMax); // 向右推
-		puDelta = Math.abs(box.posY - topMax); // 向上推
-		pdDelta = Math.abs(box.posY + box.posHeight - bottomMin); // 向下推
 		// 按左右上下取最小值
 		boolean l = plDelta < P_PER_BLOCK, r = prDelta < P_PER_BLOCK,
 				u = puDelta < P_PER_BLOCK, d = pdDelta < P_PER_BLOCK;
@@ -890,7 +1169,7 @@ public class LevelWorld implements ITerrainStatic {
 				return false;
 			}
 			
-			if (isBoxOverlap(pxStart, pyStart, box.boxWidth, box.boxHeight)) {
+			if (isBoxOverlap(pxStart, pyStart, box.boxWidth, box.boxHeight, camp, null)) {
 				continue;
 			}
 			

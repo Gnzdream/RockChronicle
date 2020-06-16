@@ -1,5 +1,6 @@
 package zdream.rockchronicle.foes.mm2shotman;
 
+import com.badlogic.gdx.utils.IntIntMap;
 import com.badlogic.gdx.utils.JsonValue;
 
 import zdream.rockchronicle.core.GameRuntime;
@@ -39,6 +40,10 @@ public class MM2Shotman extends SimpleBoxFoe {
 		
 		// "width":1.375, "height":1.375, "x":-0.666667, "y":0
 		box.setBox(-43691, 0, 90112, 90112); // 锚点在下底的中点偏左
+		box.terrain = new IntIntMap();
+		box.terrain.put(1, 2);
+		box.terrain.put(2, 2);
+		box.terrain.put(3, 2);
 		box.flush();
 		
 		this.hp = 256 * 5;
@@ -141,7 +146,7 @@ public class MM2Shotman extends SimpleBoxFoe {
 		
 		int px = (box.orientation) ?
 				(int) (box.posX + box.posWidth + 0.2f * P_PER_BLOCK) :
-				(int) (box.posX - 5.2f * P_PER_BLOCK);
+				(int) (box.posX - 6 * P_PER_BLOCK);
 		
 		runtime.world.overlaps(
 				px, (int) (box.getCenterY() - 1.5f * P_PER_BLOCK),

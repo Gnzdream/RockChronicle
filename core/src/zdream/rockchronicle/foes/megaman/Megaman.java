@@ -11,6 +11,7 @@ import static zdream.rockchronicle.core.world.Ticker.WORLD_PAUSE;
 import static zdream.rockchronicle.core.world.Ticker.WORLD_STEP;
 
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.IntSet;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
 import com.badlogic.gdx.utils.ObjectMap;
@@ -113,9 +114,13 @@ public class Megaman extends Foe implements IInputBindable {
 			recieveInput();
 		}
 		
+		// 处理 glitch
+		runtime.world.glitchFix(box, camp);
+		
 		// 3. 查询洛克人状态, 含:
 		// box 初始化、在地形中的情形、是否受伤僵直、移动情况
-		runtime.world.freshBox(box, true);
+		runtime.world.freshBox(box, true, camp);
+		
 		handleImmuse();
 		handleClimb();
 		handleMotion();
@@ -157,9 +162,6 @@ public class Megaman extends Foe implements IInputBindable {
 		// 最后……
 		// 处理左右移动
 		runtime.world.submitMotion(box, true, this.camp);
-		
-		// 处理 glitch
-		runtime.world.glitchFix(box);
 		
 		// 设置属性
 		pushParam();
@@ -690,7 +692,7 @@ public class Megaman extends Foe implements IInputBindable {
 				if (jumpStart) {
 					setClimb(0);
 	 				box.setAnchorY(pCeil(box.anchorY));
-					runtime.world.freshBox(box, true);
+					runtime.world.freshBox(box, true, camp);
 					inAir = box.inAir;
 				}
 			}
@@ -895,7 +897,8 @@ public class Megaman extends Foe implements IInputBindable {
 		int pWidth = slidePattern[2];
 		int pHeight = normalPattern[3];
 		
-		if (runtime.world.isBoxOverlap(pxStart, pyStart, pWidth, pHeight)) {
+		IntSet set = IntSet.with(box.id);
+		if (runtime.world.isBoxOverlap(pxStart, pyStart, pWidth, pHeight, camp, set)) {
 			return false;
 		}
 		

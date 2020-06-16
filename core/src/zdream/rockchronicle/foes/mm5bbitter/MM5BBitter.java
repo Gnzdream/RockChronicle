@@ -142,7 +142,8 @@ public class MM5BBitter extends SimpleBoxFoe {
 				stageDuration = 0;
 				damage = 4 * 256;
 				box.terrain = new IntIntMap();
-				box.terrain.put(1, 1);
+				box.terrain.put(1, 2);
+				box.terrain.put(3, 2);
 				painter.setState("red_appear");
 				setCurrentPattern("appear1");
 			}

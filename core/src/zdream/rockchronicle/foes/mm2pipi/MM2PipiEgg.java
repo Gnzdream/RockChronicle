@@ -55,19 +55,19 @@ public class MM2PipiEgg extends SimpleBoxFoe {
 				dropVelocity = maxDropVelocity;
 			}
 			
-			runtime.world.freshBox(box, false, ITerrainStatic.TERRAIN_EMPTY);
+			runtime.world.freshBox(box, false, camp, ITerrainStatic.TERRAIN_EMPTY);
 			if (box.leftTouched || box.rightTouched || box.topTouched || box.bottomTouched) {
 				broken();
 				return;
 			}
 			
-			if (runtime.world.isBoxOverlap(box)) {
+			if (runtime.world.isBoxOverlap(box, camp)) {
 				broken();
 				return;
 			}
 			
 			box.setVelocityY(dropVelocity);
-			runtime.world.submitMotion(box, false, this.camp, ITerrainStatic.TERRAIN_EMPTY);
+			runtime.world.submitMotion(box, false, camp, ITerrainStatic.TERRAIN_EMPTY);
 		}
 	}
 
