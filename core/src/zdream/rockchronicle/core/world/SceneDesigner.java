@@ -1,5 +1,12 @@
 package zdream.rockchronicle.core.world;
 
+import static zdream.rockchronicle.core.foe.Box.block2P;
+import static zdream.rockchronicle.core.foe.Box.p2block;
+import static zdream.rockchronicle.core.region.Gate.DIRECTION_BOTTOM;
+import static zdream.rockchronicle.core.region.Gate.DIRECTION_LEFT;
+import static zdream.rockchronicle.core.region.Gate.DIRECTION_RIGHT;
+import static zdream.rockchronicle.core.region.Gate.DIRECTION_TOP;
+
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
@@ -16,10 +23,6 @@ import zdream.rockchronicle.core.region.FieldDef;
 import zdream.rockchronicle.core.region.FoeDef;
 import zdream.rockchronicle.core.region.Gate;
 import zdream.rockchronicle.core.region.Room;
-
-import static zdream.rockchronicle.core.foe.Box.*;
-
-import static zdream.rockchronicle.core.region.Gate.*;
 
 /**
  * <p>场景设计师
@@ -62,6 +65,12 @@ public class SceneDesigner {
 	 * 创建怪的始作俑者
 	 */
 	public FoeBuilder foeBuilder = new FoeBuilder();
+	
+	/**
+	 * 真实的屏幕上区域的范围. (以当前房间左下角为坐标系, 单位: 块)
+	 * mainRender 的 viewBounds 是计算了缩放大小的, 这个不是.
+	 */
+	private float[] viewBounds = new float[4];
 	
 	public SceneDesigner(GameRuntime runtime) {
 		this.runtime = runtime;
@@ -514,19 +523,32 @@ public class SceneDesigner {
 	private void fixMapRender() {
 		// 当前区域
 		Room curRoom = runtime.getCurrentRoom();
+		float windowsWidth = RockChronicle.INSTANCE.width;
+		float windowsHeight = RockChronicle.INSTANCE.height;
+		float scaleX = Config.INSTANCE.blockWidth / 24f;
+		float scaleY = Config.INSTANCE.blockHeight / 24f;
 		
-		mainRender.setView(camera);
-		Rectangle viewBounds = mainRender.getViewBounds();
-		viewBounds.setX(viewBounds.x + curRoom.offsetx);
-		viewBounds.setY(viewBounds.y + curRoom.offsety);
+		viewBounds[0] = camera.position.x - windowsWidth / 2 + curRoom.offsetx;
+		viewBounds[1] = camera.position.y - windowsHeight / 2 + curRoom.offsety;
+		viewBounds[2] = windowsWidth;
+		viewBounds[3] = windowsHeight;
+		
+		Rectangle fakeBounds = mainRender.getViewBounds();
+		fakeBounds.setX(viewBounds[0] / scaleX);
+		fakeBounds.setY(viewBounds[1] / scaleY);
+		fakeBounds.setWidth(windowsWidth / scaleX);
+		fakeBounds.setHeight(windowsHeight / scaleY);
 		
 		float ox = -camera.position.x + camera.viewportWidth / 2.0f;
 		float oy = -camera.position.y + camera.viewportHeight / 2.0f;
 		float dx = ox - curRoom.offsetx;
 		float dy = oy - curRoom.offsety;
 		
+		mainRender.getBatch().setProjectionMatrix(camera.combined);
 		mainRender.getBatch().getProjectionMatrix()
-			.translate (dx, dy, 0);
+			.translate(dx, dy, 0)
+			.scale(scaleX, scaleY, 1)
+			;
 		
 		// 其它区域
 		for (int i = 0; i < renders.size; i++) {
@@ -540,8 +562,8 @@ public class SceneDesigner {
 			viewBounds0.setY(viewBounds0.y + curRoom.offsety + gate.offsetYOfRegion);
 			
 			render.getBatch().getProjectionMatrix()
-				.translate(ox - curRoom.offsetx - gate.offsetXOfRegion,
-						oy - curRoom.offsety - gate.offsetYOfRegion,
+				.translate(dx - gate.offsetXOfRegion,
+						dy - gate.offsetYOfRegion,
 						0);
 		}
 	}
@@ -561,14 +583,13 @@ public class SceneDesigner {
 	 * @return 单位: p
 	 */
 	public int[] getCameraBound() {
-		Rectangle viewBounds = mainRender.getViewBounds();
 		Room curRoom = runtime.getCurrentRoom();
 		int[] rets = new int[4];
 		
-		rets[0] = block2P(viewBounds.x - curRoom.offsetx);
-		rets[1] = block2P(viewBounds.y - curRoom.offsety);
-		rets[2] = block2P(viewBounds.width);
-		rets[3] = block2P(viewBounds.height);
+		rets[0] = block2P(viewBounds[0] - curRoom.offsetx);
+		rets[1] = block2P(viewBounds[1] - curRoom.offsety);
+		rets[2] = block2P(viewBounds[2]);
+		rets[3] = block2P(viewBounds[3]);
 		
 		return rets;
 	}

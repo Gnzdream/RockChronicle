@@ -1,5 +1,7 @@
 {
 	"image":"megaman7sheet.gif",
+	"blockWidth":24,
+	"blockHeight":24,
 	"default":"normal",
 	"select":
 	[

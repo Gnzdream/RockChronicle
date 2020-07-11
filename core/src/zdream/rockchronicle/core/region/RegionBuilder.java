@@ -41,7 +41,6 @@ import com.badlogic.gdx.utils.JsonValue.ValueType;
 import com.badlogic.gdx.utils.JsonWriter.OutputType;
 import com.badlogic.gdx.utils.ObjectMap;
 
-import zdream.rockchronicle.core.Config;
 import zdream.rockchronicle.utils.FilePathUtil;
 import zdream.rockchronicle.utils.JsonUtils;
 
@@ -581,6 +580,9 @@ public class RegionBuilder {
 		}
 		l.setVisible(false);
 		
+		int tmxBlockWidth = tmxBlockWidth(tmx);
+		int tmxBlockHeight = tmxBlockHeight(tmx);
+		
 		MapObjects objs = l.getObjects();
 		final int size = objs.getCount();
 		for (int i = 0; i < size; i++) {
@@ -596,10 +598,10 @@ public class RegionBuilder {
 				RectangleMapObject robj = (RectangleMapObject) obj;
 				Rectangle rect = robj.getRectangle();
 				
-				float x = rect.x / Config.INSTANCE.blockWidth;
-				float y = rect.y / Config.INSTANCE.blockHeight;
-				float w = rect.width / Config.INSTANCE.blockWidth;
-				float h = rect.height / Config.INSTANCE.blockHeight;
+				float x = rect.x / tmxBlockWidth;
+				float y = rect.y / tmxBlockHeight;
+				float w = rect.width / tmxBlockWidth;
+				float h = rect.height / tmxBlockHeight;
 				
 				// 确定该场属于哪个房间
 				Room[] rooms = bundle.region.rooms;
@@ -900,6 +902,9 @@ public class RegionBuilder {
 			return;
 		}
 		
+		int tmxBlockWidth = tmxBlockWidth(tmx);
+		int tmxBlockHeight = tmxBlockHeight(tmx);
+		
 		MapObjects objs = l.getObjects();
 		final int size = objs.getCount();
 		for (int i = 0; i < size; i++) {
@@ -919,8 +924,8 @@ public class RegionBuilder {
 			case "foe": {
 				String def = prop.get("def", String.class);
 				
-				float x = rect.x / Config.INSTANCE.blockWidth;
-				float y = rect.y / Config.INSTANCE.blockHeight;
+				float x = rect.x / tmxBlockWidth;
+				float y = rect.y / tmxBlockHeight;
 				
 				Room room = bundle.region.of(x, y);
 				FoeDef p = createFoeForRoom(room, x, y, bundle.foes.get(def));
@@ -929,8 +934,8 @@ public class RegionBuilder {
 			
 			// 连接点位
 			case "connection": default: {
-				int x = (int) rect.x / Config.INSTANCE.blockWidth;
-				int y = (int) rect.y / Config.INSTANCE.blockHeight;
+				int x = (int) rect.x / tmxBlockWidth;
+				int y = (int) rect.y / tmxBlockHeight;
 				RegionPoint p = new RegionPoint();
 				p.x = x;
 				p.y = y;
@@ -989,6 +994,22 @@ public class RegionBuilder {
 			return; // 方向参数错误
 		}
 		p.conn = prop;
+	}
+	
+	private int tmxBlockWidth(TiledMap tmx) {
+		Object o = tmx.getProperties().get("tilewidth");
+		if (o instanceof Number) {
+			return ((Number) o).intValue();
+		}
+		return 24;
+	}
+	
+	private int tmxBlockHeight(TiledMap tmx) {
+		Object o = tmx.getProperties().get("tileheight");
+		if (o instanceof Number) {
+			return ((Number) o).intValue();
+		}
+		return 24;
 	}
 	
 }

@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-import zdream.rockchronicle.core.Config;
 import zdream.rockchronicle.core.textures.TextureSelect;
 import zdream.rockchronicle.core.textures.TextureSheet;
 import zdream.rockchronicle.core.textures.TextureSheetEntry;
@@ -89,8 +88,8 @@ public abstract class SingleBoxSpritePainter implements IPainter {
 		}
 		sprite.setRegion(entry.region);
 		
-		int widthInPixel = Config.INSTANCE.blockWidth;
-		int heightInPixel = Config.INSTANCE.blockHeight;
+		int widthInPixel = textures.blockWidth;
+		int heightInPixel = textures.blockHeight;
 		
 		float x, // 单位: 像素 -> 格子
 				y = getBy() + entry.offsety / (float) widthInPixel; // 单位: 像素 -> 格子

@@ -13,6 +13,8 @@ public class TextureSheet {
 	public Texture texture;
 	public String defaultState = "normal";
 	
+	public int blockWidth = 24, blockHeight = 24;
+	
 	/**
 	 * @param path
 	 *   到 .json 文件的路径

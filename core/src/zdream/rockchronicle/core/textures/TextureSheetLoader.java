@@ -50,6 +50,14 @@ public class TextureSheetLoader {
 			case "default":
 				sheet.defaultState = entry.asString();
 				break;
+				
+			case "blockWidth":
+				sheet.blockWidth = entry.asInt();
+				break;
+				
+			case "blockHeight":
+				sheet.blockHeight = entry.asInt();
+				break;
 
 			default:
 				break;
